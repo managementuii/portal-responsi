@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Command Center PIC - UII</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
+        
+        .table-container { -webkit-overflow-scrolling: touch; }
+        .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .fade-out { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .fade-in { opacity: 1; visibility: visible; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        
+        #initial-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #f8fafc; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; }
+        .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .btn-wa-outline { border: 1px solid #10b981; color: #10b981; background: transparent; transition: all 0.2s ease; }
+        .btn-wa-outline:hover { background: #ecfdf5; }
+        
+        .form-input { width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px solid #cbd5e1; font-size: 0.875rem; color: #334155; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-input:disabled { background-color: #f8fafc; color: #64748b; }
+
+        .pulse-dot { position: absolute; top: -4px; right: -4px; display: flex; height: 12px; width: 12px; }
+        .pulse-dot-anim { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #f59e0b; opacity: 0.75; }
+        .pulse-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 12px; width: 12px; background-color: #f59e0b; border: 2px solid #ffffff; }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <div id="initial-loader" class="fade-in">
+        <div class="spinner-css"></div>
+        <p class="mt-4 font-medium text-slate-500 text-[13px]">Mempersiapkan Terminal PIC...</p>
+    </div>
+
+    <nav class="bg-blue-700 text-white shadow-sm sticky top-0 z-50 py-3 sm:py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6">
+            <div class="flex items-center gap-3">
+                <img src="https://lh3.googleusercontent.com/d/1EXPFGOzHj6a06TxLKfriCqz8VBV7p26i" alt="Logo UII" class="h-8 sm:h-9 w-auto object-contain" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+            </div>
+            <div class="flex gap-2">
+                <button onclick="refreshData()" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i> <span class="hidden sm:inline">Refresh Data</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 mt-2 flex-grow w-full">
+        
+        <div id="gateScreen" class="max-w-xl mx-auto mt-6 sm:mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 text-center hidden animate__animated animate__fadeInUp">
+            <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-headset text-blue-600 text-2xl"></i>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-semibold text-slate-800 mb-2">Terminal Tim Teknis (PIC)</h2>
+            <p class="text-slate-500 text-sm mb-6">Sistem mendeteksi jadwal aktif hari ini. Silakan pilih nama Anda untuk membuka <i>Command Center</i> pribadi.</p>
+            <div id="picListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left"></div>
+        </div>
+
+        <div id="dashboardScreen" class="hidden animate__animated animate__fadeIn">
+            <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm mb-5 relative">
+                <div class="mb-6 pb-5 border-b border-slate-100 flex justify-between items-start gap-4">
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight mb-1">Command Center PIC</h1>
+                        <p class="text-slate-500 font-medium text-sm">Program Studi Manajemen S1</p>
+                    </div>
+                    <img src="https://lh3.googleusercontent.com/d/16b_XtIbg4elZTNKmnXKkpDwn_-TBmokK" alt="Logo Tambahan" class="h-10 sm:h-14 w-auto object-contain shrink-0" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+                </div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div class="text-sm w-full md:w-auto">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">PIC Aktif</p>
+                                <p id="activePicName" class="font-semibold text-slate-800 text-base leading-none"></p>
+                            </div>
+                        </div>
+                        <button onclick="logoutPic()" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition flex items-center gap-1.5 mt-2">
+                            <i class="fas fa-sign-out-alt text-xs"></i> Ganti PIC
+                        </button>
+                    </div>
+                    <div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 sm:pb-0">
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Total Mhs</p>
+                            <p id="statTotal" class="text-2xl font-semibold text-slate-700">0</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Selesai</p>
+                            <p id="statSelesai" class="text-2xl font-semibold text-emerald-600">0</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Belum</p>
+                            <p id="statBelum" class="text-2xl font-semibold text-rose-500">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 mb-5 flex flex-col xl:flex-row justify-between items-center gap-5 shadow-sm">
+                <div class="flex items-center gap-4 w-full xl:w-auto">
+                    <div class="bg-blue-50 text-blue-500 p-3 rounded-xl border border-blue-100 flex-shrink-0">
+                        <i class="fas fa-video text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1.5">Informasi Room Zoom</p>
+                        <div class="text-sm font-medium text-slate-700 flex flex-wrap items-center gap-3">
+                            <span>ID: <span class="text-slate-900 font-semibold">223 556 7899</span></span>
+                            <span class="text-slate-300">|</span>
+                            <span>Pass: <span class="text-slate-900 font-semibold">fujitsu</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-2 w-full xl:w-auto">
+                    <button onclick="window.open('https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09', '_blank')" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <i class="fas fa-headset opacity-80"></i> <span>Masuk sbg Co-Host</span>
+                    </button>
+                    <button onclick="window.open('#', '_blank')" class="w-full sm:w-auto bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm relative">
+                        <span class="pulse-dot"><span class="pulse-dot-anim"></span><span class="pulse-dot-core"></span></span>
+                        <i class="fas fa-book-open opacity-80"></i> <span>Panduan PIC</span>
+                    </button>
+                    <button onclick="window.open('https://drive.google.com/uc?export=download&id=1sm1Vq4V6LwssqkOb4MPtux_7mLntaUHg', '_blank')" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <i class="fas fa-download opacity-80"></i> <span>Unduh VB</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="hidden md:block table-container overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
+                            <tr>
+                                <th class="px-5 py-4 text-center w-12">No</th>
+                                <th class="px-5 py-4 text-left">Jadwal & Status</th>
+                                <th class="px-5 py-4 text-left">Data Mahasiswa</th>
+                                <th class="px-5 py-4 text-left">Tim Penguji</th>
+                                <th class="px-5 py-4 text-center min-w-[200px]">Aksi Cepat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="desktopTableBody" class="bg-white divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+                <div id="mobileCardView" class="grid md:hidden gap-4 p-4 bg-slate-50/50"></div>
+            </div>
+
+            <div id="noResults" class="hidden p-10 mt-2 text-center text-slate-500 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check-circle text-2xl text-slate-300"></i>
+                </div>
+                <p class="font-medium text-slate-700 mb-1">Kerja Bagus!</p>
+                <p class="text-sm text-slate-400">Tidak ada tanggungan responsi untuk Anda hari ini.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT DATA & CENTANG W -->
+    <div id="editModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden transform scale-95 transition-transform duration-300" id="editModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-semibold text-slate-800 text-lg">Edit Jadwal & Kontak</h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 max-h-[75vh] overflow-y-auto">
+                <input type="hidden" id="editRow">
+                
+                <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 mb-5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 uppercase tracking-wider font-medium mb-0.5">Mahasiswa</p>
+                        <p id="editInfoMhs" class="font-semibold text-slate-800 leading-tight"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Responsi</label>
+                        <input type="date" id="editTanggal" class="form-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Jam (WIB)</label>
+                        <select id="editJam" class="form-input"></select>
+                    </div>
+                </div>
+                
+                <div class="border-t border-slate-100 pt-4 mt-2">
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">Informasi Kontak & Penguji</h4>
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Nama Supervisor</label>
+                        <input type="text" id="editNamaSpv" class="form-input" oninput="formatTitleCase(this)">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">No. WA Mahasiswa</label>
+                            <input type="text" id="editWaMhs" class="form-input" oninput="formatWAInput(this)" inputmode="numeric">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">No. WA SPV</label>
+                            <input type="text" id="editWaSpv" class="form-input" oninput="formatWAInput(this)" inputmode="numeric">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">No. WA Dosen Pembimbing</label>
+                            <input type="text" id="editWaDosen" class="form-input" oninput="formatWAInput(this)" inputmode="numeric" placeholder="Contoh: 08123456789">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FITUR BARU: CENTANG KOLOM W -->
+                <div class="mt-5">
+                    <label class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl cursor-pointer hover:bg-emerald-100 transition-colors">
+                        <input type="checkbox" id="editIsWChecked" class="w-5 h-5 text-emerald-600 bg-white border-emerald-300 rounded focus:ring-emerald-500 focus:ring-2 cursor-pointer">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-emerald-800">Tandai Responsi Selesai</span>
+                            <span class="text-xs text-emerald-600 font-medium">Mencentang status mahasiswa pada Kolom W</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
+                <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Batal</button>
+                <button onclick="submitEditPIC()" class="px-5 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
+                    <i class="fas fa-save"></i> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = []; let uniquePics = []; let currentActivePic = "";
+        
+        const attrHref = 'hr' + 'ef';
+        const attrOnclick = 'on' + 'click';
+
+        function formatTitleCase(input) { let str = input.value; input.value = str.replace(/\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1); }); }
+        function formatWAInput(el) { let val = el.value.replace(/[^0-9]/g, ''); if (val.startsWith('62')) val = '0' + val.substring(2); if (val.length > 0 && val[0] === '8') val = '0' + val; else if (val.length > 0 && val[0] !== '0') val = '08' + val; el.value = val; }
+        function populateTimeDropdown() { let select = document.getElementById('editJam'); select.innerHTML = '<option value="" disabled>Pilih Jam...</option>'; for (let h = 6; h <= 21; h++) { for (let m = 0; m < 60; m += 15) { let t = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0'); select.appendChild(new Option(t, t)); } } }
+
+        window.onload = () => {
+            populateTimeDropdown();
+            if (typeof google !== 'undefined') {
+                google.script.run.withSuccessHandler(initPicTerminal).withFailureHandler((e)=>Swal.fire('Error',e.message,'error')).getPreviewData();
+            } else {
+                let dummyData = [
+                    { row: 2, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "08:15", nim: "20311234", nama: "Ahmad Budi", perusahaan: "PT Pertamina", spv: "Pak Joko", dosbing: "Bpk. Haris", pic: "Siti Rahma", waPic: "0812345", waMhs: "08111", waSpv: "08222", waDosen: "08999", status: "Belum Responsi", isWChecked: false },
+                    { row: 3, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "09:00:00", nim: "20311235", nama: "Rini Melati", perusahaan: "PT Telkom", spv: "Ibu Dina", dosbing: "Ibu Maya", pic: "Andi Saputra", waPic: "0812346", waMhs: "08333", waSpv: "08444", waDosen: "", status: "Belum Isi Form Pasca Responsi", isWChecked: true }
+                ];
+                initPicTerminal(dummyData);
+            }
+        };
+
+        function refreshData() {
+            if (typeof google !== 'undefined') {
+                const loader = document.getElementById('initial-loader');
+                loader.classList.remove('fade-out');
+                loader.style.display = 'flex';
+                loader.classList.add('fade-in');
+                
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        allData = data || [];
+                        let picSet = new Set();
+                        allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
+                        uniquePics = Array.from(picSet).sort();
+                        
+                        loader.classList.remove('fade-in'); 
+                        loader.classList.add('fade-out');
+                        setTimeout(() => loader.style.display = 'none', 300);
+
+                        if (currentActivePic !== "") { renderDashboard(); } 
+                        else { renderGateScreen(); }
+                    })
+                    .withFailureHandler(function(err){
+                        loader.classList.remove('fade-in'); loader.classList.add('fade-out');
+                        setTimeout(() => loader.style.display = 'none', 300);
+                        Swal.fire('Error', 'Gagal memuat ulang data.', 'error');
+                    })
+                    .getPreviewData();
+            } else { window.location.reload(); }
+        }
+
+        function initPicTerminal(data) {
+            const loader = document.getElementById('initial-loader');
+            loader.classList.remove('fade-in'); loader.classList.add('fade-out');
+            setTimeout(() => loader.style.display = 'none', 300);
+
+            allData = data || []; let picSet = new Set();
+            allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
+            uniquePics = Array.from(picSet).sort();
+            
+            if (currentActivePic !== "") { renderDashboard(); } else { renderGateScreen(); }
+        }
+
+        function renderGateScreen() {
+            const container = document.getElementById('picListContainer'); container.innerHTML = '';
+            if (uniquePics.length === 0) { container.innerHTML = '<div class="col-span-1 sm:col-span-2 p-4 text-center text-slate-500 bg-slate-50 rounded-xl border border-slate-100">Tidak ada jadwal terdeteksi.</div>'; } 
+            else {
+                uniquePics.forEach(picName => {
+                    let btn = document.createElement('button');
+                    btn.className = 'w-full text-left bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 p-4 rounded-xl transition-all shadow-sm flex items-center justify-between group';
+                    btn.onclick = () => selectPic(picName);
+                    btn.innerHTML = '<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center text-slate-400 group-hover:text-blue-500 transition-colors"><i class="fas fa-user text-sm"></i></div><span class="font-semibold text-slate-700 group-hover:text-blue-700">' + picName + '</span></div><i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-500 transition-colors"></i>';
+                    container.appendChild(btn);
+                });
+            }
+            document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden');
+        }
+
+        function selectPic(picName) { currentActivePic = picName; document.getElementById('activePicName').innerText = picName; document.getElementById('gateScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); renderDashboard(); }
+        function logoutPic() { currentActivePic = ""; document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden'); }
+
+        function renderDashboard() {
+            let myData = allData.filter(item => item.pic.trim() === currentActivePic);
+            let countSelesai = 0; myData.forEach(item => { if(item.status === "Responsi Selesai") countSelesai++; });
+            
+            document.getElementById('statTotal').innerText = myData.length;
+            document.getElementById('statSelesai').innerText = countSelesai;
+            document.getElementById('statBelum').innerText = myData.length - countSelesai;
+
+            let tbodyDesktop = document.getElementById('desktopTableBody'); let viewMobile = document.getElementById('mobileCardView');
+            tbodyDesktop.innerHTML = ''; viewMobile.innerHTML = '';
+
+            if (myData.length === 0) { document.getElementById('noResults').classList.remove('hidden'); document.getElementById('mobileCardView').classList.add('hidden'); return; } 
+            else { document.getElementById('noResults').classList.add('hidden'); document.getElementById('mobileCardView').classList.remove('hidden'); }
+
+            let htmlDesktop = ''; let htmlMobile = '';
+
+            myData.forEach((item, index) => {
+                let badgeClass = "bg-slate-100 text-slate-600 border border-slate-200"; 
+                if (item.status === "Responsi Selesai") badgeClass = "bg-emerald-50 text-emerald-600 border border-emerald-100";
+                else if (item.status === "Belum Isi Form" || item.status === "Belum Isi Form Pasca Responsi") badgeClass = "bg-amber-50 text-amber-600 border border-amber-100";
+                else badgeClass = "bg-rose-50 text-rose-500 border border-rose-100";
+
+                let btnWaMhs = item.waMhs ? '<a ' + attrHref + '="https://wa.me/' + item.waMhs + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> Mhs</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> Mhs</button>';
+                let btnWaSpv = item.waSpv ? '<a ' + attrHref + '="https://wa.me/' + item.waSpv + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> SPV</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> SPV</button>';
+                let btnWaDosen = item.waDosen ? '<a ' + attrHref + '="https://wa.me/' + item.waDosen + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> Dosen</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed" title="Nomor belum terdaftar"><i class="fab fa-whatsapp text-sm opacity-50"></i> Dosen</button>';
+                
+                // TOMBOL EDIT SELALU AKTIF UNTUK PIC
+                let btnEdit = '<button ' + attrOnclick + '="openEditModal(' + item.row + ')" class="mt-2 w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fas fa-edit text-blue-500"></i> Edit Data & Status</button>';
+
+                htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
+                        '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
+                        '<td class="px-5 py-4">' +
+                            '<p class="font-medium text-slate-800 text-sm mb-1">' + item.tanggal + '</p>' +
+                            '<p class="text-slate-500 text-xs mb-2"><i class="fas fa-clock opacity-70 me-1"></i> ' + item.jam + ' WIB</p>' +
+                            '<span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium ' + badgeClass + '">' + item.status + '</span>' +
+                        '</td>' +
+                        '<td class="px-5 py-4">' +
+                            '<p class="font-semibold text-slate-800 text-sm mb-0.5">' + item.nama + '</p>' +
+                            '<p class="text-slate-500 text-xs">' + item.nim + '</p>' +
+                        '</td>' +
+                        '<td class="px-5 py-4">' +
+                            '<p class="font-medium text-slate-800 text-sm mb-1"><i class="far fa-building text-slate-400 w-4 text-center mr-1"></i> ' + item.perusahaan + '</p>' +
+                            '<p class="text-slate-500 text-xs mb-0.5"><i class="far fa-user text-slate-400 w-4 text-center mr-1"></i> SPV: ' + item.spv + '</p>' +
+                            '<p class="text-slate-500 text-xs"><i class="fas fa-user-tie text-slate-400 w-4 text-center mr-1"></i> DPL: ' + item.dosbing + '</p>' +
+                        '</td>' +
+                        '<td class="px-5 py-4 w-48">' +
+                            '<div class="grid grid-cols-3 gap-1.5">' + btnWaMhs + btnWaSpv + btnWaDosen + '</div>' +
+                            btnEdit +
+                        '</td>' +
+                    '</tr>';
+
+                htmlMobile += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">' +
+                        '<div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">' +
+                            '<div>' +
+                                '<span class="inline-block px-2 py-1 rounded text-[10px] font-medium mb-1.5 ' + badgeClass + '">' + item.status + '</span>' +
+                                '<div class="text-xs font-medium text-slate-600 flex items-center gap-1.5"><i class="fas fa-calendar-alt text-slate-400"></i> ' + item.tanggal + ' &bull; ' + item.jam + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="mb-4">' +
+                            '<p class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + item.nama + '</p>' +
+                            '<p class="text-xs text-slate-500 mb-2">' + item.nim + '</p>' +
+                            '<div class="bg-slate-50 rounded-lg p-2.5 mt-2 border border-slate-100">' +
+                                '<p class="text-xs font-medium text-slate-700 mb-1"><i class="far fa-building text-slate-400 mr-1"></i> ' + item.perusahaan + '</p>' +
+                                '<p class="text-xs text-slate-500 mb-0.5"><i class="far fa-user text-slate-400 mr-1"></i> SPV: ' + item.spv + '</p>' +
+                                '<p class="text-xs text-slate-500"><i class="fas fa-user-tie text-slate-400 mr-1"></i> DPL: ' + item.dosbing + '</p>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-3 gap-2 mt-3">' + btnWaMhs + btnWaSpv + btnWaDosen + '</div>' +
+                        '<div class="mt-3">' + btnEdit + '</div>' +
+                    '</div>';
+            });
+
+            tbodyDesktop.innerHTML = htmlDesktop; viewMobile.innerHTML = htmlMobile;
+        }
+
+        const modal = document.getElementById('editModal'); const modalContent = document.getElementById('editModalContent');
+
+        function openEditModal(rowId) {
+            let item = allData.find(d => d.row === rowId); if (!item) return;
+            document.getElementById('editRow').value = item.row; 
+            document.getElementById('editInfoMhs').innerText = item.nama + ' (' + item.nim + ')';
+            document.getElementById('editTanggal').value = item.tanggalInput || ""; 
+            
+            let finalJam = "";
+            if (item.jam && item.jam !== "") {
+                let parts = item.jam.toString().split(":");
+                if (parts.length >= 2) {
+                    let h = parseInt(parts[0], 10); let m = parseInt(parts[1], 10); 
+                    let roundedM = Math.round(m / 15) * 15; if (roundedM === 60) { roundedM = 0; h = (h + 1) % 24; } 
+                    finalJam = h.toString().padStart(2, '0') + ':' + roundedM.toString().padStart(2, '0');
+                }
+            }
+            document.getElementById('editJam').value = finalJam;
+            document.getElementById('editNamaSpv').value = item.spv || ""; 
+            document.getElementById('editWaMhs').value = item.waMhs || "";
+            document.getElementById('editWaSpv').value = item.waSpv || ""; 
+            document.getElementById('editWaDosen').value = item.waDosen || "";
+            
+            // SET STATUS CHECKBOX W DARI DATA SERVER
+            document.getElementById('editIsWChecked').checked = item.isWChecked || false;
+            
+            modal.classList.remove('hidden'); 
+            setTimeout(() => { modal.classList.remove('opacity-0'); modalContent.classList.remove('scale-95'); modalContent.classList.add('scale-100'); }, 10);
+        }
+
+        function closeEditModal() {
+            modal.classList.add('opacity-0'); modalContent.classList.remove('scale-100'); modalContent.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function submitEditPIC() {
+            let row = document.getElementById('editRow').value; 
+            let tanggal = document.getElementById('editTanggal').value; 
+            let jam = document.getElementById('editJam').value;
+            let spv = document.getElementById('editNamaSpv').value.trim(); 
+            let waMhs = document.getElementById('editWaMhs').value.trim(); 
+            let waSpv = document.getElementById('editWaSpv').value.trim(); 
+            let waDosen = document.getElementById('editWaDosen').value.trim();
+            let isWChecked = document.getElementById('editIsWChecked').checked; // Ambil nilai centang
+
+            if (!tanggal || !jam || !spv || !waMhs || !waSpv) { Swal.fire({ icon: 'warning', title: 'Belum Lengkap', text: 'Semua kolom wajib diisi kecuali WA Dosen.', confirmButtonColor: '#1e293b' }); return; }
+            Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            let info = { row: row, tanggal: tanggal, jam: jam, spv: spv, waMhs: waMhs, waSpv: waSpv, waDosen: waDosen, isWChecked: isWChecked };
+
+            if (typeof google === 'undefined') {
+                setTimeout(() => { 
+                    let idx = allData.findIndex(d => d.row == row); 
+                    if(idx !== -1) { 
+                        allData[idx].tanggalInput = tanggal; allData[idx].tanggal = "Telah Diedit"; 
+                        allData[idx].jam = jam; allData[idx].spv = spv; allData[idx].waMhs = waMhs; 
+                        allData[idx].waSpv = waSpv; allData[idx].waDosen = waDosen; allData[idx].isWChecked = isWChecked;
+                        if(isWChecked) allData[idx].status = "Belum Isi Form Pasca Responsi";
+                        else allData[idx].status = "Belum Responsi";
+                    }
+                    Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data diperbarui.', confirmButtonColor: '#2563eb' }).then(() => { closeEditModal(); renderDashboard(); }); 
+                }, 800);
+            } else {
+                google.script.run.withSuccessHandler(function(res) {
+                    if (res.status === "success") { 
+                        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data diperbarui.', confirmButtonColor: '#2563eb' }); 
+                        closeEditModal(); 
+                        refreshData(); 
+                    } else { Swal.fire({ icon: 'error', title: 'Gagal', text: res.message, confirmButtonColor: '#1e293b' }); }
+                }).updateByPIC(info);
+            }
+        }
+    </script>
+</body>
+</html>
