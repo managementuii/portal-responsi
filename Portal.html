@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jadwal Responsi Magang - UII</title>
+    
+    <!-- Library CSS & JS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
+        
+        .table-container { -webkit-overflow-scrolling: touch; }
+        .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        #initial-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #f8fafc; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 99999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .spinner-css {
+            width: 40px; height: 40px; border: 4px solid #e2e8f0;
+            border-top-color: #3b82f6; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .swal2-html-container { overflow: visible !important; margin-top: 0 !important; }
+        .custom-swal-width { max-width: 600px !important; width: 95% !important; border-radius: 1.25rem !important; }
+        .pdf-swal-width { max-width: 900px !important; width: 95% !important; border-radius: 1rem !important; padding: 0 !important; }
+
+        @media print {
+            body { background-color: white !important; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .print-border { border-color: #e2e8f0 !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #cbd5e1 !important; padding: 10px 8px !important; color: #1e293b !important; font-size: 10pt !important; }
+            .shadow-sm, .shadow-md { box-shadow: none !important; }
+            .print-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .badge-print { border: 1px solid #cbd5e1; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+            #qrPrintSection { display: flex !important; }
+            #stickyHeader { display: none !important; }
+            .action-center { display: none !important; } 
+            #mobileCardView { display: none !important; } 
+            #desktopTableView { display: block !important; } 
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- LAYAR LOADING AWAL -->
+    <div id="initial-loader">
+        <div class="spinner-css"></div>
+        <p style="margin-top: 15px; font-weight: 500; color: #64748b; font-size: 13px;">Memuat data...</p>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav id="stickyHeader" class="bg-blue-700 text-white shadow-sm sticky top-0 z-50 no-print py-3 sm:py-4">
+        <div class="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6">
+            <div class="flex items-center gap-3">
+                <img src="https://lh3.googleusercontent.com/d/1EXPFGOzHj6a06TxLKfriCqz8VBV7p26i" alt="Logo UII" class="h-8 sm:h-9 w-auto object-contain" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+            </div>
+            <div class="flex gap-2 sm:gap-3">
+                <button onclick="loadData()" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition flex items-center gap-2">
+                    <i class="fas fa-sync-alt"></i> <span class="hidden sm:inline">Refresh</span>
+                </button>
+                <button onclick="window.print()" class="bg-white text-blue-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm transition flex items-center gap-2 shadow-sm border border-transparent">
+                    <i class="fas fa-print"></i> <span class="hidden sm:inline">Cetak PDF</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 mt-2 print-container flex-grow w-full">
+        
+        <div id="content" class="hidden">
+            
+            <!-- HEADER UTAMA -->
+            <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm mb-5 relative">
+                <!-- LOGO KANAN ATAS -->
+                <div class="mb-6 pb-5 border-b border-slate-100 flex justify-between items-start gap-4">
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight mb-1">Jadwal Responsi Magang</h1>
+                        <p class="text-slate-500 font-medium text-sm">Program Studi Manajemen S1</p>
+                    </div>
+                    <img src="https://lh3.googleusercontent.com/d/16b_XtIbg4elZTNKmnXKkpDwn_-TBmokK" alt="Logo Tambahan" class="h-10 sm:h-14 w-auto object-contain shrink-0" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div class="text-sm w-full md:w-auto">
+                        <div class="flex flex-col gap-2.5">
+                            <div class="flex items-center">
+                                <span class="font-medium inline-block w-24 text-slate-500">Peran</span>
+                                <span class="mx-2 text-slate-300">:</span> 
+                                <span id="lblRole" class="font-medium text-blue-700 bg-blue-50/50 border border-blue-100 px-2 py-0.5 rounded-md text-xs"></span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="font-medium inline-block w-24 text-slate-500">Nama Lengkap</span>
+                                <span class="mx-2 text-slate-300">:</span> 
+                                <span id="lblName" class="font-semibold text-slate-800 text-base"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Box Info Khusus SPV -->
+                        <div id="spvInfoBox" class="hidden flex flex-col gap-2.5 mt-4 pt-4 border-t border-slate-100">
+                            <div class="flex items-center">
+                                <span class="font-medium inline-block w-24 text-slate-500">Instansi</span>
+                                <span class="mx-2 text-slate-300">:</span> 
+                                <span id="lblCompany" class="font-medium text-slate-700"></span>
+                            </div>
+                            <div class="flex items-start">
+                                <span class="font-medium inline-block w-24 text-slate-500 shrink-0 mt-0.5">Email Terdaftar</span> 
+                                <span class="mx-2 text-slate-300 shrink-0 mt-0.5">:</span> 
+                                <div>
+                                    <span id="lblEmail" class="font-medium text-slate-700 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-md truncate inline-block max-w-[200px] sm:max-w-md"></span>
+                                    <span class="block text-xs text-slate-400 mt-1">Tautan penilaian SPV akan dikirim ke email ini setelah Dosen Pembimbing mengisi nilai.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards (Minimalist) -->
+                    <div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 sm:pb-0">
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Total</p>
+                            <p id="statTotal" class="text-2xl font-semibold text-slate-700">0</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Selesai</p>
+                            <p id="statSelesai" class="text-2xl font-semibold text-emerald-600">0</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 min-w-[100px] text-center shadow-sm">
+                            <p class="text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">Belum</p>
+                            <p id="statBelum" class="text-2xl font-semibold text-rose-500">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION CENTER -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 mb-5 flex flex-col lg:flex-row justify-between items-center gap-4 shadow-sm action-center no-print">
+                <div class="flex items-center gap-4 w-full lg:w-auto">
+                    <div class="bg-slate-50 text-slate-400 p-3 rounded-xl border border-slate-100 flex-shrink-0">
+                        <i class="fas fa-video text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Informasi Zoom</p>
+                        <div class="text-sm font-medium text-slate-700 flex flex-wrap gap-x-4 gap-y-1">
+                            <span>ID: <span class="text-slate-900">223 556 7899</span></span>
+                            <span class="text-slate-300">|</span>
+                            <span>Pass: <span class="text-slate-900">fujitsu</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto">
+                    <a href="https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09" target="_blank" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm">
+                        <i class="fas fa-video text-sm opacity-80"></i> <span class="whitespace-nowrap">Masuk Zoom</span>
+                    </a>
+                    
+                    <button onclick="bukaPanduan()" class="relative w-full lg:w-auto bg-amber-400 hover:bg-amber-500 text-amber-900 font-semibold py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <span class="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500 border-2 border-white"></span>
+                        </span>
+                        <i class="fas fa-book-open text-amber-800 opacity-80"></i> <span class="whitespace-nowrap">Panduan</span>
+                    </button>
+                    
+                    <a href="https://drive.google.com/uc?export=download&id=1sm1Vq4V6LwssqkOb4MPtux_7mLntaUHg" target="_blank" class="w-full lg:w-auto bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <i class="fas fa-download text-slate-400"></i> <span class="whitespace-nowrap">Unduh VB</span>
+                    </a>
+
+                    <!-- TOMBOL BANTUAN RESPONSI (Dinamis: 1 PIC = Link WA, >1 PIC = Modal) -->
+                    <a id="btnHelpAction" href="#" class="hidden w-full lg:w-auto bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-medium py-2.5 px-5 rounded-lg transition-colors items-center justify-center gap-2 text-sm shadow-sm">
+                        <i class="fab fa-whatsapp text-emerald-600 text-lg"></i> <span class="whitespace-nowrap">Bantuan Responsi</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- BANNER PERINGATAN SITA -->
+            <div id="alertSitaDosen" class="hidden no-print mb-6">
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                    <div>
+                        <p class="text-blue-800 font-medium text-sm mb-1">Pengingat Penilaian</p>
+                        <p class="text-blue-600/80 text-sm leading-relaxed">
+                            Bapak/Ibu Dosen Pembimbing dimohon untuk melakukan input nilai responsi secara langsung melalui 
+                            <a href="https://sita-management.uii.ac.id" target="_blank" class="font-semibold text-blue-700 hover:underline">sita-management.uii.ac.id <i class="fas fa-external-link-alt text-[10px] ml-0.5"></i></a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="mb-5 no-print relative">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-400"></i>
+                </div>
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari nama mahasiswa atau NIM..." class="w-full pl-11 pr-10 py-3 bg-white border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition text-sm text-slate-700">
+                <button id="clearSearch" onclick="clearSearchInput()" class="absolute inset-y-0 right-0 pr-4 flex items-center hidden cursor-pointer text-slate-400 hover:text-slate-600 transition">
+                    <i class="fas fa-times-circle text-lg"></i>
+                </button>
+            </div>
+
+            <!-- WRAPPER DATA -->
+            <div id="dataContainer" class="print-border">
+                
+                <!-- 1. TAMPILAN DESKTOP (Tabel Standar) -->
+                <div id="desktopTableView" class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="table-container overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200" id="dataTable">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
+                                <tr>
+                                    <th class="px-5 py-4 text-center w-12 print-border">No</th>
+                                    <th class="px-5 py-4 text-left print-border">Waktu Pelaksanaan</th>
+                                    <th class="px-5 py-4 text-left print-border">Data Mahasiswa</th>
+                                    <th class="px-5 py-4 text-left print-border" id="colMitraTitle">Mitra Evaluasi</th>
+                                    <th class="px-5 py-4 text-center print-border">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desktopTableBody" class="bg-white divide-y divide-slate-100 text-sm">
+                                <!-- Skeleton Inject Via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. TAMPILAN MOBILE (Kartu Responsif Minimalis Baru) -->
+                <div id="mobileCardView" class="grid md:hidden gap-4 no-print">
+                    <!-- Skeleton Inject Via JS -->
+                </div>
+
+            </div> <!-- End Data Container -->
+
+            <!-- Empty State -->
+            <div id="noResults" class="hidden p-10 mt-2 text-center text-slate-500 bg-white rounded-xl border border-slate-200 shadow-sm">
+                <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-2xl text-slate-300"></i>
+                </div>
+                <p class="font-medium text-slate-700 mb-1">Tidak ada data ditemukan</p>
+                <p class="text-sm text-slate-400">Pastikan ejaan nama atau NIM sudah benar.</p>
+            </div>
+
+            <!-- PRINT FOOTER & QR CODE -->
+            <div id="qrPrintSection" class="hidden mt-8 justify-between items-end border-t border-slate-200 pt-6">
+                <div class="text-sm text-slate-600">
+                    <p class="font-medium mb-1 text-slate-800">Catatan Dokumen:</p>
+                    <p>Dokumen ini ditarik secara real-time dari sistem administrasi UII.</p>
+                    <p id="printTimestamp" class="text-slate-400 mt-1 text-xs"></p>
+                </div>
+                <div class="flex items-center gap-4 text-right">
+                    <div class="text-xs text-slate-500">
+                        <p class="font-medium text-slate-800 mb-1">Scan QR Code</p>
+                        <p>Untuk melihat pembaruan data</p>
+                    </div>
+                    <div id="qrcodeBox" class="p-1.5 border border-slate-300 rounded-md"></div>
+                </div>
+            </div>
+
+        </div> <!-- End Content -->
+    </div> <!-- End Main Wrapper -->
+
+    <!-- FOOTER CREAGIEVITY -->
+    <footer class="text-center mt-auto mb-6 no-print w-full pt-8">
+        <p class="text-[11px] text-slate-400 font-medium">Aplikasi dikembangkan oleh:</p>
+        <p class="text-xs font-semibold text-slate-500 tracking-wide mt-1">creagievity® UI/UX App Development</p>
+    </footer>
+
+    <!-- SCRIPT LOGIKA -->
+    <script>
+        const targetId = "<?= targetId ?>";
+        let masterData = [];
+
+        window.onload = () => {
+            // Hilangkan blok if targetId ini jika hanya mengetes di Preview lokal Canvas
+            // if (!targetId || targetId === "undefined" || targetId === "") {
+            //    Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'ID Dosen atau SPV tidak ditemukan pada URL.', confirmButtonColor: '#3b82f6' });
+            //    return;
+            // }
+            generateQR();
+            setPrintTimestamp();
+            loadData();
+            
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const btnClear = document.getElementById('clearSearch');
+                if(this.value.length > 0) btnClear.classList.remove('hidden');
+                else btnClear.classList.add('hidden');
+            });
+        };
+
+        function clearSearchInput() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearch').classList.add('hidden');
+            filterTable();
+        }
+
+        function loadData() {
+            document.getElementById('content').classList.remove('hidden');
+            
+            // Set Skeleton Loader Desktop
+            document.getElementById('desktopTableBody').innerHTML = 
+                '<tr class="animate-pulse no-print">' +
+                    '<td class="px-5 py-5"><div class="h-4 bg-slate-100 rounded w-6 mx-auto"></div></td>' +
+                    '<td class="px-5 py-5"><div class="h-4 bg-slate-100 rounded w-24 mb-2.5"></div><div class="h-3 bg-slate-100 rounded w-16"></div></td>' +
+                    '<td class="px-5 py-5"><div class="h-4 bg-slate-100 rounded w-48 mb-2.5"></div><div class="h-3 bg-slate-100 rounded w-24"></div></td>' +
+                    '<td class="px-5 py-5"><div class="h-4 bg-slate-100 rounded w-32"></div></td>' +
+                    '<td class="px-5 py-5"><div class="h-6 bg-slate-100 rounded-md w-24 mx-auto"></div></td>' +
+                '</tr>';
+                
+            // Set Skeleton Loader Mobile
+            document.getElementById('mobileCardView').innerHTML = 
+                '<div class="animate-pulse bg-white border border-slate-200 rounded-xl p-5 shadow-sm">' +
+                    '<div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-50">' +
+                        '<div class="h-4 bg-slate-100 rounded w-32"></div>' +
+                        '<div class="h-5 bg-slate-100 rounded-md w-20"></div>' +
+                    '</div>' +
+                    '<div class="mb-4">' +
+                        '<div class="h-5 bg-slate-100 rounded w-3/4 mb-2"></div>' +
+                        '<div class="h-4 bg-slate-100 rounded w-1/3"></div>' +
+                    '</div>' +
+                    '<div class="pt-4 border-t border-slate-50">' +
+                        '<div class="h-3 bg-slate-100 rounded w-1/4 mb-2"></div>' +
+                        '<div class="h-4 bg-slate-100 rounded w-1/2"></div>' +
+                    '</div>' +
+                '</div>';
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(renderData)
+                    .withFailureHandler(handleError)
+                    .getJadwalPersonalisasi(targetId);
+            } else {
+                sembunyikanLoader();
+            }
+        }
+
+        function sembunyikanLoader() {
+            const loader = document.getElementById('initial-loader');
+            if (loader) { loader.style.opacity = '0'; loader.style.visibility = 'hidden'; }
+        }
+
+        function renderData(response) {
+            sembunyikanLoader();
+
+            if (!response.isFound) {
+                document.getElementById('dataContainer').classList.add('hidden');
+                document.getElementById('noResults').classList.remove('hidden');
+                return;
+            }
+
+            masterData = response.data; 
+
+            document.getElementById('lblRole').innerText = response.role;
+            document.getElementById('lblName').innerText = response.name;
+            
+            let countSelesai = 0;
+            let uniquePics = [];
+            let picMap = new Map();
+
+            // Kumpulkan daftar PIC
+            masterData.forEach(item => { 
+                if(item.status === "Responsi Selesai") countSelesai++; 
+                
+                if (item.pic && item.pic !== "-" && item.waPic && item.waPic !== "") {
+                    if (!picMap.has(item.pic)) {
+                        picMap.set(item.pic, item.waPic);
+                        uniquePics.push({ nama: item.pic, wa: item.waPic, mhs: [item.nama] });
+                    } else {
+                        let p = uniquePics.find(x => x.nama === item.pic);
+                        if(p && p.mhs.length < 3) p.mhs.push(item.nama);
+                    }
+                }
+            });
+
+            // LOGIKA UI BERDASARKAN ROLE
+            if (response.isDosen) {
+                document.getElementById('spvInfoBox').classList.add('hidden');
+                document.getElementById('colMitraTitle').innerText = "SPV & Perusahaan";
+                document.getElementById('alertSitaDosen').classList.remove('hidden');
+            } else {
+                document.getElementById('spvInfoBox').classList.remove('hidden');
+                document.getElementById('colMitraTitle').innerText = "Dosen Pembimbing";
+                document.getElementById('lblCompany').innerText = response.company;
+                
+                if(response.email && response.email !== "-") {
+                    document.getElementById('lblEmail').innerText = response.email;
+                } else {
+                    document.getElementById('lblEmail').innerText = "Belum terdaftar (Hubungi PIC)";
+                    document.getElementById('lblEmail').classList.add('text-rose-600', 'bg-rose-50', 'border-rose-200');
+                }
+                document.getElementById('alertSitaDosen').classList.add('hidden');
+            }
+
+            // LOGIKA TOMBOL BANTUAN (DOSEN & SPV SAMA TATA LETAKNYA)
+            const btnHelp = document.getElementById('btnHelpAction');
+            if (uniquePics.length === 1) {
+                // Skenario 1 PIC (Langsung Direct WA)
+                btnHelp.classList.remove('hidden');
+                btnHelp.classList.add('flex');
+                btnHelp.href = "https://wa.me/" + uniquePics[0].wa;
+                btnHelp.target = "_blank";
+                btnHelp.removeAttribute("onclick");
+            } else if (uniquePics.length > 1) {
+                // Skenario >1 PIC (Munculkan Popup Modal)
+                btnHelp.classList.remove('hidden');
+                btnHelp.classList.add('flex');
+                btnHelp.href = "javascript:void(0)";
+                btnHelp.removeAttribute("target");
+                btnHelp.setAttribute("onclick", "showSpvHelp()");
+                window.spvPicsList = uniquePics; // Simpan untuk modal
+            } else {
+                // Skenario Tidak Ada Data PIC
+                btnHelp.classList.add('hidden');
+                btnHelp.classList.remove('flex');
+            }
+
+            document.getElementById('statTotal').innerText = masterData.length;
+            document.getElementById('statSelesai').innerText = countSelesai;
+            document.getElementById('statBelum').innerText = masterData.length - countSelesai;
+
+            buildTableRows(masterData);
+        }
+
+        function showSpvHelp() {
+            // Popup Modal khusus untuk yang PIC nya lebih dari 1 (Umumnya SPV)
+            if (!window.spvPicsList || window.spvPicsList.length === 0) return;
+
+            let htmlContent = '<div class="text-left"><p class="text-sm text-slate-500 mb-4 leading-relaxed">Pilih PIC Teknis yang ingin Anda hubungi berdasarkan mahasiswa yang sedang diuji:</p><div class="flex flex-col gap-3">';
+            
+            window.spvPicsList.forEach(pic => {
+                let mhsText = pic.mhs.join(", ") + (pic.mhs.length >= 3 ? ", dll" : "");
+                htmlContent += `
+                    <a href="https://wa.me/${pic.wa}" target="_blank" class="block bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 rounded-xl p-4 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-emerald-100 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                                <i class="fab fa-whatsapp text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-800 text-sm mb-0.5">${pic.nama}</p>
+                                <p class="text-xs text-slate-500 line-clamp-1">Mhs: ${mhsText}</p>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+
+            htmlContent += '</div></div>';
+
+            Swal.fire({
+                title: '<div class="text-left"><span class="text-lg font-semibold text-slate-800">Hubungi PIC Bantuan</span></div>',
+                html: htmlContent,
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: { popup: 'custom-swal-width', title: 'pt-6 pb-2 px-6', htmlContainer: 'px-6 pb-6' },
+                padding: '0'
+            });
+        }
+
+        function buildTableRows(dataArray) {
+            const tbodyDesktop = document.getElementById('desktopTableBody');
+            const viewMobile = document.getElementById('mobileCardView');
+            
+            let htmlDesktop = '';
+            let htmlMobile = '';
+            
+            const isDosenUser = targetId.toLowerCase().startsWith('dos');
+
+            if(dataArray.length === 0) {
+                document.getElementById('dataContainer').classList.add('hidden');
+                document.getElementById('noResults').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('dataContainer').classList.remove('hidden');
+                document.getElementById('noResults').classList.add('hidden');
+            }
+
+            dataArray.forEach((item, index) => {
+                let badgeClass = "bg-slate-100 text-slate-600 border border-slate-200";
+                
+                if (item.status === "Responsi Selesai") {
+                    badgeClass = "bg-emerald-50 text-emerald-600 border border-emerald-100";
+                } else if (item.status === "Belum Isi Form") {
+                    badgeClass = "bg-amber-50 text-amber-600 border border-amber-100";
+                } else {
+                    badgeClass = "bg-rose-50 text-rose-500 border border-rose-100";
+                }
+
+                let textMitraUtama = item.mitra;
+                let textPerusahaanDesktop = "";
+                let textPerusahaanMobile = "";
+                
+                if (isDosenUser && item.perusahaan && item.perusahaan !== "-") {
+                    textPerusahaanDesktop = '<div class="text-[12px] text-slate-500 mt-1"><span class="leading-snug">' + item.perusahaan + '</span></div>';
+                    textPerusahaanMobile = '<div class="text-[12px] text-slate-500 mt-1"><span class="leading-snug">' + item.perusahaan + '</span></div>';
+                }
+
+                // Render untuk Desktop
+                htmlDesktop += 
+                    '<tr class="hover:bg-slate-50/50 transition-colors">' +
+                        '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm print-border">' + (index + 1) + '</td>' +
+                        '<td class="px-5 py-4 print-border">' +
+                            '<p class="font-medium text-slate-800 text-sm">' + item.tanggal + '</p>' +
+                            '<p class="text-slate-500 text-xs mt-1">' + item.jam + ' WIB</p>' +
+                        '</td>' +
+                        '<td class="px-5 py-4 print-border">' +
+                            '<p class="font-semibold text-slate-800 text-sm">' + item.nama + '</p>' +
+                            '<p class="text-slate-500 text-xs mt-1">' + item.nim + '</p>' +
+                        '</td>' +
+                        '<td class="px-5 py-4 print-border">' +
+                            '<p class="font-medium text-slate-800 text-sm">' + textMitraUtama + '</p>' +
+                            textPerusahaanDesktop +
+                        '</td>' +
+                        '<td class="px-5 py-4 text-center print-border">' +
+                            '<span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' +
+                                item.status +
+                            '</span>' +
+                        '</td>' +
+                    '</tr>';
+
+                // Render untuk Mobile
+                htmlMobile += 
+                    '<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">' +
+                        '<div class="flex justify-between items-start mb-4 pb-4 border-b border-slate-100">' +
+                            '<div class="flex items-center gap-2 text-slate-600">' +
+                                '<i class="fas fa-calendar text-slate-300 text-sm"></i>' +
+                                '<span class="text-xs font-medium">' + item.tanggal + ' &bull; ' + item.jam + ' WIB</span>' +
+                            '</div>' +
+                            '<div>' +
+                                '<span class="inline-block px-2 py-1 rounded-md text-[10px] font-medium shadow-sm ' + badgeClass + '">' +
+                                    item.status +
+                                '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        
+                        '<div class="mb-4">' +
+                            '<p class="font-semibold text-slate-800 text-base leading-tight">' + item.nama + '</p>' +
+                            '<p class="text-sm text-slate-500 mt-1">' + item.nim + '</p>' +
+                        '</div>' +
+                        
+                        '<div class="pt-4 border-t border-slate-100">' +
+                            '<p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">' + document.getElementById('colMitraTitle').innerText + '</p>' +
+                            '<p class="font-medium text-slate-800 text-sm">' + textMitraUtama + '</p>' +
+                            textPerusahaanMobile +
+                        '</div>' +
+                    '</div>';
+            });
+            
+            tbodyDesktop.innerHTML = htmlDesktop;
+            viewMobile.innerHTML = htmlMobile;
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = masterData.filter(item => 
+                item.nama.toLowerCase().includes(query) || 
+                item.nim.toLowerCase().includes(query) ||
+                item.perusahaan.toLowerCase().includes(query) ||
+                item.mitra.toLowerCase().includes(query)
+            );
+            buildTableRows(filtered);
+        }
+
+        function bukaPanduan() {
+            const isDosenUser = targetId.toLowerCase().startsWith('dos');
+            let pdfUrl = isDosenUser ? "https://drive.google.com/file/d/1fnTgGH2Q_ZVO_7K4Oaz1djsFB24cPm-D/preview" : "https://drive.google.com/file/d/1X8-qEzjb3D9HEHmHBaijg6uQxPdit4Ab/preview";
+            let originalUrl = isDosenUser ? "https://drive.google.com/file/d/1fnTgGH2Q_ZVO_7K4Oaz1djsFB24cPm-D/view?usp=drive_link" : "https://drive.google.com/file/d/1X8-qEzjb3D9HEHmHBaijg6uQxPdit4Ab/view?usp=drive_link";
+            
+            Swal.fire({
+                title: '<span class="text-lg font-semibold text-slate-800">Panduan Teknis Responsi</span>',
+                html: 
+                    '<div style="width: 100%; height: 75vh; overflow: hidden; border-radius: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0;">' +
+                        '<iframe src="' + pdfUrl + '" width="100%" height="100%" style="border: none;" allow="autoplay"></iframe>' +
+                    '</div>' +
+                    '<p class="text-xs text-slate-500 mt-3">Dokumen tidak termuat? <a href="' + originalUrl + '" target="_blank" class="text-blue-600 font-medium hover:underline">Buka di tab baru</a>.</p>',
+                customClass: { popup: 'pdf-swal-width', title: 'pt-5 pb-3' },
+                showCloseButton: true, showConfirmButton: false, focusConfirm: false, padding: '1.25rem'
+            });
+        }
+
+        function handleError(error) {
+            sembunyikanLoader();
+            Swal.fire({ icon: 'error', title: 'Gagal Memuat Data', text: 'Terjadi kesalahan sistem: ' + error.message, confirmButtonColor: '#3b82f6' });
+        }
+
+        function generateQR() {
+            // PERUBAHAN: URL QR Code sekarang mengarah ke domain UII
+            const currentUrl = "https://management.uii.ac.id/portal-responsi/?" + targetId;
+            new QRCode(document.getElementById("qrcodeBox"), {
+                text: currentUrl, width: 75, height: 75,
+                colorDark : "#1e293b", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H 
+            });
+        }
+
+        function setPrintTimestamp() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('printTimestamp').innerText = now.toLocaleDateString('id-ID', options) + ' WIB';
+        }
+    </script>
+</body>
+</html>
