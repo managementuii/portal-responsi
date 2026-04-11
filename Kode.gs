@@ -36,6 +36,52 @@ function formatWA(wa) {
   return str;
 }
 
+
+// ==========================================
+// OTOMATISASI KAMUS HEADER (PENGAMAN STRUKTUR KOLOM)
+// ==========================================
+// Sistem ini akan mencari posisi kolom berdasarkan judulnya di Baris 1.
+// Jika teks judul tidak ditemukan, sistem akan memakai indeks default bawaan lama.
+function getKamusKolom(sheet) {
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  function cari(namaJudul, indeksDefault) {
+    var indeks = headers.indexOf(namaJudul);
+    return indeks !== -1 ? indeks : indeksDefault;
+  }
+
+  // SILAKAN UBAH TEKS DI DALAM KUTIP (contoh: "Tanggal") AGAR SAMA PERSIS DENGAN HEADER EXCEL-MU
+  return {
+    NO: cari("No", 0),
+    TANGGAL: cari("Tanggal", 1),
+    JAM: cari("Jam", 2),
+    NIM: cari("NIM", 3),
+    NAMA_MHS: cari("Nama Mahasiswa", 4),
+    WA_MHS: cari("No. WA Mahasiswa", 5),
+    PERUSAHAAN: cari("Perusahaan", 6),
+    NAMA_SPV: cari("Nama Supervisor", 7),
+    WA_SPV: cari("No. WA Supervisor", 8),
+    DOSBING: cari("Dosen Pembimbing", 10),
+    WA_DOSEN: cari("No. WA Dosen", 11),
+    PIC: cari("PIC Teknis", 13),
+    WA_PIC: cari("WA PIC", 14),
+    STATUS: cari("Status Responsi", 15),
+    EMAIL_SPV: cari("Email SPV", 16),
+    EMAIL_SITA: cari("Email SITA", 17),
+    KEHADIRAN_SPV: cari("Kehadiran SPV", 18),
+    NAMA_PENGGANTI: cari("Pengganti SPV", 19),
+    WA_PENGGANTI: cari("WA Pengganti", 20),
+    EMAIL_PENGGANTI: cari("Email Pengganti", 21),
+    CENTANG_W: cari("Kolom W", 22),       // Ganti kutip ini jika nama headernya berbeda
+    CENTANG_X: cari("Kolom X", 23),       // Ganti kutip ini jika nama headernya berbeda
+    ALAMAT: cari("Alamat Perusahaan", 24),
+    ID_SPV: cari("ID SPV", 25),           // SPV (Z)
+    ID_DOSEN: cari("ID Dosen", 26),       // Dosen (AA)
+    STATUS_SURAT: cari("Status Surat", 27)
+  };
+}
+
+
 // ==========================================
 // 1. ROUTING MULTI-PAGE DENGAN IZIN IFRAME
 // ==========================================
@@ -96,14 +142,15 @@ function setPhaseStatus(phaseNumber) {
 // ==========================================
 function getPreviewData() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet); // <-- Panggil Kamus
   var rawData = sheet.getDataRange().getValues();
   var displayData = sheet.getDataRange().getDisplayValues();
   var previewData = [];
  
   for (var i = 1; i < rawData.length; i++) {
-    if (rawData[i][4] !== "") { 
-      var dateValue = rawData[i][1]; 
-      var jamValue = displayData[i][2]; 
+    if (rawData[i][KOLOM.NAMA_MHS] !== "") { 
+      var dateValue = rawData[i][KOLOM.TANGGAL]; 
+      var jamValue = displayData[i][KOLOM.JAM]; 
       var timestamp = 0;
       var rawTanggal = "";
      
@@ -119,8 +166,8 @@ function getPreviewData() {
         }
       }
 
-      var isWChecked = rawData[i][22] === true || String(rawData[i][22]).toUpperCase() === "TRUE"; 
-      var isXChecked = rawData[i][23] === true || String(rawData[i][23]).toUpperCase() === "TRUE"; 
+      var isWChecked = rawData[i][KOLOM.CENTANG_W] === true || String(rawData[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
+      var isXChecked = rawData[i][KOLOM.CENTANG_X] === true || String(rawData[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
       var finalStatus = "Belum Daftar Ulang"; 
 
       if (timestamp > 0) {
@@ -129,30 +176,30 @@ function getPreviewData() {
         else finalStatus = "Belum Responsi";
       }
 
-      var picTeknis = displayData[i][13] || "-";
-      var waPicRaw = rawData[i][14] || "";
-      var waMhsRaw = rawData[i][5] || "";
-      var waSpvRaw = rawData[i][8] || "";
-      var waDosenRaw = rawData[i][11] || ""; // Kolom L
+      var picTeknis = displayData[i][KOLOM.PIC] || "-";
+      var waPicRaw = rawData[i][KOLOM.WA_PIC] || "";
+      var waMhsRaw = rawData[i][KOLOM.WA_MHS] || "";
+      var waSpvRaw = rawData[i][KOLOM.WA_SPV] || "";
+      var waDosenRaw = rawData[i][KOLOM.WA_DOSEN] || "";
       
       previewData.push({ 
         row: i + 1,
         timestamp: timestamp, 
-        tanggal: displayData[i][1] || "", 
+        tanggal: displayData[i][KOLOM.TANGGAL] || "", 
         tanggalInput: rawTanggal,
-        jam: displayData[i][2] || "", 
-        nim: displayData[i][3] || "-",
-        nama: displayData[i][4], 
-        perusahaan: displayData[i][6] || "-",
-        spv: displayData[i][7] || "-",
-        dosbing: displayData[i][10] || "-",
+        jam: displayData[i][KOLOM.JAM] || "", 
+        nim: displayData[i][KOLOM.NIM] || "-",
+        nama: displayData[i][KOLOM.NAMA_MHS], 
+        perusahaan: displayData[i][KOLOM.PERUSAHAAN] || "-",
+        spv: displayData[i][KOLOM.NAMA_SPV] || "-",
+        dosbing: displayData[i][KOLOM.DOSBING] || "-",
         waMhs: waMhsRaw !== "" ? formatWA(waMhsRaw) : "",
         waSpv: waSpvRaw !== "" ? formatWA(waSpvRaw) : "",
         waDosen: waDosenRaw !== "" ? formatWA(waDosenRaw) : "",
         pic: picTeknis, 
         waPic: waPicRaw !== "" ? formatWA(waPicRaw) : "", 
         status: finalStatus,
-        isWChecked: isWChecked // Menambahkan info centang W
+        isWChecked: isWChecked 
       });
     }
   }
@@ -167,16 +214,19 @@ function getPreviewData() {
 
 function getPhase1Data() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
   var rawData = sheet.getDataRange().getValues();
   var displayData = sheet.getDataRange().getDisplayValues();
   var phase1Data = [];
  
   for (var i = 1; i < rawData.length; i++) {
-    if (rawData[i][4] !== "") { 
-      var statusKolomAB = rawData[i][27];
+    if (rawData[i][KOLOM.NAMA_MHS] !== "") { 
+      var statusKolomAB = rawData[i][KOLOM.STATUS_SURAT];
       phase1Data.push({ 
-        nama: displayData[i][4] || "-", dosbing: displayData[i][10] ? displayData[i][10] : "-",
-        perusahaan: displayData[i][6] || "-", spv: displayData[i][7] || "-", 
+        nama: displayData[i][KOLOM.NAMA_MHS] || "-", 
+        dosbing: displayData[i][KOLOM.DOSBING] ? displayData[i][KOLOM.DOSBING] : "-",
+        perusahaan: displayData[i][KOLOM.PERUSAHAAN] || "-", 
+        spv: displayData[i][KOLOM.NAMA_SPV] || "-", 
         status: (statusKolomAB && statusKolomAB.toString().trim() !== "") ? "Sudah Konfirmasi" : "Belum Konfirmasi" 
       });
     }
@@ -193,50 +243,49 @@ function updateByPIC(info) {
   var lock = LockService.getScriptLock(); lock.waitLock(10000); 
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var KOLOM = getKamusKolom(sheet);
     var row = info.row;
 
-    // Eksekusi Pembaruan Data
-    if (info.tanggal) sheet.getRange(row, 2).setValue(toIndoDateString(info.tanggal)); 
-    if (info.jam) sheet.getRange(row, 3).setValue(info.jam);        
-    if (info.spv) sheet.getRange(row, 8).setValue(info.spv);
-    if (info.waMhs) sheet.getRange(row, 6).setValue(formatWA(info.waMhs)); 
-    if (info.waSpv) sheet.getRange(row, 9).setValue(formatWA(info.waSpv));      
-    if (info.waDosen !== undefined) sheet.getRange(row, 12).setValue(formatWA(info.waDosen));
+    // Ingat: fungsi getRange(baris, lajur) dimulai dari indeks 1, jadi kita tambahkan +1 dari Kamus.
+    if (info.tanggal) sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(toIndoDateString(info.tanggal)); 
+    if (info.jam) sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
+    if (info.spv) sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv);
+    if (info.waMhs) sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); 
+    if (info.waSpv) sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));      
+    if (info.waDosen !== undefined) sheet.getRange(row, KOLOM.WA_DOSEN + 1).setValue(formatWA(info.waDosen));
 
-    // UPDATE STATUS CENTANG KOLOM W (23) DARI PIC
     if (info.isWChecked !== undefined) {
-        sheet.getRange(row, 23).setValue(info.isWChecked ? true : false);
+        sheet.getRange(row, KOLOM.CENTANG_W + 1).setValue(info.isWChecked ? true : false);
     }
 
-    // Beri highlight warna kuning muda (tanda diedit oleh PIC)
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#fef9c3');
-    
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
 
 function getDataByNIM(nim) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
   var data = sheet.getDataRange().getValues();
  
   for (var i = 1; i < data.length; i++) {
-    if (data[i][3] == nim) {
-      var tglFormat = (data[i][1] instanceof Date) ? Utilities.formatDate(data[i][1], Session.getScriptTimeZone(), "yyyy-MM-dd") : fromIndoDateString(data[i][1].toString());
-      var jamFormat = (data[i][2] instanceof Date) ? Utilities.formatDate(data[i][2], Session.getScriptTimeZone(), "HH:mm") : data[i][2];
+    if (data[i][KOLOM.NIM] == nim) {
+      var tglFormat = (data[i][KOLOM.TANGGAL] instanceof Date) ? Utilities.formatDate(data[i][KOLOM.TANGGAL], Session.getScriptTimeZone(), "yyyy-MM-dd") : fromIndoDateString(data[i][KOLOM.TANGGAL].toString());
+      var jamFormat = (data[i][KOLOM.JAM] instanceof Date) ? Utilities.formatDate(data[i][KOLOM.JAM], Session.getScriptTimeZone(), "HH:mm") : data[i][KOLOM.JAM];
 
-      var isWChecked = data[i][22] === true || String(data[i][22]).toUpperCase() === "TRUE"; 
-      var isXChecked = data[i][23] === true || String(data[i][23]).toUpperCase() === "TRUE"; 
+      var isWChecked = data[i][KOLOM.CENTANG_W] === true || String(data[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
+      var isXChecked = data[i][KOLOM.CENTANG_X] === true || String(data[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
       
-      var rawWaMhs = data[i][5] ? data[i][5].toString() : ""; if(rawWaMhs.startsWith("62")) rawWaMhs = "0" + rawWaMhs.substring(2); else if(rawWaMhs.startsWith("8")) rawWaMhs = "0" + rawWaMhs;
-      var rawWaSpv = data[i][8] ? data[i][8].toString() : ""; if(rawWaSpv.startsWith("62")) rawWaSpv = "0" + rawWaSpv.substring(2); else if(rawWaSpv.startsWith("8")) rawWaSpv = "0" + rawWaSpv;
-      var rawWaPengganti = data[i][20] ? data[i][20].toString() : ""; if(rawWaPengganti.startsWith("62")) rawWaPengganti = "0" + rawWaPengganti.substring(2); else if(rawWaPengganti.startsWith("8")) rawWaPengganti = "0" + rawWaPengganti;
-      var rawWaPic = data[i][14] ? data[i][14].toString() : ""; if(rawWaPic.startsWith("62")) rawWaPic = "0" + rawWaPic.substring(2); else if(rawWaPic.startsWith("8")) rawWaPic = "0" + rawWaPic;
+      var rawWaMhs = data[i][KOLOM.WA_MHS] ? data[i][KOLOM.WA_MHS].toString() : ""; if(rawWaMhs.startsWith("62")) rawWaMhs = "0" + rawWaMhs.substring(2); else if(rawWaMhs.startsWith("8")) rawWaMhs = "0" + rawWaMhs;
+      var rawWaSpv = data[i][KOLOM.WA_SPV] ? data[i][KOLOM.WA_SPV].toString() : ""; if(rawWaSpv.startsWith("62")) rawWaSpv = "0" + rawWaSpv.substring(2); else if(rawWaSpv.startsWith("8")) rawWaSpv = "0" + rawWaSpv;
+      var rawWaPengganti = data[i][KOLOM.WA_PENGGANTI] ? data[i][KOLOM.WA_PENGGANTI].toString() : ""; if(rawWaPengganti.startsWith("62")) rawWaPengganti = "0" + rawWaPengganti.substring(2); else if(rawWaPengganti.startsWith("8")) rawWaPengganti = "0" + rawWaPengganti;
+      var rawWaPic = data[i][KOLOM.WA_PIC] ? data[i][KOLOM.WA_PIC].toString() : ""; if(rawWaPic.startsWith("62")) rawWaPic = "0" + rawWaPic.substring(2); else if(rawWaPic.startsWith("8")) rawWaPic = "0" + rawWaPic;
 
       return {
-        isNew: false, isFinished: (isWChecked && isXChecked), row: i + 1, nim: nim, nama: data[i][4], waMhs: rawWaMhs,    
-        tanggal: tglFormat, jam: jamFormat, perusahaan: data[i][6], spv: data[i][7], waSpv: rawWaSpv, dosbing: data[i][10],        
-        emailSpv: data[i][16] || "", emailSita: data[i][17] || "", kehadiranSpv: data[i][18] || "", namaPengganti: data[i][19] || "",
-        waPengganti: rawWaPengganti, emailPengganti: data[i][21] || "", alamatPerusahaan: data[i][24] || "", pic: data[i][13] || "-", waPic: rawWaPic
+        isNew: false, isFinished: (isWChecked && isXChecked), row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,    
+        tanggal: tglFormat, jam: jamFormat, perusahaan: data[i][KOLOM.PERUSAHAAN], spv: data[i][KOLOM.NAMA_SPV], waSpv: rawWaSpv, dosbing: data[i][KOLOM.DOSBING],        
+        emailSpv: data[i][KOLOM.EMAIL_SPV] || "", emailSita: data[i][KOLOM.EMAIL_SITA] || "", kehadiranSpv: data[i][KOLOM.KEHADIRAN_SPV] || "", namaPengganti: data[i][KOLOM.NAMA_PENGGANTI] || "",
+        waPengganti: rawWaPengganti, emailPengganti: data[i][KOLOM.EMAIL_PENGGANTI] || "", alamatPerusahaan: data[i][KOLOM.ALAMAT] || "", pic: data[i][KOLOM.PIC] || "-", waPic: rawWaPic
       };
     }
   }
@@ -247,18 +296,28 @@ function simpanUpdate(info) {
   if (!info || !info.nim) return { status: "error", message: "Gagal: Data kosong." };
   var lock = LockService.getScriptLock(); lock.waitLock(10000); 
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; var row = info.row;
-    var isWChecked = sheet.getRange(row, 23).getValue() === true || String(sheet.getRange(row, 23).getValue()).toUpperCase() === "TRUE"; 
-    var isXChecked = sheet.getRange(row, 24).getValue() === true || String(sheet.getRange(row, 24).getValue()).toUpperCase() === "TRUE"; 
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var KOLOM = getKamusKolom(sheet);
+    var row = info.row;
+    
+    var isWChecked = sheet.getRange(row, KOLOM.CENTANG_W + 1).getValue() === true || String(sheet.getRange(row, KOLOM.CENTANG_W + 1).getValue()).toUpperCase() === "TRUE"; 
+    var isXChecked = sheet.getRange(row, KOLOM.CENTANG_X + 1).getValue() === true || String(sheet.getRange(row, KOLOM.CENTANG_X + 1).getValue()).toUpperCase() === "TRUE"; 
     if (isWChecked && isXChecked) return { status: "error", message: "Responsi telah selesai." };
 
-    sheet.getRange(row, 2).setValue(toIndoDateString(info.tanggal)); sheet.getRange(row, 3).setValue(info.jam);        
-    sheet.getRange(row, 6).setValue(formatWA(info.waMhs)); sheet.getRange(row, 7).setValue(info.perusahaan); 
-    sheet.getRange(row, 8).setValue(info.spv); sheet.getRange(row, 9).setValue(formatWA(info.waSpv));      
-    sheet.getRange(row, 16).setValue("Belum Responsi"); sheet.getRange(row, 17).setValue(info.emailSpv);  
-    sheet.getRange(row, 18).setValue(info.emailSita); sheet.getRange(row, 19).setValue(info.kehadiranSpv);
-    sheet.getRange(row, 20).setValue(info.namaPengganti); sheet.getRange(row, 21).setValue(formatWA(info.waPengganti));
-    sheet.getRange(row, 22).setValue(info.emailPengganti);
+    sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(toIndoDateString(info.tanggal)); 
+    sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
+    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); 
+    sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan); 
+    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); 
+    sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));      
+    sheet.getRange(row, KOLOM.STATUS + 1).setValue("Belum Responsi"); 
+    sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv);  
+    sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita); 
+    sheet.getRange(row, KOLOM.KEHADIRAN_SPV + 1).setValue(info.kehadiranSpv);
+    sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(info.namaPengganti); 
+    sheet.getRange(row, KOLOM.WA_PENGGANTI + 1).setValue(formatWA(info.waPengganti));
+    sheet.getRange(row, KOLOM.EMAIL_PENGGANTI + 1).setValue(info.emailPengganti);
+    
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -268,14 +327,35 @@ function simpanBaru(info) {
   if (!info || !info.nim) return { status: "error", message: "Gagal: Data kosong." };
   var lock = LockService.getScriptLock(); lock.waitLock(10000);
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; var newRow = sheet.getLastRow() + 1;
-    var rowData = new Array(28).fill(""); 
-    rowData[0] = newRow - 1; rowData[1] = toIndoDateString(info.tanggal); rowData[2] = info.jam; rowData[3] = info.nim;                       
-    rowData[4] = info.nama; rowData[5] = formatWA(info.waMhs); rowData[6] = info.perusahaan; rowData[7] = info.spv;                       
-    rowData[8] = formatWA(info.waSpv); rowData[10] = info.dosbing; rowData[15] = "Belum Responsi"; rowData[16] = info.emailSpv;                 
-    rowData[17] = info.emailSita; rowData[18] = info.kehadiranSpv; rowData[19] = info.namaPengganti; rowData[20] = formatWA(info.waPengganti);
-    rowData[21] = info.emailPengganti;
-    sheet.getRange(newRow, 1, 1, 28).setValues([rowData]); sheet.getRange(newRow, 1, 1, 28).setBackground('#ecfdf5');
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var KOLOM = getKamusKolom(sheet);
+    var newRow = sheet.getLastRow() + 1;
+    
+    // Sesuaikan lebar array dengan jumlah kolom maksimum di spreadsheet saat ini
+    var maxCol = Math.max(28, sheet.getLastColumn());
+    var rowData = new Array(maxCol).fill(""); 
+    
+    rowData[KOLOM.NO] = newRow - 1; 
+    rowData[KOLOM.TANGGAL] = toIndoDateString(info.tanggal); 
+    rowData[KOLOM.JAM] = info.jam; 
+    rowData[KOLOM.NIM] = info.nim;                       
+    rowData[KOLOM.NAMA_MHS] = info.nama; 
+    rowData[KOLOM.WA_MHS] = formatWA(info.waMhs); 
+    rowData[KOLOM.PERUSAHAAN] = info.perusahaan; 
+    rowData[KOLOM.NAMA_SPV] = info.spv;                       
+    rowData[KOLOM.WA_SPV] = formatWA(info.waSpv); 
+    rowData[KOLOM.DOSBING] = info.dosbing; 
+    rowData[KOLOM.STATUS] = "Belum Responsi"; 
+    rowData[KOLOM.EMAIL_SPV] = info.emailSpv;                 
+    rowData[KOLOM.EMAIL_SITA] = info.emailSita; 
+    rowData[KOLOM.KEHADIRAN_SPV] = info.kehadiranSpv; 
+    rowData[KOLOM.NAMA_PENGGANTI] = info.namaPengganti; 
+    rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti);
+    rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
+    
+    sheet.getRange(newRow, 1, 1, maxCol).setValues([rowData]); 
+    sheet.getRange(newRow, 1, 1, maxCol).setBackground('#ecfdf5');
+    
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -284,22 +364,38 @@ function simpanSurat(info) {
   if (!info || !info.nim) return { status: "error", message: "Gagal: NIM kosong." };
   var lock = LockService.getScriptLock(); lock.waitLock(10000); 
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; var row = info.row;
-    if (sheet.getRange(row, 4).getValue() != info.nim) return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
-    sheet.getRange(row, 6).setValue(formatWA(info.waMhs)); sheet.getRange(row, 7).setValue(info.perusahaan);      
-    sheet.getRange(row, 8).setValue(info.spv); sheet.getRange(row, 9).setValue(formatWA(info.waSpv));              
-    sheet.getRange(row, 17).setValue(info.emailSpv); sheet.getRange(row, 18).setValue(info.emailSita);      
-    sheet.getRange(row, 25).setValue(info.alamat); sheet.getRange(row, 28).setValue("Sudah Konfirmasi");  
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var KOLOM = getKamusKolom(sheet);
+    var row = info.row;
+    
+    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
+    
+    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); 
+    sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan);      
+    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); 
+    sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));              
+    sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv); 
+    sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita);      
+    sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamat); 
+    sheet.getRange(row, KOLOM.STATUS_SURAT + 1).setValue("Sudah Konfirmasi");  
+    
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
 
 function getDropdownOptions() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; var rawData = sheet.getDataRange().getValues();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+  var KOLOM = getKamusKolom(sheet);
+  var rawData = sheet.getDataRange().getValues();
   var companies = []; var spvs = [];
+  
   for (var i = 1; i < rawData.length; i++) {
-    if (rawData[i][6] && rawData[i][6] !== "" && companies.indexOf(rawData[i][6]) === -1) companies.push(rawData[i][6]);
-    if (rawData[i][7] && rawData[i][7] !== "" && spvs.indexOf(rawData[i][7]) === -1) spvs.push(rawData[i][7]);
+    if (rawData[i][KOLOM.PERUSAHAAN] && rawData[i][KOLOM.PERUSAHAAN] !== "" && companies.indexOf(rawData[i][KOLOM.PERUSAHAAN]) === -1) {
+      companies.push(rawData[i][KOLOM.PERUSAHAAN]);
+    }
+    if (rawData[i][KOLOM.NAMA_SPV] && rawData[i][KOLOM.NAMA_SPV] !== "" && spvs.indexOf(rawData[i][KOLOM.NAMA_SPV]) === -1) {
+      spvs.push(rawData[i][KOLOM.NAMA_SPV]);
+    }
   }
   companies.sort(); spvs.sort();
   return { companies: companies, spvs: spvs };
@@ -312,19 +408,14 @@ function getDropdownOptions() {
 function getJadwalPersonalisasi(targetId) {
   if (!targetId) return { isFound: false };
 
-  // ⚠️ PENTING: KONFIGURASI KOLOM ID ⚠️
-  // Sesuaikan angka ini dengan posisi kolom di Google Spreadsheet Anda yang menyimpan ID "dos..." dan "spv...".
-  // Ingat: Indeks array di Google Apps Script dimulai dari 0.
-  // (Kolom A=0, B=1, ... Y=24, Z=25, AA=26, AB=27, dst.)
-  var INDEX_KOLOM_ID_DOSEN = 26; // Dosen di Kolom AA (diubah dari 25 ke 26)
-  var INDEX_KOLOM_ID_SPV = 25;   // SPV di Kolom Z (diubah dari 26 ke 25)
-
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
+  
   var rawData = sheet.getDataRange().getValues();
   var displayData = sheet.getDataRange().getDisplayValues();
 
   var isDosen = targetId.toLowerCase().startsWith('dos');
-  var idColumnIndex = isDosen ? INDEX_KOLOM_ID_DOSEN : INDEX_KOLOM_ID_SPV;
+  var idColumnIndex = isDosen ? KOLOM.ID_DOSEN : KOLOM.ID_SPV;
 
   var result = {
     isFound: false,
@@ -339,46 +430,42 @@ function getJadwalPersonalisasi(targetId) {
   for (var i = 1; i < rawData.length; i++) {
     var currentId = (displayData[i][idColumnIndex] || "").toString().trim().toLowerCase();
 
-    // Jika ID di baris ini cocok dengan targetId dari URL (?dos2023)
     if (currentId === targetId.toLowerCase()) {
       
-      // Ambil Profil (Hanya dipanggil sekali saat pencocokan pertama)
       if (!result.isFound) {
         result.isFound = true;
         if (isDosen) {
-          result.name = displayData[i][10] || "-"; // Nama Dosen Pembimbing (Kolom K)
+          result.name = displayData[i][KOLOM.DOSBING] || "-"; 
         } else {
-          result.name = displayData[i][7] || "-";  // Nama Supervisor (Kolom H)
-          result.company = displayData[i][6] || "-"; // Perusahaan (Kolom G)
-          result.email = displayData[i][16] || "-";  // Email SPV (Kolom Q)
+          result.name = displayData[i][KOLOM.NAMA_SPV] || "-";  
+          result.company = displayData[i][KOLOM.PERUSAHAAN] || "-"; 
+          result.email = displayData[i][KOLOM.EMAIL_SPV] || "-";  
         }
       }
 
-      // Format Data Baris Jadwal
-      var isWChecked = rawData[i][22] === true || String(rawData[i][22]).toUpperCase() === "TRUE";
-      var isXChecked = rawData[i][23] === true || String(rawData[i][23]).toUpperCase() === "TRUE";
+      var isWChecked = rawData[i][KOLOM.CENTANG_W] === true || String(rawData[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE";
+      var isXChecked = rawData[i][KOLOM.CENTANG_X] === true || String(rawData[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE";
       var finalStatus = "Belum Responsi";
 
-      // Logika status yang sama dengan Dashboard PIC/Mahasiswa
       if (isWChecked && isXChecked) {
         finalStatus = "Responsi Selesai";
       } else if (isWChecked && !isXChecked) {
-        finalStatus = "Belum Isi Form"; // Teks persis yang dicek oleh Portal.html
+        finalStatus = "Belum Isi Form"; 
       }
 
-      var waPicRaw = rawData[i][14] || "";
+      var waPicRaw = rawData[i][KOLOM.WA_PIC] || "";
 
       result.data.push({
-        tanggal: displayData[i][1] || "Belum ditentukan",
-        jam: displayData[i][2] || "-",
-        nim: displayData[i][3] || "-",
-        nama: displayData[i][4] || "-",
-        mitra: isDosen ? (displayData[i][7] || "-") : (displayData[i][10] || "-"), // Info silang
-        perusahaan: displayData[i][6] || "-",
-        spv: displayData[i][7] || "-",
-        dosbing: displayData[i][10] || "-",
+        tanggal: displayData[i][KOLOM.TANGGAL] || "Belum ditentukan",
+        jam: displayData[i][KOLOM.JAM] || "-",
+        nim: displayData[i][KOLOM.NIM] || "-",
+        nama: displayData[i][KOLOM.NAMA_MHS] || "-",
+        mitra: isDosen ? (displayData[i][KOLOM.NAMA_SPV] || "-") : (displayData[i][KOLOM.DOSBING] || "-"), 
+        perusahaan: displayData[i][KOLOM.PERUSAHAAN] || "-",
+        spv: displayData[i][KOLOM.NAMA_SPV] || "-",
+        dosbing: displayData[i][KOLOM.DOSBING] || "-",
         status: finalStatus,
-        pic: displayData[i][13] || "-",
+        pic: displayData[i][KOLOM.PIC] || "-",
         waPic: waPicRaw !== "" ? formatWA(waPicRaw) : ""
       });
     }
