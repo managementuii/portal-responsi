@@ -3,14 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Command Center PIC - UII</title>
+    <title>Command Center PIC - Tailwind Build</title>
     
+    <!-- 
+    ========================================================================
+    🔥 THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🔥
+    ========================================================================
+    Langkah saat kamu memindahkan kode ini ke Google Apps Script:
+    1. Hapus tag <script src="https://cdn.tailwindcss.com"></script> di bawah.
+    2. Jalankan build Tailwind CLI di laptopmu (npx tailwindcss -o output.css --minify).
+    3. Buka file 'output.css', copy semua isinya.
+    4. Paste isinya tepat di dalam tag <style> di bawah ini!
+    ========================================================================
+    -->
+    <style id="compiled-tailwind-css">
+        /* ---> PASTE HASIL BUILD MINIFIED TAILWIND (output.css) DI SINI <--- */
+        /* Hasilnya nanti hanya sekitar 5KB - 15KB. Sangat ringan untuk HP mahasiswa! */
+    </style>
+
+    <!-- !!! SCRIPT INI HANYA UNTUK TAHAP DEVELOPMENT / PREVIEW DI CANVAS !!! -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     
     <style>
+        /* CSS Kustom Tambahan (Animasi & Scrollbar) tetap aman di sini */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
         
@@ -36,9 +55,26 @@
         .pulse-dot-anim { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #f59e0b; opacity: 0.75; }
         .pulse-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 12px; width: 12px; background-color: #f59e0b; border: 2px solid #ffffff; }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+        /* Top Loading Bar ala YouTube/LinkedIn */
+        #top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background-color: #3b82f6; /* Warna biru sesuai tema */
+            z-index: 9999999;
+            width: 0%;
+            opacity: 1;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Loading Bar Element -->
+    <div id="top-progress-bar"></div>
 
     <div id="initial-loader" class="fade-in">
         <div class="spinner-css"></div>
@@ -167,9 +203,9 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT DATA & CENTANG W -->
+    <!-- MODAL EDIT DATA -->
     <div id="editModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden transform scale-95 transition-transform duration-300" id="editModalContent">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="editModalContent">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-semibold text-slate-800 text-lg">Edit Jadwal & Kontak</h3>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
@@ -221,7 +257,6 @@
                     </div>
                 </div>
 
-                <!-- FITUR BARU: CENTANG KOLOM W -->
                 <div class="mt-5">
                     <label class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl cursor-pointer hover:bg-emerald-100 transition-colors">
                         <input type="checkbox" id="editIsWChecked" class="w-5 h-5 text-emerald-600 bg-white border-emerald-300 rounded focus:ring-emerald-500 focus:ring-2 cursor-pointer">
@@ -248,25 +283,55 @@
         const attrHref = 'hr' + 'ef';
         const attrOnclick = 'on' + 'click';
 
+        // --- FUNGSI TOP LOADING BAR ---
+        function startTopProgress() {
+            const bar = document.getElementById('top-progress-bar');
+            bar.style.opacity = '1';
+            bar.style.width = '0%';
+            bar.style.transition = 'none';
+            
+            // Beri jeda kecil agar DOM mereset style sebelum dianimasikan
+            setTimeout(() => {
+                bar.style.transition = 'width 2.5s cubic-bezier(0.1, 0.8, 0.3, 1)'; // Bergerak melambat mentok di 85%
+                bar.style.width = '85%';
+            }, 10);
+        }
+
+        function completeTopProgress() {
+            const bar = document.getElementById('top-progress-bar');
+            bar.style.transition = 'width 0.3s ease-out';
+            bar.style.width = '100%'; // Penuhkan seketika ke ujung kanan
+            
+            // Sembunyikan transparansinya dan kembalikan ke 0 setelah penuh
+            setTimeout(() => {
+                bar.style.transition = 'opacity 0.4s ease';
+                bar.style.opacity = '0';
+                setTimeout(() => { bar.style.width = '0%'; }, 400); 
+            }, 300);
+        }
+
         function formatTitleCase(input) { let str = input.value; input.value = str.replace(/\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1); }); }
         function formatWAInput(el) { let val = el.value.replace(/[^0-9]/g, ''); if (val.startsWith('62')) val = '0' + val.substring(2); if (val.length > 0 && val[0] === '8') val = '0' + val; else if (val.length > 0 && val[0] !== '0') val = '08' + val; el.value = val; }
         function populateTimeDropdown() { let select = document.getElementById('editJam'); select.innerHTML = '<option value="" disabled>Pilih Jam...</option>'; for (let h = 6; h <= 21; h++) { for (let m = 0; m < 60; m += 15) { let t = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0'); select.appendChild(new Option(t, t)); } } }
 
         window.onload = () => {
+            startTopProgress();
             populateTimeDropdown();
             if (typeof google !== 'undefined') {
-                google.script.run.withSuccessHandler(initPicTerminal).withFailureHandler((e)=>Swal.fire('Error',e.message,'error')).getPreviewData();
+                google.script.run.withSuccessHandler(initPicTerminal).withFailureHandler((e)=>{ completeTopProgress(); Swal.fire('Error',e.message,'error') }).getPreviewData();
             } else {
                 let dummyData = [
                     { row: 2, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "08:15", nim: "20311234", nama: "Ahmad Budi", perusahaan: "PT Pertamina", spv: "Pak Joko", dosbing: "Bpk. Haris", pic: "Siti Rahma", waPic: "0812345", waMhs: "08111", waSpv: "08222", waDosen: "08999", status: "Belum Responsi", isWChecked: false },
                     { row: 3, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "09:00:00", nim: "20311235", nama: "Rini Melati", perusahaan: "PT Telkom", spv: "Ibu Dina", dosbing: "Ibu Maya", pic: "Andi Saputra", waPic: "0812346", waMhs: "08333", waSpv: "08444", waDosen: "", status: "Belum Isi Form Pasca Responsi", isWChecked: true }
                 ];
-                initPicTerminal(dummyData);
+                // Simulasi delay ringan di Canvas agar efek loading bar bisa kamu lihat jelas
+                setTimeout(() => { initPicTerminal(dummyData); }, 1200);
             }
         };
 
         function refreshData() {
             if (typeof google !== 'undefined') {
+                startTopProgress();
                 const loader = document.getElementById('initial-loader');
                 loader.classList.remove('fade-out');
                 loader.style.display = 'flex';
@@ -274,6 +339,7 @@
                 
                 google.script.run
                     .withSuccessHandler(function(data) {
+                        completeTopProgress();
                         allData = data || [];
                         let picSet = new Set();
                         allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
@@ -287,15 +353,20 @@
                         else { renderGateScreen(); }
                     })
                     .withFailureHandler(function(err){
+                        completeTopProgress();
                         loader.classList.remove('fade-in'); loader.classList.add('fade-out');
                         setTimeout(() => loader.style.display = 'none', 300);
                         Swal.fire('Error', 'Gagal memuat ulang data.', 'error');
                     })
                     .getPreviewData();
-            } else { window.location.reload(); }
+            } else { 
+                startTopProgress();
+                setTimeout(() => window.location.reload(), 500); 
+            }
         }
 
         function initPicTerminal(data) {
+            completeTopProgress();
             const loader = document.getElementById('initial-loader');
             loader.classList.remove('fade-in'); loader.classList.add('fade-out');
             setTimeout(() => loader.style.display = 'none', 300);
@@ -351,7 +422,6 @@
                 let btnWaSpv = item.waSpv ? '<a ' + attrHref + '="https://wa.me/' + item.waSpv + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> SPV</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> SPV</button>';
                 let btnWaDosen = item.waDosen ? '<a ' + attrHref + '="https://wa.me/' + item.waDosen + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> Dosen</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed" title="Nomor belum terdaftar"><i class="fab fa-whatsapp text-sm opacity-50"></i> Dosen</button>';
                 
-                // TOMBOL EDIT SELALU AKTIF UNTUK PIC
                 let btnEdit = '<button ' + attrOnclick + '="openEditModal(' + item.row + ')" class="mt-2 w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fas fa-edit text-blue-500"></i> Edit Data & Status</button>';
 
                 htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
@@ -423,15 +493,23 @@
             document.getElementById('editWaSpv').value = item.waSpv || ""; 
             document.getElementById('editWaDosen').value = item.waDosen || "";
             
-            // SET STATUS CHECKBOX W DARI DATA SERVER
             document.getElementById('editIsWChecked').checked = item.isWChecked || false;
             
             modal.classList.remove('hidden'); 
-            setTimeout(() => { modal.classList.remove('opacity-0'); modalContent.classList.remove('scale-95'); modalContent.classList.add('scale-100'); }, 10);
+            
+            // Trik "Reflow": Memaksa browser merekam penghapusan 'hidden' sebelum animasi jalan
+            void modal.offsetWidth;
+            
+            modal.classList.remove('opacity-0'); 
+            modalContent.classList.remove('scale-95', 'opacity-0'); 
+            modalContent.classList.add('scale-100', 'opacity-100');
         }
 
         function closeEditModal() {
-            modal.classList.add('opacity-0'); modalContent.classList.remove('scale-100'); modalContent.classList.add('scale-95');
+            modal.classList.add('opacity-0'); 
+            modalContent.classList.remove('scale-100', 'opacity-100'); 
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
@@ -443,15 +521,18 @@
             let waMhs = document.getElementById('editWaMhs').value.trim(); 
             let waSpv = document.getElementById('editWaSpv').value.trim(); 
             let waDosen = document.getElementById('editWaDosen').value.trim();
-            let isWChecked = document.getElementById('editIsWChecked').checked; // Ambil nilai centang
+            let isWChecked = document.getElementById('editIsWChecked').checked; 
 
             if (!tanggal || !jam || !spv || !waMhs || !waSpv) { Swal.fire({ icon: 'warning', title: 'Belum Lengkap', text: 'Semua kolom wajib diisi kecuali WA Dosen.', confirmButtonColor: '#1e293b' }); return; }
+            
+            startTopProgress();
             Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             let info = { row: row, tanggal: tanggal, jam: jam, spv: spv, waMhs: waMhs, waSpv: waSpv, waDosen: waDosen, isWChecked: isWChecked };
 
             if (typeof google === 'undefined') {
                 setTimeout(() => { 
+                    completeTopProgress();
                     let idx = allData.findIndex(d => d.row == row); 
                     if(idx !== -1) { 
                         allData[idx].tanggalInput = tanggal; allData[idx].tanggal = "Telah Diedit"; 
@@ -464,11 +545,15 @@
                 }, 800);
             } else {
                 google.script.run.withSuccessHandler(function(res) {
+                    completeTopProgress();
                     if (res.status === "success") { 
                         Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data diperbarui.', confirmButtonColor: '#2563eb' }); 
                         closeEditModal(); 
                         refreshData(); 
                     } else { Swal.fire({ icon: 'error', title: 'Gagal', text: res.message, confirmButtonColor: '#1e293b' }); }
+                }).withFailureHandler(function(err){
+                    completeTopProgress();
+                    Swal.fire({ icon: 'error', title: 'Error Server', text: 'Gagal menghubungi server.', confirmButtonColor: '#1e293b' });
                 }).updateByPIC(info);
             }
         }
