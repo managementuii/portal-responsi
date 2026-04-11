@@ -194,8 +194,6 @@ function updateByPIC(info) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var row = info.row;
-    
-    // INFO: Kunci pengeditan dihapus khusus untuk PIC. PIC bebas mengedit/mencentang status!
 
     // Eksekusi Pembaruan Data
     if (info.tanggal) sheet.getRange(row, 2).setValue(toIndoDateString(info.tanggal)); 
@@ -305,4 +303,86 @@ function getDropdownOptions() {
   }
   companies.sort(); spvs.sort();
   return { companies: companies, spvs: spvs };
+}
+
+
+// ==========================================
+// 5. FUNGSI PORTAL PERSONALISASI (DOSEN & SPV)
+// ==========================================
+function getJadwalPersonalisasi(targetId) {
+  if (!targetId) return { isFound: false };
+
+  // ⚠️ PENTING: KONFIGURASI KOLOM ID ⚠️
+  // Sesuaikan angka ini dengan posisi kolom di Google Spreadsheet Anda yang menyimpan ID "dos..." dan "spv...".
+  // Ingat: Indeks array di Google Apps Script dimulai dari 0.
+  // (Kolom A=0, B=1, ... Y=24, Z=25, AA=26, AB=27, dst.)
+  var INDEX_KOLOM_ID_DOSEN = 26; // Dosen di Kolom AA (diubah dari 25 ke 26)
+  var INDEX_KOLOM_ID_SPV = 25;   // SPV di Kolom Z (diubah dari 26 ke 25)
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var rawData = sheet.getDataRange().getValues();
+  var displayData = sheet.getDataRange().getDisplayValues();
+
+  var isDosen = targetId.toLowerCase().startsWith('dos');
+  var idColumnIndex = isDosen ? INDEX_KOLOM_ID_DOSEN : INDEX_KOLOM_ID_SPV;
+
+  var result = {
+    isFound: false,
+    role: isDosen ? "Dosen Pembimbing" : "Supervisor",
+    name: "",
+    isDosen: isDosen,
+    company: "-",
+    email: "-",
+    data: []
+  };
+
+  for (var i = 1; i < rawData.length; i++) {
+    var currentId = (displayData[i][idColumnIndex] || "").toString().trim().toLowerCase();
+
+    // Jika ID di baris ini cocok dengan targetId dari URL (?dos2023)
+    if (currentId === targetId.toLowerCase()) {
+      
+      // Ambil Profil (Hanya dipanggil sekali saat pencocokan pertama)
+      if (!result.isFound) {
+        result.isFound = true;
+        if (isDosen) {
+          result.name = displayData[i][10] || "-"; // Nama Dosen Pembimbing (Kolom K)
+        } else {
+          result.name = displayData[i][7] || "-";  // Nama Supervisor (Kolom H)
+          result.company = displayData[i][6] || "-"; // Perusahaan (Kolom G)
+          result.email = displayData[i][16] || "-";  // Email SPV (Kolom Q)
+        }
+      }
+
+      // Format Data Baris Jadwal
+      var isWChecked = rawData[i][22] === true || String(rawData[i][22]).toUpperCase() === "TRUE";
+      var isXChecked = rawData[i][23] === true || String(rawData[i][23]).toUpperCase() === "TRUE";
+      var finalStatus = "Belum Responsi";
+
+      // Logika status yang sama dengan Dashboard PIC/Mahasiswa
+      if (isWChecked && isXChecked) {
+        finalStatus = "Responsi Selesai";
+      } else if (isWChecked && !isXChecked) {
+        finalStatus = "Belum Isi Form"; // Teks persis yang dicek oleh Portal.html
+      }
+
+      var waPicRaw = rawData[i][14] || "";
+
+      result.data.push({
+        tanggal: displayData[i][1] || "Belum ditentukan",
+        jam: displayData[i][2] || "-",
+        nim: displayData[i][3] || "-",
+        nama: displayData[i][4] || "-",
+        mitra: isDosen ? (displayData[i][7] || "-") : (displayData[i][10] || "-"), // Info silang
+        perusahaan: displayData[i][6] || "-",
+        spv: displayData[i][7] || "-",
+        dosbing: displayData[i][10] || "-",
+        status: finalStatus,
+        pic: displayData[i][13] || "-",
+        waPic: waPicRaw !== "" ? formatWA(waPicRaw) : ""
+      });
+    }
+  }
+
+  return result;
 }
