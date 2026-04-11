@@ -522,6 +522,16 @@
       let phase1MasterData = []; 
       let phase2MasterData = [];
 
+      // HELPER: Menampilkan Error Umum ke User
+      function handleError(error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Terjadi Kesalahan',
+          text: 'Gagal terhubung ke server. Pastikan koneksi internet Anda stabil atau muat ulang halaman. Detail: ' + (error.message || 'Unknown error'),
+          confirmButtonColor: '#1e293b'
+        });
+      }
+
       function formatTitleCase(input) { 
           let str = input.value; 
           input.value = str.replace(/\w\S*/g, function(txt) { 
@@ -559,37 +569,44 @@
           document.getElementById('tablePhase2Container').classList.remove('d-none'); 
           loadGlobalData(); 
         } else {
-            google.script.run.withSuccessHandler(function(phaseFromServer) {
-              ACTIVE_PHASE = phaseFromServer;
-              document.getElementById('appLoader').classList.add('d-none'); 
-              document.getElementById('mainContent').classList.remove('d-none');
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(function(phaseFromServer) {
+                ACTIVE_PHASE = phaseFromServer;
+                document.getElementById('appLoader').classList.add('d-none'); 
+                document.getElementById('mainContent').classList.remove('d-none');
 
-              if (ACTIVE_PHASE === 1) {
-                document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk melengkapi administrasi Surat SPV.";
-                document.getElementById('btnSurat').classList.remove('d-none'); 
-                document.getElementById('tablePhase1Container').classList.remove('d-none');
-                document.getElementById('actionCenterDivider').classList.add('d-none'); 
-                document.getElementById('actionCenterSection').classList.add('d-none');
-                loadPhase1Data();
-              } else {
-                document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar atau mengubah Jadwal Responsi.";
-                document.getElementById('btnDaftar').classList.remove('d-none'); 
-                document.getElementById('btnUbah').classList.remove('d-none'); 
-                document.getElementById('btnSurat').classList.add('d-none'); 
-                document.getElementById('tablePhase2Container').classList.remove('d-none');
-                document.getElementById('actionCenterDivider').classList.remove('d-none'); 
-                document.getElementById('actionCenterSection').classList.remove('d-none');
-                loadGlobalData();
-              }
-              
-              loadDropdownOptions(); 
-              populateTimeDropdown(); 
-              
-              let dtToday = new Date(); 
-              let month = (dtToday.getMonth() + 1).toString().padStart(2, '0'); 
-              let day = dtToday.getDate().toString().padStart(2, '0');
-              document.getElementById('tanggal').setAttribute('min', dtToday.getFullYear() + '-' + month + '-' + day);
-            }).getPhaseStatus();
+                if (ACTIVE_PHASE === 1) {
+                  document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk melengkapi administrasi Surat SPV.";
+                  document.getElementById('btnSurat').classList.remove('d-none'); 
+                  document.getElementById('tablePhase1Container').classList.remove('d-none');
+                  document.getElementById('actionCenterDivider').classList.add('d-none'); 
+                  document.getElementById('actionCenterSection').classList.add('d-none');
+                  loadPhase1Data();
+                } else {
+                  document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar atau mengubah Jadwal Responsi.";
+                  document.getElementById('btnDaftar').classList.remove('d-none'); 
+                  document.getElementById('btnUbah').classList.remove('d-none'); 
+                  document.getElementById('btnSurat').classList.add('d-none'); 
+                  document.getElementById('tablePhase2Container').classList.remove('d-none');
+                  document.getElementById('actionCenterDivider').classList.remove('d-none'); 
+                  document.getElementById('actionCenterSection').classList.remove('d-none');
+                  loadGlobalData();
+                }
+                
+                loadDropdownOptions(); 
+                populateTimeDropdown(); 
+                
+                let dtToday = new Date(); 
+                let month = (dtToday.getMonth() + 1).toString().padStart(2, '0'); 
+                let day = dtToday.getDate().toString().padStart(2, '0');
+                document.getElementById('tanggal').setAttribute('min', dtToday.getFullYear() + '-' + month + '-' + day);
+              })
+              .withFailureHandler(function(error) {
+                document.getElementById('appLoader').innerHTML = '<h6 class="text-danger">Gagal memuat portal. Silakan muat ulang halaman.</h6>';
+                handleError(error);
+              })
+              .getPhaseStatus();
         }
       };
 
@@ -663,7 +680,11 @@
             if (typeof google === 'undefined') {
                 setTimeout(() => { tampilkanInfoPIC({isNew: false, nim: nim, pic: 'Admin Prodi', waPic: '08123456789'}); }, 600);
             } else {
-                google.script.run.withSuccessHandler(tampilkanInfoPIC).getDataByNIM(nim);
+                // PENAMBAHAN .withFailureHandler()
+                google.script.run
+                  .withSuccessHandler(tampilkanInfoPIC)
+                  .withFailureHandler(handleError)
+                  .getDataByNIM(nim);
             }
           }
         });
@@ -760,7 +781,18 @@
       function loadPhase1Data() { 
           document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-5"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat data...</td></tr>'; 
           document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat data...</div>'; 
-          if (typeof google !== 'undefined') google.script.run.withSuccessHandler(renderPhase1Table).getPhase1Data(); 
+          
+          if (typeof google !== 'undefined') {
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(renderPhase1Table)
+              .withFailureHandler(function(error) {
+                 document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</td></tr>';
+                 document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</div>';
+                 handleError(error);
+              })
+              .getPhase1Data(); 
+          }
       }
       
       function renderPhase1Table(dataArray) { 
@@ -813,7 +845,18 @@
       function loadGlobalData() { 
           document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat jadwal...</td></tr>'; 
           document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat jadwal...</div>'; 
-          if (typeof google !== 'undefined') google.script.run.withSuccessHandler(renderTable).getPreviewData(); 
+          
+          if (typeof google !== 'undefined') {
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(renderTable)
+              .withFailureHandler(function(error) {
+                 document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</td></tr>';
+                 document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</div>';
+                 handleError(error);
+              })
+              .getPreviewData(); 
+          }
       }
       
       function renderTable(dataArray) { 
@@ -887,10 +930,16 @@
       
       function loadDropdownOptions() { 
           if (typeof google !== 'undefined') {
-              google.script.run.withSuccessHandler(function(data) { 
-                  availableCompanies = data.companies; 
-                  availableSpvs = data.spvs; 
-              }).getDropdownOptions(); 
+              // PENAMBAHAN .withFailureHandler()
+              google.script.run
+                .withSuccessHandler(function(data) { 
+                    availableCompanies = data.companies; 
+                    availableSpvs = data.spvs; 
+                })
+                .withFailureHandler(function(error) {
+                    console.error("Gagal memuat opsi dropdown:", error);
+                })
+                .getDropdownOptions(); 
           }
       }
       
@@ -934,24 +983,28 @@
             return;
         }
         
-        google.script.run.withSuccessHandler(function(data) {
-          if (data.isFinished) { 
-              Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Responsi telah selesai, data tidak dapat diubah.', confirmButtonColor: '#1e293b' }); 
-              return; 
-          }
-          if (currentAction === 'surat') { 
-              if (data.isNew) { 
-                  Swal.fire({ icon: 'error', title: 'Belum Terdaftar', text: 'Data NIM kamu belum terdaftar.', confirmButtonColor: '#1e293b' }); 
-                  return; 
-              } 
-              Swal.close(); 
-              setupFormSurat(data); 
-              return; 
-          }
-          
-          Swal.close(); 
-          setupFormJadwal(data);
-        }).getDataByNIM(nim);
+        // PENAMBAHAN .withFailureHandler()
+        google.script.run
+          .withSuccessHandler(function(data) {
+            if (data.isFinished) { 
+                Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Responsi telah selesai, data tidak dapat diubah.', confirmButtonColor: '#1e293b' }); 
+                return; 
+            }
+            if (currentAction === 'surat') { 
+                if (data.isNew) { 
+                    Swal.fire({ icon: 'error', title: 'Belum Terdaftar', text: 'Data NIM kamu belum terdaftar.', confirmButtonColor: '#1e293b' }); 
+                    return; 
+                } 
+                Swal.close(); 
+                setupFormSurat(data); 
+                return; 
+            }
+            
+            Swal.close(); 
+            setupFormJadwal(data);
+          })
+          .withFailureHandler(handleError)
+          .getDataByNIM(nim);
       }
 
       function setupFormSurat(data) {
@@ -1113,7 +1166,12 @@
                 emailSpv: document.getElementById('emailSpvSurat').value, 
                 emailSita: document.getElementById('emailSitaSurat').value 
             };
-            google.script.run.withSuccessHandler(onSuccess).simpanSurat(info);
+            
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(onSuccess)
+              .withFailureHandler(handleError)
+              .simpanSurat(info);
           }
         });
       }
@@ -1162,10 +1220,18 @@
         };
         
         if (document.getElementById('isNewData').value === "true") { 
-            google.script.run.withSuccessHandler(onSuccess).simpanBaru(info); 
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(onSuccess)
+              .withFailureHandler(handleError)
+              .simpanBaru(info); 
         } else { 
             info.row = document.getElementById('rowIdx').value; 
-            google.script.run.withSuccessHandler(onSuccess).simpanUpdate(info); 
+            // PENAMBAHAN .withFailureHandler()
+            google.script.run
+              .withSuccessHandler(onSuccess)
+              .withFailureHandler(handleError)
+              .simpanUpdate(info); 
         }
       }
 
