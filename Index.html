@@ -3,234 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Portal Administrasi & Responsi Magang</title>
   
-  <!-- Frameworks -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Tailwind CSS (Development Mode) -->
+  <!-- 
+  ========================================================================
+  🔥 THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🔥
+  ========================================================================
+  Ganti script CDN ini dengan output.css hasil build jika akan rilis ke production.
+  ========================================================================
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
  
   <style>
-    /* ==========================================================================
-       TEMA VISUAL MINIMALIS (Meniru Tailwind CSS dari Portal Dosen)
-       ========================================================================== */
-    body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: #334155; }
+    /* CSS Kustom Tambahan (Animasi & Scrollbar) */
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
     
-    /* OVERRIDE FONT WEIGHT BOOTSTRAP */
-    .fw-semibold { font-weight: 600 !important; }
-    .fw-medium { font-weight: 500 !important; }
-    h2, h5, h6 { font-weight: 600; letter-spacing: -0.025em; color: #1e293b; }
-    
-    /* GAYA KOTAK (CARDS) */
-    .card { 
-        border: 1px solid #e2e8f0; 
-        border-radius: 0.75rem; 
-        background-color: #ffffff; 
-        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); 
-    }
-    
-    /* HERO BANNER */
-    .hero-banner { 
-        border-top: 4px solid #1d4ed8; 
-        padding: 1.75rem 1.5rem;
-    }
-    .hero-banner h2 { font-size: 1.5rem; color: #1e293b !important; margin-bottom: 0.25rem; font-weight: 600; }
-    .hero-banner p { color: #64748b !important; font-size: 0.9rem; }
-
-    /* TOMBOL (BUTTONS) */
-    .btn-highlight { 
-        background-color: #2563eb; color: #ffffff; border: none; border-radius: 0.5rem; 
-        font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); padding: 0.625rem 1.25rem;
-    }
-    .btn-highlight:hover { background-color: #1d4ed8; color: #ffffff; transform: translateY(-1px); }
-    
-    .btn-outline-dark { 
-        border: 1px solid #cbd5e1; color: #475569; background: #ffffff; border-radius: 0.5rem; 
-        font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; padding: 0.625rem 1.25rem;
-    }
-    .btn-outline-dark:hover { background-color: #f8fafc; color: #1e293b; border-color: #94a3b8; transform: translateY(-1px); }
-    
-    .btn-dark { background-color: #1e293b; border-color: #1e293b; border-radius: 0.5rem; font-weight: 500; padding: 0.625rem 1.25rem; color: #ffffff; }
-    .btn-dark:hover { background-color: #0f172a; color: #ffffff; }
-    
-    .btn-wa { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 0.5rem; font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; padding: 0.625rem 1.25rem;}
-    .btn-wa:hover { background-color: #d1fae5; color: #047857; transform: translateY(-1px); }
-
-    /* TABEL DESKTOP */
-    .table-container { max-height: 600px; overflow-y: auto; border-radius: 0.75rem; border: 1px solid #e2e8f0; background: #fff; }
+    .table-container { -webkit-overflow-scrolling: touch; }
     .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
     .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    thead th { 
-        background-color: #f8fafc !important; color: #64748b !important; 
-        text-transform: uppercase; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.05em; 
-        border-bottom: 1px solid #e2e8f0 !important; padding: 1rem 1.25rem; box-shadow: none; position: sticky; top: 0; z-index: 2;
-    }
-    tbody td { color: #475569; font-size: 0.875rem; border-bottom: 1px solid #f1f5f9; vertical-align: middle; padding: 1rem 1.25rem; }
-    .table-hover tbody tr:hover td { background-color: #f8fafc !important; transition: background-color 0.2s ease; }
+    
+    .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* KARTU MOBILE */
-    .mobile-card {
-        background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.75rem;
-        padding: 1.25rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); margin-bottom: 1rem;
-        transition: box-shadow 0.2s ease;
-    }
-    .mobile-card:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-    .mc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f8fafc; }
-    .mc-title { font-weight: 600; color: #1e293b; font-size: 1rem; line-height: 1.2; }
-    .mc-subtitle { font-size: 0.875rem; color: #64748b; margin-top: 0.25rem; }
-    .mc-footer { padding-top: 1rem; border-top: 1px solid #f1f5f9; margin-top: 1rem; }
-    .mc-label { font-size: 0.625rem; color: #94a3b8; text-transform: uppercase; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
-
-    /* LENCANA STATUS (BADGES) */
-    .badge-status { font-size: 0.6875rem; padding: 0.25rem 0.625rem; border-radius: 0.375rem; font-weight: 500; letter-spacing: 0.025em; display: inline-block; }
-    .badge-done { background-color: #f0fdf4; color: #059669; border: 1px solid #d1fae5; } 
-    .badge-red { background-color: #fff1f2; color: #e11d48; border: 1px solid #ffe4e6; } 
-    .badge-pending { background-color: #fffbeb; color: #d97706; border: 1px solid #fef3c7; } 
-    .badge-blue { background-color: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; } 
-    .badge-grey { background-color: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; } 
-
-    /* INPUT & FORM */
-    .form-control, .form-select { border-radius: 0.5rem; border: 1px solid #cbd5e1; box-shadow: none !important; font-size: 0.875rem; padding: 0.6rem 1rem; color: #334155; }
-    .form-control:focus, .form-select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important; }
-    .form-label { color: #64748b; font-weight: 500; font-size: 0.8rem; margin-bottom: 0.35rem; }
-    .form-control:disabled { background-color: #f8fafc; color: #64748b; }
-
-    /* PENCARIAN */
-    .search-wrapper { position: relative; }
-    .search-wrapper input { padding-left: 35px; background-color: #ffffff; border-radius: 0.5rem; border: 1px solid #e2e8f0; }
-    .search-wrapper input:focus { border-color: #3b82f6; }
-    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 4; font-size: 0.85rem; }
-
-    /* MODAL POPUP */
-    .modal-content { border: none; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-    .modal-header { border-bottom: 1px solid #e2e8f0; background-color: #ffffff; border-radius: 1rem 1rem 0 0; padding: 1.25rem 1.5rem; }
-    .modal-footer { border-top: 1px solid #e2e8f0; background-color: #f8fafc; border-radius: 0 0 1rem 1rem; padding: 1.25rem 1.5rem; }
-    .modal-title { color: #1e293b; font-size: 1.125rem; }
-    .btn-close { opacity: 0.5; }
-
-    /* ANIMASI TITIK NOTIFIKASI */
     .pulse-dot { position: absolute; top: -4px; right: -4px; display: flex; height: 12px; width: 12px; }
     .pulse-dot-anim { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #f59e0b; opacity: 0.75; }
     .pulse-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 12px; width: 12px; background-color: #f59e0b; border: 2px solid #ffffff; }
     @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
 
-    /* LAINNYA */
-    div:where(.swal2-container) button { border-radius: 0.5rem !important; font-weight: 500 !important; }
-    div:where(.swal2-container) h2 { font-weight: 600 !important; color: #1e293b !important; }
-    .custom-dropdown-item { white-space: normal; border-bottom: 1px solid #f1f5f9; font-size: 0.875rem; padding: 10px 16px; cursor: pointer; color: #475569; }
+    /* Dropdown Autocomplete Styles */
+    .custom-dropdown-item { padding: 0.5rem 1rem; font-size: 0.875rem; color: #475569; cursor: pointer; border-bottom: 1px solid #f1f5f9; white-space: normal; }
     .custom-dropdown-item:hover, .custom-dropdown-item.active-item { background-color: #f1f5f9; color: #1e293b; }
-    .alert-new { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 12px; color: #1e40af; font-size: 0.875rem; display: none; }
-    #appLoader { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 0; }
-    .spinner-border { color: #3b82f6 !important; }
     
-    /* GAYA TABEL MOBILE */
-    @media screen and (max-width: 768px) {
-      .table-container { border: none; background: transparent; max-height: none; overflow-y: visible; } 
-      .table-container table, .table-container thead, .table-container tbody, .table-container th, .table-container td, .table-container tr { display: block; }
-      .table-container thead tr { position: absolute; top: -9999px; left: -9999px; }
-      .table-container tr { border: 1px solid #e2e8f0; background-color: #ffffff !important; border-radius: 0.75rem; margin-bottom: 1rem; padding: 1rem; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
-      .table-container td { border: none; border-bottom: 1px solid #f1f5f9; position: relative; padding: 0.5rem 0 0.5rem 40% !important; text-align: left !important; min-height: auto; font-size: 0.875rem; }
-      .table-container td:last-child { border-bottom: none; padding-bottom: 0 !important; }
-      .table-container td:first-child { padding-top: 0 !important; }
-      .table-container td:before { position: absolute; top: 0.5rem; left: 0; width: 35%; font-weight: 500; color: #64748b; font-size: 0.6875rem; text-align: left; text-transform: uppercase; letter-spacing: 0.025em; }
-      .table-container td:first-child:before { top: 0; }
-      
-      .phase1-table td:nth-of-type(1):before { content: "Mahasiswa"; } .phase1-table td:nth-of-type(2):before { content: "Perusahaan"; } .phase1-table td:nth-of-type(3):before { content: "Status"; }
-      .phase2-table td:nth-of-type(1):before { content: "Jadwal"; } .phase2-table td:nth-of-type(2):before { content: "Mahasiswa"; } .phase2-table td:nth-of-type(3):before { content: "Mitra Evaluasi"; } .phase2-table td:nth-of-type(4):before { content: "Status"; }
-    }
+    .swal2-html-container { overflow: visible !important; }
   </style>
 </head>
-<body style="background-color: #f8fafc; color: #334155;">
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
   <!-- NAVBAR -->
-  <nav class="sticky-top shadow-sm py-3 mb-4" style="background-color: #1d4ed8; z-index: 1050;">
-    <div class="container d-flex justify-content-between align-items-center" style="max-width: 1152px;">
-      <div class="d-flex align-items-center gap-3">
-        <img src="https://lh3.googleusercontent.com/d/1EXPFGOzHj6a06TxLKfriCqz8VBV7p26i" alt="Logo UII" style="max-height: 36px; width: auto; object-fit: contain;" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+  <nav class="bg-blue-700 text-white shadow-sm sticky top-0 z-50 py-3 sm:py-4">
+    <div class="max-w-6xl mx-auto flex justify-between items-center px-4 sm:px-6">
+      <div class="flex items-center gap-3">
+        <img src="https://lh3.googleusercontent.com/d/1EXPFGOzHj6a06TxLKfriCqz8VBV7p26i" alt="Logo UII" class="h-8 sm:h-9 w-auto object-contain" referrerpolicy="no-referrer" onerror="this.style.display='none';">
       </div>
-      <div class="d-flex gap-2">
-        <button onclick="window.location.reload()" class="btn btn-sm text-white px-3" style="background-color: rgba(255, 255, 255, 0.15); font-weight: 500; border: none; border-radius: 0.5rem;">
-          <i class="fas fa-sync-alt me-1"></i> <span class="d-none d-sm-inline">Refresh</span>
+      <div class="flex gap-2">
+        <button onclick="window.location.reload()" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition flex items-center gap-2">
+          <i class="fas fa-sync-alt"></i> <span class="hidden sm:inline">Refresh</span>
         </button>
       </div>
     </div>
   </nav>
 
   <!-- WRAPPER KONTEN UTAMA -->
-  <div class="container mb-5" style="max-width: 1152px;">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6 mt-2 flex-grow w-full">
  
     <!-- HERO BANNER -->
-    <div class="card hero-banner mb-4">
-      <div class="d-flex justify-content-between align-items-start gap-3">
-        <div>
-          <h2 class="mb-1" style="font-size: 1.35rem; color: #1e293b; font-weight: 600;">Portal Responsi Magang</h2>
-          <p class="mb-0" style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Program Studi Manajemen S1</p>
-        </div>
-        <img src="https://lh3.googleusercontent.com/d/16b_XtIbg4elZTNKmnXKkpDwn_-TBmokK" alt="Logo Tambahan" style="max-height: 44px; width: auto; object-fit: contain;" referrerpolicy="no-referrer" onerror="this.style.display='none';">
+    <div class="bg-white rounded-xl shadow-sm border-t-4 border-blue-600 p-6 sm:p-8 flex justify-between items-start gap-4 mb-5 border-l border-r border-b border-slate-200">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-semibold text-slate-800 tracking-tight mb-1">Portal Responsi Magang</h2>
+        <p class="text-slate-500 font-medium text-sm">Program Studi Manajemen S1</p>
       </div>
+      <img src="https://lh3.googleusercontent.com/d/16b_XtIbg4elZTNKmnXKkpDwn_-TBmokK" alt="Logo Tambahan" class="h-10 sm:h-14 w-auto object-contain shrink-0" referrerpolicy="no-referrer" onerror="this.style.display='none';">
     </div>
 
-    <div id="appLoader">
-      <div class="spinner-border mb-3" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
-      <h6 class="text-muted fw-medium">Mempersiapkan sistem portal...</h6>
+    <!-- LOADER UTAMA -->
+    <div id="appLoader" class="flex flex-col items-center justify-center py-16">
+      <div class="spinner-css mb-4"></div>
+      <h6 class="text-slate-500 font-medium text-sm">Mempersiapkan sistem portal...</h6>
     </div>
 
-    <div id="mainContent" class="d-none animate__animated animate__fadeIn">
+    <div id="mainContent" class="hidden animate__animated animate__fadeIn">
       
-      <!-- MENU TOMBOL -->
-      <div class="card p-4 mb-4">
-        <h5 class="fw-semibold mb-2" style="font-size: 1.1rem;">Menu Mahasiswa</h5>
-        <p class="text-muted mb-4 fw-medium" id="teksMenu" style="font-size: 0.85rem; color: #64748b !important;">Pilih menu di bawah ini sesuai dengan tahapan magang yang sedang berlangsung.</p>
+      <!-- MENU TOMBOL MAHASISWA -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm mb-5">
+        <h5 class="font-semibold text-lg text-slate-800 mb-1">Menu Mahasiswa</h5>
+        <p class="text-slate-500 font-medium text-sm mb-5" id="teksMenu">Pilih menu di bawah ini sesuai dengan tahapan magang yang sedang berlangsung.</p>
         
-        <div class="d-flex flex-wrap gap-2 mb-2">
-          <button id="btnDaftar" class="btn btn-highlight px-4 py-2 d-none" onclick="openAppModal('jadwal_baru')">
-            <i class="fas fa-calendar-plus me-2 opacity-75"></i> Daftar Ulang Responsi
+        <div class="flex flex-wrap gap-3 mb-2">
+          <button id="btnDaftar" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('jadwal_baru')">
+            <i class="fas fa-calendar-plus opacity-80"></i> Daftar Ulang Responsi
           </button>
-          <button id="btnUbah" class="btn btn-outline-dark px-4 py-2 d-none" onclick="showWarningUbahData()">
-            <i class="fas fa-edit me-2 text-secondary"></i> Ubah Data Responsi
+          <button id="btnUbah" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="showWarningUbahData()">
+            <i class="fas fa-edit text-slate-400"></i> Ubah Data Responsi
           </button>
-          <button id="btnSurat" class="btn btn-highlight px-4 py-2 d-none" onclick="openAppModal('surat')">
-            <i class="fas fa-envelope me-2 opacity-75"></i> Konfirmasi Surat SPV
+          <button id="btnSurat" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('surat')">
+            <i class="fas fa-envelope opacity-80"></i> Konfirmasi Surat SPV
           </button>
         </div>
 
         <!-- ACTION CENTER -->
-        <hr class="my-4 d-none" id="actionCenterDivider" style="border-color: #e2e8f0;">
+        <hr class="hidden my-6 border-slate-200" id="actionCenterDivider">
         
-        <div id="actionCenterSection" class="d-none">
-          <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center gap-4">
-            <div class="d-flex align-items-center gap-3 w-100 w-lg-auto">
-              <div class="p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #94a3b8;">
-                <i class="fas fa-video fs-5"></i>
+        <div id="actionCenterSection" class="hidden">
+          <div class="flex flex-col lg:flex-row justify-between items-center gap-5">
+            <div class="flex items-center gap-4 w-full lg:w-auto">
+              <div class="bg-slate-50 text-slate-400 p-3 rounded-xl border border-slate-100 flex-shrink-0">
+                <i class="fas fa-video text-lg"></i>
               </div>
               <div>
-                <p class="mb-1" style="font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Informasi Zoom</p>
-                <div class="d-flex flex-wrap gap-3" style="font-size: 0.875rem; font-weight: 500; color: #334155;">
-                  <span>ID: <span class="text-dark">223 556 7899</span></span>
-                  <span style="color: #cbd5e1;">|</span>
-                  <span>Pass: <span class="text-dark">fujitsu</span></span>
+                <p class="text-[11px] text-slate-500 font-medium uppercase tracking-wider mb-1">Informasi Zoom</p>
+                <div class="text-sm font-medium text-slate-700 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>ID: <span class="text-slate-900 font-semibold">223 556 7899</span></span>
+                  <span class="text-slate-300">|</span>
+                  <span>Pass: <span class="text-slate-900 font-semibold">fujitsu</span></span>
                 </div>
               </div>
             </div>
 
-            <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-lg-auto">
-              <a href="https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09" target="_blank" class="btn btn-highlight d-flex align-items-center justify-content-center gap-2 px-4 py-2">
-                <i class="fas fa-video opacity-75"></i> Masuk Zoom
+            <div class="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto">
+              <a href="https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09" target="_blank" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                <i class="fas fa-video opacity-80"></i> <span>Masuk Zoom</span>
               </a>
-              <a href="#" target="_blank" class="btn btn-outline-dark d-flex align-items-center justify-content-center gap-2 px-4 py-2 position-relative" style="background-color: #fffbeb; color: #b45309; border-color: #fde68a;">
+              <a href="#" target="_blank" class="relative w-full sm:w-auto bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
                 <span class="pulse-dot"><span class="pulse-dot-anim"></span><span class="pulse-dot-core"></span></span>
-                <i class="fas fa-book-open opacity-75"></i> Panduan
+                <i class="fas fa-book-open opacity-80"></i> <span>Panduan</span>
               </a>
-              <a href="https://drive.google.com/uc?export=download&id=1sm1Vq4V6LwssqkOb4MPtux_7mLntaUHg" target="_blank" class="btn btn-outline-dark d-flex align-items-center justify-content-center gap-2 px-4 py-2">
-                <i class="fas fa-download text-secondary"></i> Unduh VB
+              <a href="https://drive.google.com/uc?export=download&id=1sm1Vq4V6LwssqkOb4MPtux_7mLntaUHg" target="_blank" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                <i class="fas fa-download text-slate-400"></i> <span>Unduh VB</span>
               </a>
-              <button onclick="mintaBantuanPIC()" class="btn btn-wa d-flex align-items-center justify-content-center gap-2 px-4 py-2">
-                <i class="fab fa-whatsapp fs-5"></i> Bantuan Responsi
+              <button onclick="mintaBantuanPIC()" class="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                <i class="fab fa-whatsapp text-emerald-600 text-lg"></i> <span>Bantuan Responsi</span>
               </button>
             </div>
           </div>
@@ -238,279 +137,293 @@
       </div>
 
       <!-- FASE 1: TABEL KONFIRMASI SURAT -->
-      <div class="card p-4 mb-4 d-none" id="tablePhase1Container">
-        <div class="row align-items-center mb-4">
-          <div class="col-md-6 mb-3 mb-md-0">
-              <h5 class="mb-1 fw-semibold" style="font-size: 1.1rem;">Daftar Konfirmasi SPV</h5>
-              <p class="text-muted mb-0 fw-medium" style="font-size: 0.85rem;">Cek status konfirmasi surat pengantar SPV kamu disini.</p>
+      <div class="hidden bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm mb-5" id="tablePhase1Container">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h5 class="font-semibold text-lg text-slate-800 mb-1">Daftar Konfirmasi SPV</h5>
+            <p class="text-slate-500 font-medium text-sm">Cek status konfirmasi surat pengantar SPV kamu disini.</p>
           </div>
-          <div class="col-md-6 d-flex justify-content-md-end gap-2 align-items-center">
-            <div class="search-wrapper w-100" style="max-width: 320px;">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInputPhase1" class="form-control form-control-sm" placeholder="Cari Nama Mahasiswa..." onkeyup="filterTabelPhase1()">
+          <div class="flex w-full md:w-auto gap-2 items-center">
+            <div class="relative w-full sm:w-64">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-slate-400"></i>
+              </div>
+              <input type="text" id="searchInputPhase1" class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Nama Mahasiswa..." onkeyup="filterTabelPhase1()">
             </div>
-            <button class="btn btn-outline-dark btn-sm px-3 py-2" onclick="loadPhase1Data()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 px-3 rounded-lg transition-colors" onclick="loadPhase1Data()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
           </div>
         </div>
         
-        <div class="table-container d-none d-md-block">
-          <table class="table table-hover align-middle mb-0" id="mainTablePhase1">
-            <thead>
+        <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="min-w-full divide-y divide-slate-200" id="mainTablePhase1">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
               <tr>
-                <th class="text-center" style="width: 50px;">No</th>
-                <th style="min-width: 250px;">Data Mahasiswa</th>
-                <th style="min-width: 250px;">Mitra Evaluasi</th>
-                <th style="min-width: 140px;" class="text-center">Status</th>
+                <th class="px-5 py-4 text-center w-16">No</th>
+                <th class="px-5 py-4 text-left">Data Mahasiswa</th>
+                <th class="px-5 py-4 text-left">Mitra Evaluasi</th>
+                <th class="px-5 py-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody id="tabelBodyPhase1Desktop">
+            <tbody id="tabelBodyPhase1Desktop" class="bg-white divide-y divide-slate-100 text-sm">
               <tr id="loadingRowPhase1">
-                <td colspan="4" class="text-center py-5">
-                  <div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat data...
-                </td>
+                <td colspan="4" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat data...</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div id="tabelBodyPhase1Mobile" class="d-block d-md-none"></div>
+        <div id="tabelBodyPhase1Mobile" class="grid md:hidden gap-4"></div>
       </div>
 
       <!-- FASE 2: TABEL JADWAL RESPONSI -->
-      <div class="card p-4 mb-4 d-none" id="tablePhase2Container">
-        <div class="row align-items-center mb-4">
-          <div class="col-md-6 mb-3 mb-md-0">
-              <h5 class="mb-1 fw-semibold" style="font-size: 1.1rem;">Daftar Jadwal Masuk</h5>
-              <p class="text-muted mb-0 fw-medium" style="font-size: 0.85rem;">Jika sudah daftar ulang, cek jadwal responsi di sini.</p>
+      <div class="hidden bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm mb-5" id="tablePhase2Container">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h5 class="font-semibold text-lg text-slate-800 mb-1">Daftar Jadwal Masuk</h5>
+            <p class="text-slate-500 font-medium text-sm">Jika sudah daftar ulang, cek jadwal responsi di sini.</p>
           </div>
-          <div class="col-md-6 d-flex justify-content-md-end gap-2 align-items-center">
-            <div class="search-wrapper w-100" style="max-width: 320px;">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari Nama Mahasiswa atau NIM..." onkeyup="filterTabel()">
+          <div class="flex w-full md:w-auto gap-2 items-center">
+            <div class="relative w-full sm:w-72">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-slate-400"></i>
+              </div>
+              <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Cari Nama Mahasiswa atau NIM..." onkeyup="filterTabel()">
             </div>
-            <button class="btn btn-outline-dark btn-sm px-3 py-2" onclick="loadGlobalData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 px-3 rounded-lg transition-colors" onclick="loadGlobalData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
           </div>
         </div>
 
-        <div class="table-container d-none d-md-block">
-          <table class="table table-hover align-middle mb-0" id="mainTable">
-            <thead>
+        <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="min-w-full divide-y divide-slate-200" id="mainTable">
+            <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
               <tr>
-                <th class="text-center" style="width: 50px;">No</th>
-                <th style="min-width: 180px;">Waktu Pelaksanaan</th>
-                <th style="min-width: 200px;">Data Mahasiswa</th>
-                <th style="min-width: 180px;">Mitra Evaluasi</th>
-                <th style="min-width: 140px;" class="text-center">Status</th>
+                <th class="px-5 py-4 text-center w-16">No</th>
+                <th class="px-5 py-4 text-left">Waktu Pelaksanaan</th>
+                <th class="px-5 py-4 text-left">Data Mahasiswa</th>
+                <th class="px-5 py-4 text-left">Mitra Evaluasi</th>
+                <th class="px-5 py-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody id="tabelBodyDesktop">
+            <tbody id="tabelBodyDesktop" class="bg-white divide-y divide-slate-100 text-sm">
               <tr id="loadingRow">
-                <td colspan="5" class="text-center py-5">
-                  <div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat jadwal...
-                </td>
+                <td colspan="5" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat jadwal...</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div id="tabelBodyMobile" class="d-block d-md-none"></div>
+        <div id="tabelBodyMobile" class="grid md:hidden gap-4"></div>
       </div>
     </div> <!-- End Main Content -->
 
-    <!-- MODAL UTAMA MULTIFUNGSI -->
-    <div class="modal fade" id="formModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-semibold" id="formModalLabel">Form Responsi</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="resetModal()"></button>
-          </div>
-          <div class="modal-body p-4">
-            
-            <div id="searchSection" class="text-center py-4">
-              <div class="bg-slate-50 w-16 h-16 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="background-color: #f8fafc;">
-                  <i class="fas fa-id-card text-secondary fs-3"></i>
-              </div>
-              <h6 class="mb-3 fw-semibold text-dark">Pengecekan Data Mahasiswa</h6>
-              <div class="input-group mb-2 mx-auto" style="max-width: 400px;">
-                <input type="text" id="nimInput" class="form-control text-center fw-medium" placeholder="Masukkan 8 Digit NIM..." maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="if(event.key === 'Enter') cariData()" inputmode="numeric">
-                <button class="btn btn-dark px-4 fw-medium" id="btnCari" onclick="cariData()">Cek</button>
-              </div>
-              <small class="text-muted fw-medium" id="teksBantuanNIM" style="font-size: 0.8rem;">Sistem akan mendeteksi status kamu.</small>
+    <!-- MODAL UTAMA MULTIFUNGSI (Versi Tailwind) -->
+    <div id="formModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+      <div id="formModalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl shrink-0">
+          <h3 class="font-semibold text-slate-800 text-lg" id="formModalLabel">Form Responsi</h3>
+          <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto grow">
+          
+          <!-- SEARCH SECTION -->
+          <div id="searchSection" class="text-center py-6">
+            <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                <i class="fas fa-id-card text-slate-400 text-3xl"></i>
             </div>
+            <h6 class="mb-3 font-semibold text-slate-800 text-lg">Pengecekan Data Mahasiswa</h6>
+            <div class="flex max-w-sm mx-auto mb-3 gap-2">
+              <input type="text" id="nimInput" class="w-full px-4 py-2 border border-slate-300 rounded-lg text-center font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="Masukkan 8 Digit NIM..." maxlength="8" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="if(event.key === 'Enter') cariData()" inputmode="numeric">
+              <button class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-medium transition-colors" id="btnCari" onclick="cariData()">Cek</button>
+            </div>
+            <p class="text-slate-500 font-medium text-xs" id="teksBantuanNIM">Sistem akan mendeteksi status kamu.</p>
+          </div>
 
-            <!-- FORM 1: JADWAL RESPONSI -->
-            <div id="formSection" style="display: none;">
-              <div id="alertNew" class="alert-new mb-4 text-center fw-medium"><i class="fas fa-info-circle me-2"></i>NIM Belum Terdaftar! Silakan lengkapi formulir di bawah ini.</div>
-              <input type="hidden" id="rowIdx">
-              <input type="hidden" id="isNewData">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">NIM <span class="text-danger">*</span></label>
-                  <input type="text" id="nimField" class="form-control fw-medium" disabled>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">No. WA Mahasiswa <span class="text-danger">*</span></label>
-                  <input type="text" id="waMhs" class="form-control" oninput="formatWAInput(this)" inputmode="numeric">
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Nama Mahasiswa <span class="text-danger">*</span></label>
-                  <input type="text" id="nama" class="form-control">
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Nama Perusahaan Magang <span class="text-danger">*</span></label>
-                  <div class="position-relative">
-                    <textarea id="perusahaan" class="form-control" rows="2" oninput="this.value = this.value.toUpperCase(); showDropdown('perusahaan', 'customCompanyList', availableCompanies);" onfocus="showDropdown('perusahaan', 'customCompanyList', availableCompanies)"></textarea>
-                    <ul id="customCompanyList" class="dropdown-menu w-100 shadow-sm" style="max-height: 200px; overflow-y: auto; display: none; position: absolute; z-index: 1050; padding:0;"></ul>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Dosen Pembimbing <span class="text-danger">*</span></label>
-                  <input type="text" id="dosbing" class="form-control">
-                </div>
-                
-                <div class="col-12 border-top mt-4 pt-3"><h6 class="fw-semibold mb-2 text-dark" style="font-size: 0.95rem;">Detail Pelaksanaan Responsi</h6></div>
-                <div class="col-md-6">
-                  <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-                  <input type="date" id="tanggal" class="form-control">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Jam <span class="text-danger">*</span></label>
-                  <select id="jam" class="form-select"></select>
-                </div>
-                
-                <div class="col-12 border-top mt-4 pt-3"><h6 class="fw-semibold mb-2 text-dark" style="font-size: 0.95rem;">Informasi Supervisor (SPV)</h6></div>
-                <div class="col-12">
-                  <label class="form-label">Nama SPV <span class="text-danger">*</span></label>
-                  <div class="position-relative">
-                    <input type="text" id="spv" class="form-control" oninput="formatTitleCase(this); showDropdown('spv', 'customSpvList', availableSpvs);" onfocus="showDropdown('spv', 'customSpvList', availableSpvs)">
-                    <ul id="customSpvList" class="dropdown-menu w-100 shadow-sm" style="max-height: 200px; overflow-y: auto; display: none; position: absolute; z-index: 1050; padding:0;"></ul>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">No. WA SPV <span class="text-danger">*</span></label>
-                  <input type="text" id="waSpv" class="form-control" oninput="formatWAInput(this)" inputmode="numeric">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Email SPV <span class="text-danger">*</span></label>
-                  <input type="email" id="emailSpv" class="form-control">
-                </div>
-                <div class="col-12 mt-3">
-                  <label class="form-label">Email SPV diinput sama dengan SITA? <span class="text-danger">*</span></label>
-                  <select id="emailSita" class="form-select" onchange="checkEmailSita()">
-                    <option value="" disabled selected>Pilih...</option>
-                    <option value="Iya">Iya</option>
-                    <option value="Tidak">Tidak</option>
-                  </select>
-                </div>
-                <div class="col-12 mt-3">
-                  <label class="form-label">Kehadiran SPV <span class="text-danger">*</span></label>
-                  <select id="kehadiranSpv" class="form-select" onchange="togglePenggantiSPV()">
-                    <option value="" disabled selected>Pilih...</option>
-                    <option value="Hadir">Hadir</option>
-                    <option value="Tidak Hadir">Tidak Hadir</option>
-                    <option value="Tentatif">Tentatif</option>
-                  </select>
-                </div>
-                
-                <div class="col-12 mt-3 animate__animated animate__fadeIn" id="formPenggantiSPV" style="display: none;">
-                  <div class="p-3 bg-white border border-danger rounded">
-                    <h6 class="text-danger fw-semibold mb-3" style="font-size: 0.9rem;">Pengganti Supervisor</h6>
-                    <div class="row g-3">
-                      <div class="col-12">
-                        <label class="form-label">Nama <span class="text-danger">*</span></label>
-                        <input type="text" id="namaPengganti" class="form-control" oninput="formatTitleCase(this)">
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">WA <span class="text-danger">*</span></label>
-                        <input type="text" id="waPengganti" class="form-control" oninput="formatWAInput(this)">
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" id="emailPengganti" class="form-control">
-                      </div>
+          <!-- FORM 1: JADWAL RESPONSI -->
+          <div id="formSection" class="hidden">
+            <div id="alertNew" class="hidden mb-5 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm font-medium text-center">
+              <i class="fas fa-info-circle me-1.5"></i>NIM Belum Terdaftar! Silakan lengkapi formulir di bawah ini.
+            </div>
+            <input type="hidden" id="rowIdx">
+            <input type="hidden" id="isNewData">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">NIM <span class="text-rose-500">*</span></label>
+                <input type="text" id="nimField" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">No. WA Mahasiswa <span class="text-rose-500">*</span></label>
+                <input type="text" id="waMhs" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatWAInput(this)" inputmode="numeric">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Mahasiswa <span class="text-rose-500">*</span></label>
+                <input type="text" id="nama" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+              </div>
+              <div class="md:col-span-2 relative">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Perusahaan Magang <span class="text-rose-500">*</span></label>
+                <textarea id="perusahaan" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" rows="2" oninput="this.value = this.value.toUpperCase(); showDropdown('perusahaan', 'customCompanyList', availableCompanies);" onfocus="showDropdown('perusahaan', 'customCompanyList', availableCompanies)"></textarea>
+                <ul id="customCompanyList" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></ul>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Dosen Pembimbing <span class="text-rose-500">*</span></label>
+                <input type="text" id="dosbing" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+              </div>
+              
+              <!-- Divider -->
+              <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
+                <h6 class="font-semibold text-slate-800 text-sm mb-3">Detail Pelaksanaan Responsi</h6>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Tanggal <span class="text-rose-500">*</span></label>
+                <input type="date" id="tanggal" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Jam <span class="text-rose-500">*</span></label>
+                <select id="jam" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white"></select>
+              </div>
+              
+              <!-- Divider -->
+              <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
+                <h6 class="font-semibold text-slate-800 text-sm mb-3">Informasi Supervisor (SPV)</h6>
+              </div>
+              
+              <div class="md:col-span-2 relative">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama SPV <span class="text-rose-500">*</span></label>
+                <input type="text" id="spv" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatTitleCase(this); showDropdown('spv', 'customSpvList', availableSpvs);" onfocus="showDropdown('spv', 'customSpvList', availableSpvs)">
+                <ul id="customSpvList" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></ul>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">No. WA SPV <span class="text-rose-500">*</span></label>
+                <input type="text" id="waSpv" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatWAInput(this)" inputmode="numeric">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Email SPV <span class="text-rose-500">*</span></label>
+                <input type="email" id="emailSpv" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Email SPV diinput sama dengan SITA? <span class="text-rose-500">*</span></label>
+                <select id="emailSita" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white" onchange="checkEmailSita()">
+                  <option value="" disabled selected>Pilih...</option>
+                  <option value="Iya">Iya</option>
+                  <option value="Tidak">Tidak</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Kehadiran SPV <span class="text-rose-500">*</span></label>
+                <select id="kehadiranSpv" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white" onchange="togglePenggantiSPV()">
+                  <option value="" disabled selected>Pilih...</option>
+                  <option value="Hadir">Hadir</option>
+                  <option value="Tidak Hadir">Tidak Hadir</option>
+                  <option value="Tentatif">Tentatif</option>
+                </select>
+              </div>
+              
+              <!-- Pengganti SPV Block -->
+              <div class="md:col-span-2 mt-2 hidden" id="formPenggantiSPV">
+                <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl">
+                  <h6 class="text-rose-600 font-semibold text-sm mb-3">Pengganti Supervisor</h6>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                      <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama <span class="text-rose-500">*</span></label>
+                      <input type="text" id="namaPengganti" class="w-full px-3.5 py-2.5 border border-rose-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none bg-white transition-colors" oninput="formatTitleCase(this)">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-600 mb-1.5">WA <span class="text-rose-500">*</span></label>
+                      <input type="text" id="waPengganti" class="w-full px-3.5 py-2.5 border border-rose-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none bg-white transition-colors" oninput="formatWAInput(this)">
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-600 mb-1.5">Email <span class="text-rose-500">*</span></label>
+                      <input type="email" id="emailPengganti" class="w-full px-3.5 py-2.5 border border-rose-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none bg-white transition-colors">
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- FORM 2: SURAT SPV -->
-            <div id="formSuratSection" style="display: none;">
-              <div class="alert-new mb-4 text-center fw-medium" style="display: block; border-color: #bfdbfe;">
-                <i class="fas fa-info-circle me-2"></i>Mohon Perhatian! Lengkapi data sesuai surat resmi.
+          <!-- FORM 2: SURAT SPV -->
+          <div id="formSuratSection" class="hidden">
+            <div class="mb-5 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm font-medium text-center">
+              <i class="fas fa-info-circle me-1.5"></i>Mohon Perhatian! Lengkapi data sesuai surat resmi.
+            </div>
+            <input type="hidden" id="rowIdxSurat">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">NIM</label>
+                <input type="text" id="nimSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
               </div>
-              <input type="hidden" id="rowIdxSurat">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label">NIM</label>
-                  <input type="text" id="nimSurat" class="form-control fw-medium" disabled>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">No. WA Mahasiswa <span class="text-danger">*</span></label>
-                  <input type="text" id="waMhsSurat" class="form-control" oninput="formatWAInput(this)">
-                </div>
-                
-                <div class="col-md-6">
-                  <label class="form-label">Nama Mahasiswa</label>
-                  <input type="text" id="namaMhsSurat" class="form-control fw-medium" disabled>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Dosen Pembimbing</label>
-                  <input type="text" id="dosbingSurat" class="form-control fw-medium" disabled>
-                </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">No. WA Mahasiswa <span class="text-rose-500">*</span></label>
+                <input type="text" id="waMhsSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatWAInput(this)">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Mahasiswa</label>
+                <input type="text" id="namaMhsSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Dosen Pembimbing</label>
+                <input type="text" id="dosbingSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
+              </div>
 
-                <div class="col-12 border-top mt-4 pt-3">
-                  <h6 class="fw-semibold mb-2 text-dark" style="font-size: 0.95rem;">Data Perusahaan & Supervisor</h6>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Nama Perusahaan <span class="text-danger">*</span></label>
-                  <div class="position-relative">
-                    <textarea id="perusahaanSurat" class="form-control" rows="2" oninput="this.value = this.value.toUpperCase(); showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies);" onfocus="showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies)"></textarea>
-                    <ul id="customCompanyListSurat" class="dropdown-menu w-100 shadow-sm" style="max-height: 200px; overflow-y: auto; display: none; position: absolute; z-index: 1050; padding:0;"></ul>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Alamat Perusahaan <span class="text-danger">*</span></label>
-                  <textarea id="alamatSurat" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Nama SPV <span class="text-danger">*</span></label>
-                  <div class="position-relative">
-                    <input type="text" id="spvSurat" class="form-control" oninput="formatTitleCase(this); showDropdown('spvSurat', 'customSpvListSurat', availableSpvs);" onfocus="showDropdown('spvSurat', 'customSpvListSurat', availableSpvs)">
-                    <ul id="customSpvListSurat" class="dropdown-menu w-100 shadow-sm" style="max-height: 200px; overflow-y: auto; display: none; position: absolute; z-index: 1050; padding:0;"></ul>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">No. WA SPV <span class="text-danger">*</span></label>
-                  <input type="text" id="waSpvSurat" class="form-control" oninput="formatWAInput(this)">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Email SPV <span class="text-danger">*</span></label>
-                  <input type="email" id="emailSpvSurat" class="form-control">
-                </div>
-                <div class="col-12 mt-3">
-                  <label class="form-label">Email SPV diinput sama dengan SITA? <span class="text-danger">*</span></label>
-                  <select id="emailSitaSurat" class="form-select" onchange="checkEmailSitaSurat()">
-                    <option value="" disabled selected>Pilih...</option>
-                    <option value="Iya">Iya</option>
-                    <option value="Tidak">Tidak</option>
-                  </select>
-                </div>
+              <!-- Divider -->
+              <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
+                <h6 class="font-semibold text-slate-800 text-sm mb-3">Data Perusahaan & Supervisor</h6>
+              </div>
+              
+              <div class="md:col-span-2 relative">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Perusahaan <span class="text-rose-500">*</span></label>
+                <textarea id="perusahaanSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" rows="2" oninput="this.value = this.value.toUpperCase(); showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies);" onfocus="showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies)"></textarea>
+                <ul id="customCompanyListSurat" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></ul>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Alamat Perusahaan <span class="text-rose-500">*</span></label>
+                <textarea id="alamatSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" rows="2"></textarea>
+              </div>
+              <div class="md:col-span-2 relative">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama SPV <span class="text-rose-500">*</span></label>
+                <input type="text" id="spvSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatTitleCase(this); showDropdown('spvSurat', 'customSpvListSurat', availableSpvs);" onfocus="showDropdown('spvSurat', 'customSpvListSurat', availableSpvs)">
+                <ul id="customSpvListSurat" class="hidden absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"></ul>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">No. WA SPV <span class="text-rose-500">*</span></label>
+                <input type="text" id="waSpvSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatWAInput(this)">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Email SPV <span class="text-rose-500">*</span></label>
+                <input type="email" id="emailSpvSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-600 mb-1.5">Email SPV diinput sama dengan SITA? <span class="text-rose-500">*</span></label>
+                <select id="emailSitaSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white" onchange="checkEmailSitaSurat()">
+                  <option value="" disabled selected>Pilih...</option>
+                  <option value="Iya">Iya</option>
+                  <option value="Tidak">Tidak</option>
+                </select>
               </div>
             </div>
+          </div>
 
-          </div>
-          <div class="modal-footer" id="modalFooterSection" style="display: none;">
-            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal" onclick="resetModal()">Batal</button>
-            <button type="button" class="btn btn-dark px-4 fw-medium" id="btnSubmitJadwal" onclick="submitDataJadwal()">Simpan Perubahan</button>
-            <button type="button" class="btn btn-highlight px-4 fw-medium" id="btnSubmitSurat" onclick="submitDataSurat()">Simpan Data Surat</button>
-          </div>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl shrink-0 hidden" id="modalFooterSection">
+          <button type="button" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-lg font-medium text-sm transition-colors" onclick="toggleModal(false); resetModal()">Batal</button>
+          <button type="button" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm" id="btnSubmitJadwal" onclick="submitDataJadwal()">Simpan Perubahan</button>
+          <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm hidden" id="btnSubmitSurat" onclick="submitDataSurat()">Simpan Data Surat</button>
         </div>
       </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT YANG SUDAH DIBERSIHKAN DARI MULTILINE TEMPLATE LITERAL -->
+    <!-- SCRIPT JAVASCRIPT (Logika tidak ada yang diubah, hanya kelas CSS output tabel dan modal) -->
     <script>
       let ACTIVE_PHASE = 2; 
       let availableCompanies = []; 
@@ -522,7 +435,24 @@
       let phase1MasterData = []; 
       let phase2MasterData = [];
 
-      // HELPER: Menampilkan Error Umum ke User
+      // Fungsi Modal Custom (Menggantikan Bootstrap)
+      function toggleModal(show) {
+          const m = document.getElementById('formModal');
+          const c = document.getElementById('formModalContent');
+          if(show) {
+              m.classList.remove('hidden');
+              void m.offsetWidth; // Trigger reflow browser untuk animasi
+              m.classList.remove('opacity-0');
+              c.classList.remove('scale-95', 'opacity-0');
+              c.classList.add('scale-100', 'opacity-100');
+          } else {
+              m.classList.add('opacity-0');
+              c.classList.remove('scale-100', 'opacity-100');
+              c.classList.add('scale-95', 'opacity-0');
+              setTimeout(() => m.classList.add('hidden'), 300);
+          }
+      }
+
       function handleError(error) {
         Swal.fire({
           icon: 'error',
@@ -560,37 +490,43 @@
 
       window.onload = function() {
         if (typeof google === 'undefined') {
-          document.getElementById('appLoader').classList.add('d-none'); 
-          document.getElementById('mainContent').classList.remove('d-none'); 
-          document.getElementById('btnDaftar').classList.remove('d-none'); 
-          document.getElementById('btnUbah').classList.remove('d-none'); 
-          document.getElementById('actionCenterDivider').classList.remove('d-none'); 
-          document.getElementById('actionCenterSection').classList.remove('d-none'); 
-          document.getElementById('tablePhase2Container').classList.remove('d-none'); 
+          // Mode lokal testing (tanpa GAS)
+          document.getElementById('appLoader').classList.add('hidden'); 
+          document.getElementById('mainContent').classList.remove('hidden'); 
+          document.getElementById('btnDaftar').classList.remove('hidden'); 
+          document.getElementById('btnDaftar').classList.add('flex');
+          document.getElementById('btnUbah').classList.remove('hidden'); 
+          document.getElementById('btnUbah').classList.add('flex');
+          document.getElementById('actionCenterDivider').classList.remove('hidden'); 
+          document.getElementById('actionCenterSection').classList.remove('hidden'); 
+          document.getElementById('tablePhase2Container').classList.remove('hidden'); 
           loadGlobalData(); 
         } else {
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(function(phaseFromServer) {
                 ACTIVE_PHASE = phaseFromServer;
-                document.getElementById('appLoader').classList.add('d-none'); 
-                document.getElementById('mainContent').classList.remove('d-none');
+                document.getElementById('appLoader').classList.add('hidden'); 
+                document.getElementById('mainContent').classList.remove('hidden');
 
                 if (ACTIVE_PHASE === 1) {
                   document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk melengkapi administrasi Surat SPV.";
-                  document.getElementById('btnSurat').classList.remove('d-none'); 
-                  document.getElementById('tablePhase1Container').classList.remove('d-none');
-                  document.getElementById('actionCenterDivider').classList.add('d-none'); 
-                  document.getElementById('actionCenterSection').classList.add('d-none');
+                  document.getElementById('btnSurat').classList.remove('hidden'); 
+                  document.getElementById('btnSurat').classList.add('flex');
+                  document.getElementById('tablePhase1Container').classList.remove('hidden');
+                  document.getElementById('actionCenterDivider').classList.add('hidden'); 
+                  document.getElementById('actionCenterSection').classList.add('hidden');
                   loadPhase1Data();
                 } else {
                   document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar atau mengubah Jadwal Responsi.";
-                  document.getElementById('btnDaftar').classList.remove('d-none'); 
-                  document.getElementById('btnUbah').classList.remove('d-none'); 
-                  document.getElementById('btnSurat').classList.add('d-none'); 
-                  document.getElementById('tablePhase2Container').classList.remove('d-none');
-                  document.getElementById('actionCenterDivider').classList.remove('d-none'); 
-                  document.getElementById('actionCenterSection').classList.remove('d-none');
+                  document.getElementById('btnDaftar').classList.remove('hidden'); 
+                  document.getElementById('btnDaftar').classList.add('flex');
+                  document.getElementById('btnUbah').classList.remove('hidden'); 
+                  document.getElementById('btnUbah').classList.add('flex');
+                  document.getElementById('btnSurat').classList.add('hidden'); 
+                  document.getElementById('btnSurat').classList.remove('flex');
+                  document.getElementById('tablePhase2Container').classList.remove('hidden');
+                  document.getElementById('actionCenterDivider').classList.remove('hidden'); 
+                  document.getElementById('actionCenterSection').classList.remove('hidden');
                   loadGlobalData();
                 }
                 
@@ -603,7 +539,7 @@
                 document.getElementById('tanggal').setAttribute('min', dtToday.getFullYear() + '-' + month + '-' + day);
               })
               .withFailureHandler(function(error) {
-                document.getElementById('appLoader').innerHTML = '<h6 class="text-danger">Gagal memuat portal. Silakan muat ulang halaman.</h6>';
+                document.getElementById('appLoader').innerHTML = '<h6 class="text-rose-500 text-sm font-medium">Gagal memuat portal. Silakan muat ulang halaman.</h6>';
                 handleError(error);
               })
               .getPhaseStatus();
@@ -611,24 +547,25 @@
       };
 
       function showWarningUbahData() {
-        let warningHtml = '<div class="text-start" style="font-size: 0.9em; line-height: 1.6; color: #475569;">' +
-                          '<p class="fw-semibold mb-2 text-dark">Pastikan bahwa:</p>' +
-                          '<ul class="ps-3 mb-0">' +
-                          '<li class="mb-1">Jadwal baru telah dikoordinasikan dan disetujui oleh dosen pembimbing serta SPV.</li>' +
-                          '<li class="mb-1">Khusus perubahan dari dosen pembimbing yang terjadi pada hari H, responsi tetap akan dilaksanakan dengan dosen pembimbing dari prodi.</li>' +
-                          '<li class="mb-1">Jika SPV tidak dapat hadir, dapat diwakilkan oleh perwakilan SPV dari perusahaan yang telah ditunjuk secara resmi oleh SPV.</li>' +
-                          '<li>Setelah jadwal baru berhasil diubah, <b class="text-dark">wajib melakukan konfirmasi kepada PIC</b> untuk penjadwalan teknis dari prodi.</li>' +
+        let warningHtml = '<div class="text-left text-sm text-slate-600 leading-relaxed">' +
+                          '<p class="font-semibold text-slate-800 mb-2">Pastikan bahwa:</p>' +
+                          '<ul class="list-disc pl-5 mb-0 space-y-1.5">' +
+                          '<li>Jadwal baru telah dikoordinasikan dan disetujui oleh dosen pembimbing serta SPV.</li>' +
+                          '<li>Khusus perubahan dari dosen pembimbing yang terjadi pada hari H, responsi tetap akan dilaksanakan dengan dosen pembimbing dari prodi.</li>' +
+                          '<li>Jika SPV tidak dapat hadir, dapat diwakilkan oleh perwakilan SPV dari perusahaan yang telah ditunjuk secara resmi.</li>' +
+                          '<li>Setelah jadwal baru berhasil diubah, <b class="text-slate-800">wajib melakukan konfirmasi kepada PIC</b> untuk penjadwalan teknis dari prodi.</li>' +
                           '</ul></div>';
 
         Swal.fire({
-          title: '<span style="font-weight: 600; color: #1e293b;">Sebelum Mengubah Jadwal</span>',
+          title: '<span class="font-semibold text-slate-800 text-lg">Sebelum Mengubah Jadwal</span>',
           html: warningHtml,
           icon: 'warning', 
           showCancelButton: true, 
           confirmButtonColor: '#2563eb', 
           cancelButtonColor: '#94a3b8', 
           confirmButtonText: 'Saya Setuju', 
-          cancelButtonText: 'Batal'
+          cancelButtonText: 'Batal',
+          customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
         }).then((result) => { 
             if (result.isConfirmed) { openAppModal('jadwal_ubah'); } 
         });
@@ -636,7 +573,6 @@
 
       function openAppModal(actionType) {
         currentAction = actionType; 
-        let modalEl = new bootstrap.Modal(document.getElementById('formModal'));
         if (actionType === 'surat') { 
             document.getElementById('formModalLabel').innerText = "Konfirmasi Surat Undangan SPV"; 
             document.getElementById('teksBantuanNIM').innerText = "Silakan masukkan NIM untuk memverifikasi data Anda."; 
@@ -645,21 +581,22 @@
             document.getElementById('teksBantuanNIM').innerText = "Sistem akan mendeteksi status jadwal kamu."; 
         }
         resetModal(); 
-        modalEl.show();
+        toggleModal(true); // Panggil fungsi modal kustom Tailwind
       }
 
       function mintaBantuanPIC() {
         Swal.fire({
-          title: '<span style="font-weight: 600; color: #1e293b;">Bantuan Responsi</span>',
-          html: '<span style="color: #475569; font-size: 0.9em;">Masukkan 8 digit NIM Anda untuk mencari kontak PIC Teknis.</span>',
+          title: '<span class="font-semibold text-slate-800 text-lg">Bantuan Responsi</span>',
+          html: '<span class="text-sm text-slate-500">Masukkan 8 digit NIM Anda untuk mencari kontak PIC Teknis.</span>',
           input: 'text',
-          inputAttributes: { maxlength: 8, autocapitalize: 'off', autocorrect: 'off', pattern: '[0-9]*', inputmode: 'numeric' },
+          inputAttributes: { maxlength: 8, autocapitalize: 'off', autocorrect: 'off', pattern: '[0-9]*', inputmode: 'numeric', class: 'swal2-input !rounded-lg !text-center' },
           inputPlaceholder: 'Contoh: 20311xxx',
           showCancelButton: true, 
           confirmButtonText: 'Cari PIC', 
           cancelButtonText: 'Batal', 
           confirmButtonColor: '#2563eb', 
           cancelButtonColor: '#94a3b8',
+          customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' },
           preConfirm: (nim) => {
             if (!nim || nim.length !== 8 || !/^\d+$/.test(nim)) { 
                 Swal.showValidationMessage('NIM harus terdiri dari tepat 8 digit angka!'); 
@@ -672,7 +609,7 @@
             let nim = result.value;
             Swal.fire({ 
                 title: 'Mencari PIC...', 
-                html: '<span style="color: #475569;">Mengecek data NIM <b>' + nim + '</b>...</span>', 
+                html: '<span class="text-slate-500 text-sm">Mengecek data NIM <b class="text-slate-800">' + nim + '</b>...</span>', 
                 allowOutsideClick: false, 
                 didOpen: () => { Swal.showLoading(); } 
             });
@@ -680,7 +617,6 @@
             if (typeof google === 'undefined') {
                 setTimeout(() => { tampilkanInfoPIC({isNew: false, nim: nim, pic: 'Admin Prodi', waPic: '08123456789'}); }, 600);
             } else {
-                // PENAMBAHAN .withFailureHandler()
                 google.script.run
                   .withSuccessHandler(tampilkanInfoPIC)
                   .withFailureHandler(handleError)
@@ -694,9 +630,10 @@
         if (data.isNew) {
           Swal.fire({ 
               icon: 'error', 
-              title: '<span style="font-weight: 600; color: #1e293b;">NIM Tidak Ditemukan</span>', 
-              html: '<span style="color: #475569;">Kamu belum terdaftar di jadwal responsi. Silakan Daftar Ulang terlebih dahulu.</span>', 
-              confirmButtonColor: '#1e293b' 
+              title: '<span class="font-semibold text-slate-800 text-lg">NIM Tidak Ditemukan</span>', 
+              html: '<span class="text-slate-600 text-sm">Kamu belum terdaftar di jadwal responsi. Silakan Daftar Ulang terlebih dahulu.</span>', 
+              confirmButtonColor: '#1e293b',
+              customClass: { confirmButton: 'rounded-lg' }
           });
           return;
         }
@@ -705,30 +642,30 @@
         let picWa = data.waPic;
         
         let btnWaHtml = picWa ? 
-            '<a href="https://wa.me/' + picWa + '" target="_blank" class="btn btn-success rounded-pill px-4 py-2 fw-medium mt-3 d-block"><i class="fab fa-whatsapp me-2 fs-5"></i>Hubungi PIC Sekarang</a>' : 
-            '<div class="text-muted small mt-3 p-2 bg-white rounded border">Nomor WhatsApp PIC belum tersedia di sistem.</div>';
+            '<a href="https://wa.me/' + picWa + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors"><i class="fab fa-whatsapp me-2 text-lg"></i>Hubungi PIC Sekarang</a>' : 
+            '<div class="text-slate-400 text-xs mt-4 p-2 bg-white rounded-lg border border-slate-200">Nomor WhatsApp PIC belum tersedia di sistem.</div>';
 
-        let htmlContent = '<p style="font-size: 0.9em; color: #475569; margin-bottom: 15px;">Berikut adalah PIC yang ditugaskan untuk mendampingi responsi kamu:</p>' +
-                          '<div class="p-3 rounded text-center" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">' +
-                          '<div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 45px; height: 45px;">' +
-                          '<i class="fas fa-headset text-primary fs-5"></i></div>' +
-                          '<h5 class="fw-semibold mb-1" style="color: #1e293b; font-size: 1.1rem;">' + picName + '</h5>' +
-                          '<p class="text-muted small mb-0 fw-medium">NIM: ' + data.nim + '</p>' +
+        let htmlContent = '<p class="text-sm text-slate-500 mb-4">Berikut adalah PIC yang ditugaskan untuk mendampingi responsi kamu:</p>' +
+                          '<div class="p-4 rounded-xl text-center border border-slate-200 bg-slate-50">' +
+                          '<div class="bg-white rounded-full inline-flex items-center justify-center mb-3 shadow-sm w-12 h-12">' +
+                          '<i class="fas fa-headset text-blue-500 text-xl"></i></div>' +
+                          '<h5 class="font-semibold text-slate-800 text-lg mb-0.5">' + picName + '</h5>' +
+                          '<p class="text-slate-500 text-xs font-medium">NIM: ' + data.nim + '</p>' +
                           btnWaHtml + '</div>';
 
         Swal.fire({
-            title: '<span style="font-weight: 600; color: #1e293b;">PIC Bantuan Teknis</span>',
+            title: '<span class="font-semibold text-slate-800 text-lg">PIC Bantuan Teknis</span>',
             html: htmlContent,
             showConfirmButton: false, 
             showCloseButton: true,
-            customClass: { popup: 'rounded-4' }
+            customClass: { popup: 'rounded-2xl' }
         });
       }
 
       function initKeyboardNavigation(inputId, listId) { 
           document.getElementById(inputId).addEventListener("keydown", function(e) { 
               let list = document.getElementById(listId); 
-              if (list.style.display === 'none') return; 
+              if (list.classList.contains('hidden')) return; 
               
               let items = list.getElementsByTagName("li"); 
               if (e.keyCode === 40) { 
@@ -770,7 +707,7 @@
           dropdowns.forEach(d => { 
               if (e.target.id !== d.i) { 
                   let l = document.getElementById(d.l); 
-                  if (l) l.style.display = 'none'; 
+                  if (l) l.classList.add('hidden'); 
               } 
           }); 
       });
@@ -779,16 +716,15 @@
       // RENDER PHASE 1
       // ==========================================
       function loadPhase1Data() { 
-          document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-5"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat data...</td></tr>'; 
-          document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat data...</div>'; 
+          document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat data...</td></tr>'; 
+          document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat data...</div>'; 
           
           if (typeof google !== 'undefined') {
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(renderPhase1Table)
               .withFailureHandler(function(error) {
-                 document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</td></tr>';
-                 document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</div>';
+                 document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-10 text-rose-500 text-sm"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</td></tr>';
+                 document.getElementById('tabelBodyPhase1Mobile').innerHTML = '<div class="text-center py-6 text-rose-500 text-sm"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data</div>';
                  handleError(error);
               })
               .getPhase1Data(); 
@@ -807,8 +743,8 @@
         tMobile.innerHTML = '';
         
         if(!dataArray || dataArray.length === 0) { 
-            tDesktop.innerHTML = '<tr class="no-data"><td colspan="4" class="text-center py-5 text-muted">Tidak ada data ditemukan.</td></tr>'; 
-            tMobile.innerHTML = '<div class="text-center py-4 text-muted">Tidak ada data ditemukan.</div>'; 
+            tDesktop.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-500 text-sm">Tidak ada data ditemukan.</td></tr>'; 
+            tMobile.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-xl border border-slate-200">Tidak ada data ditemukan.</div>'; 
             return; 
         }
         
@@ -816,23 +752,30 @@
         let htmlMobile = '';
         
         dataArray.forEach((row, index) => {
-          let badgeClass = row.status === 'Sudah Konfirmasi' ? 'badge-done' : 'badge-red'; 
+          let badgeClass = row.status === 'Sudah Konfirmasi' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-500 border border-rose-100'; 
           
           htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
-                         '<td class="text-center fw-medium text-muted">' + (index + 1) + '</td>' +
-                         '<td><div style="font-weight: 600; color: #1e293b; font-size: 0.95rem; margin-bottom: 2px;">' + row.nama + '</div>' +
-                         '<div style="font-size: 0.85rem; color: #64748b;">DPL: ' + row.dosbing + '</div></td>' +
-                         '<td><div style="font-weight: 500; color: #334155; font-size: 0.9rem; margin-bottom: 2px;">' + row.perusahaan + '</div>' +
-                         '<div style="font-size: 0.85rem; color: #64748b;">SPV: ' + row.spv + '</div></td>' +
-                         '<td class="text-center"><span class="badge badge-status ' + badgeClass + '">' + row.status + '</span></td></tr>';
+                         '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
+                         '<td class="px-5 py-4">' +
+                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + row.nama + '</div>' +
+                            '<div class="text-slate-500 text-xs">DPL: ' + row.dosbing + '</div>' +
+                         '</td>' +
+                         '<td class="px-5 py-4">' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
+                            '<div class="text-slate-500 text-xs">SPV: ' + row.spv + '</div>' +
+                         '</td>' +
+                         '<td class="px-5 py-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></td></tr>';
             
-          htmlMobile += '<div class="mobile-card"><div class="mc-header"><div>' +
-                        '<div class="mc-title">' + row.nama + '</div>' +
-                        '<div class="mc-subtitle">DPL: ' + row.dosbing + '</div></div>' +
-                        '<div><span class="badge badge-status ' + badgeClass + '">' + row.status + '</span></div></div>' +
-                        '<div class="mc-footer border-0 pt-0 mt-0"><div class="mc-label">Mitra Evaluasi</div>' +
-                        '<div style="font-weight: 500; color: #334155; font-size: 0.9rem;">' + row.perusahaan + '</div>' +
-                        '<div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">SPV: ' + row.spv + '</div></div></div>';
+          htmlMobile += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">' +
+                        '<div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">' +
+                            '<div><div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + row.nama + '</div><div class="text-xs text-slate-500">DPL: ' + row.dosbing + '</div></div>' +
+                            '<div><span class="inline-block px-2 py-1 rounded-md text-[10px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></div>' +
+                        '</div>' +
+                        '<div class="pt-1">' +
+                            '<div class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Mitra Evaluasi</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
+                            '<div class="text-xs text-slate-500">SPV: ' + row.spv + '</div>' +
+                        '</div></div>';
         });
         
         tDesktop.innerHTML = htmlDesktop; 
@@ -843,16 +786,15 @@
       // RENDER PHASE 2
       // ==========================================
       function loadGlobalData() { 
-          document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat jadwal...</td></tr>'; 
-          document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2 text-primary"></div> Memuat jadwal...</div>'; 
+          document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat jadwal...</td></tr>'; 
+          document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat jadwal...</div>'; 
           
           if (typeof google !== 'undefined') {
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(renderTable)
               .withFailureHandler(function(error) {
-                 document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</td></tr>';
-                 document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</div>';
+                 document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-rose-500 text-sm"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</td></tr>';
+                 document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-6 text-rose-500 text-sm"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat jadwal</div>';
                  handleError(error);
               })
               .getPreviewData(); 
@@ -871,8 +813,8 @@
         tMobile.innerHTML = '';
         
         if(!dataArray || dataArray.length === 0) { 
-            tDesktop.innerHTML = '<tr class="no-data"><td colspan="5" class="text-center py-5 text-muted">Belum ada jadwal terdaftar.</td></tr>'; 
-            tMobile.innerHTML = '<div class="text-center py-4 text-muted">Belum ada jadwal terdaftar.</div>'; 
+            tDesktop.innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500 text-sm">Belum ada jadwal terdaftar.</td></tr>'; 
+            tMobile.innerHTML = '<div class="text-center py-6 text-slate-500 text-sm bg-slate-50 rounded-xl border border-slate-200">Belum ada jadwal terdaftar.</div>'; 
             return; 
         }
         
@@ -881,35 +823,46 @@
         
         dataArray.forEach((row, index) => {
           let stat = row.status.toLowerCase(); 
-          let badgeClass = 'badge-grey'; 
+          let badgeClass = 'bg-slate-100 text-slate-600 border border-slate-200'; 
           
-          if (stat.includes('selesai')) badgeClass = 'badge-done'; 
-          else if (stat.includes('belum isi')) badgeClass = 'badge-blue'; 
-          else if (stat.includes('belum responsi')) badgeClass = 'badge-pending';
+          if (stat.includes('selesai')) badgeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100'; 
+          else if (stat.includes('belum isi')) badgeClass = 'bg-blue-50 text-blue-600 border border-blue-200'; 
+          else if (stat.includes('belum responsi')) badgeClass = 'bg-amber-50 text-amber-600 border border-amber-100';
           
-          let tglDisplay = row.tanggal === "" ? '<span class="text-muted fst-italic">Belum ditentukan</span>' : '<div style="font-weight: 500; color: #1e293b; font-size: 0.9rem; margin-bottom: 2px;">' + row.tanggal + '</div>'; 
-          let jamDisplay = row.jam === "" ? '' : '<div style="font-size: 0.8rem; color: #64748b;">' + row.jam + ' WIB</div>'; 
+          let tglDisplay = row.tanggal === "" ? '<span class="text-slate-400 italic text-xs">Belum ditentukan</span>' : '<div class="font-medium text-slate-800 text-sm">' + row.tanggal + '</div>'; 
+          let jamDisplay = row.jam === "" ? '' : '<div class="text-xs text-slate-500 mt-1">' + row.jam + ' WIB</div>'; 
           let jadwalDisplay = '<div>' + tglDisplay + jamDisplay + '</div>';
           
           htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
-                         '<td class="text-center fw-medium text-muted">' + (index + 1) + '</td>' +
-                         '<td>' + jadwalDisplay + '</td>' +
-                         '<td><div style="font-weight: 600; color: #1e293b; font-size: 0.95rem; margin-bottom: 2px;">' + row.nama + '</div>' +
-                         '<div style="font-size: 0.85rem; color: #64748b;">' + row.nim + '</div></td>' +
-                         '<td><div style="font-weight: 500; color: #334155; font-size: 0.9rem; margin-bottom: 2px;">' + row.perusahaan + '</div>' +
-                         '<div style="font-size: 0.85rem; color: #64748b;">SPV: ' + row.spv + '</div></td>' +
-                         '<td class="text-center"><span class="badge badge-status ' + badgeClass + '">' + row.status + '</span></td></tr>';
+                         '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
+                         '<td class="px-5 py-4">' + jadwalDisplay + '</td>' +
+                         '<td class="px-5 py-4">' +
+                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + row.nama + '</div>' +
+                            '<div class="text-slate-500 text-xs">' + row.nim + '</div>' +
+                         '</td>' +
+                         '<td class="px-5 py-4">' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
+                            '<div class="text-slate-500 text-xs">SPV: ' + row.spv + '</div>' +
+                         '</td>' +
+                         '<td class="px-5 py-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></td></tr>';
           
-          htmlMobile += '<div class="mobile-card"><div class="mc-header"><div>' +
-                        '<div class="d-flex align-items-center gap-2 mb-1" style="color: #64748b;">' +
-                        '<i class="fas fa-calendar-alt" style="font-size: 0.85rem;"></i>' +
-                        '<span style="font-size: 0.8rem; font-weight: 600;">' + row.tanggal + ' &bull; ' + row.jam + ' WIB</span></div>' +
-                        '<span class="badge badge-status ' + badgeClass + ' mt-1">' + row.status + '</span></div></div>' +
-                        '<div class="mb-3"><div style="font-weight: 600; color: #1e293b; font-size: 1.05rem; line-height: 1.3;">' + row.nama + '</div>' +
-                        '<div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">' + row.nim + '</div></div>' +
-                        '<div class="mc-footer"><div class="mc-label">Mitra Evaluasi</div>' +
-                        '<div style="font-weight: 500; color: #334155; font-size: 0.9rem;">' + row.perusahaan + '</div>' +
-                        '<div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">SPV: ' + row.spv + '</div></div></div>';
+          htmlMobile += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">' +
+                        '<div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">' +
+                            '<div class="flex items-center gap-2 text-slate-500">' +
+                                '<i class="fas fa-calendar-alt text-xs"></i>' +
+                                '<span class="text-xs font-semibold">' + (row.tanggal ? row.tanggal + ' &bull; ' + row.jam + ' WIB' : 'Belum ditentukan') + '</span>' +
+                            '</div>' +
+                            '<div><span class="inline-block px-2 py-1 rounded-md text-[10px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></div>' +
+                        '</div>' +
+                        '<div class="mb-3">' +
+                            '<div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + row.nama + '</div>' +
+                            '<div class="text-xs text-slate-500">' + row.nim + '</div>' +
+                        '</div>' +
+                        '<div class="pt-1">' +
+                            '<div class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Mitra Evaluasi</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
+                            '<div class="text-xs text-slate-500">SPV: ' + row.spv + '</div>' +
+                        '</div></div>';
         });
         
         tDesktop.innerHTML = htmlDesktop; 
@@ -930,7 +883,6 @@
       
       function loadDropdownOptions() { 
           if (typeof google !== 'undefined') {
-              // PENAMBAHAN .withFailureHandler()
               google.script.run
                 .withSuccessHandler(function(data) { 
                     availableCompanies = data.companies; 
@@ -952,7 +904,7 @@
           let matches = val === "" ? dataArray : dataArray.filter(c => c.toUpperCase().includes(val)); 
           
           if(matches.length > 0) { 
-              list.style.display = 'block'; 
+              list.classList.remove('hidden'); 
               matches.forEach(c => { 
                   let li = document.createElement('li'); 
                   li.className = 'custom-dropdown-item'; 
@@ -960,39 +912,38 @@
                   li.onmousedown = function(e) { 
                       e.preventDefault(); 
                       document.getElementById(inputId).value = c; 
-                      list.style.display = 'none'; 
+                      list.classList.add('hidden'); 
                   }; 
                   list.appendChild(li); 
               }); 
           } else {
-              list.style.display = 'none'; 
+              list.classList.add('hidden'); 
           }
       }
 
       function cariData() {
         let nim = document.getElementById('nimInput').value.trim();
         if(!nim || nim.length !== 8) { 
-            Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'NIM harus terdiri dari tepat 8 digit angka!', confirmButtonColor: '#2563eb' }); 
+            Swal.fire({ icon: 'warning', title: '<span class="font-semibold text-slate-800">Perhatian</span>', html: '<span class="text-sm text-slate-600">NIM harus terdiri dari tepat 8 digit angka!</span>', confirmButtonColor: '#2563eb', customClass: { confirmButton: 'rounded-lg' } }); 
             return; 
         }
         
-        Swal.fire({ title: 'Mencari Data...', html: '<span style="color: #475569;">Mengecek NIM <b>' + nim + '</b> ke server.</span>', allowOutsideClick: false, showConfirmButton: false, didOpen: () => { Swal.showLoading(); }});
+        Swal.fire({ title: 'Mencari Data...', html: '<span class="text-sm text-slate-500">Mengecek NIM <b class="text-slate-800">' + nim + '</b> ke server.</span>', allowOutsideClick: false, showConfirmButton: false, didOpen: () => { Swal.showLoading(); }});
         
         if (typeof google === 'undefined') {
             setTimeout(() => { Swal.close(); setupFormJadwal({ isNew: true, nim: nim }); }, 600);
             return;
         }
         
-        // PENAMBAHAN .withFailureHandler()
         google.script.run
           .withSuccessHandler(function(data) {
             if (data.isFinished) { 
-                Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: 'Responsi telah selesai, data tidak dapat diubah.', confirmButtonColor: '#1e293b' }); 
+                Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Akses Ditolak</span>', html: '<span class="text-sm text-slate-600">Responsi telah selesai, data tidak dapat diubah.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                 return; 
             }
             if (currentAction === 'surat') { 
                 if (data.isNew) { 
-                    Swal.fire({ icon: 'error', title: 'Belum Terdaftar', text: 'Data NIM kamu belum terdaftar.', confirmButtonColor: '#1e293b' }); 
+                    Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Belum Terdaftar</span>', html: '<span class="text-sm text-slate-600">Data NIM kamu belum terdaftar.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                     return; 
                 } 
                 Swal.close(); 
@@ -1008,12 +959,13 @@
       }
 
       function setupFormSurat(data) {
-        document.getElementById('searchSection').style.display = 'none'; 
-        document.getElementById('formSection').style.display = 'none'; 
-        document.getElementById('formSuratSection').style.display = 'block'; 
-        document.getElementById('modalFooterSection').style.display = 'flex'; 
-        document.getElementById('btnSubmitJadwal').style.display = 'none'; 
-        document.getElementById('btnSubmitSurat').style.display = 'block';
+        document.getElementById('searchSection').classList.add('hidden'); 
+        document.getElementById('formSection').classList.add('hidden'); 
+        document.getElementById('formSuratSection').classList.remove('hidden'); 
+        document.getElementById('modalFooterSection').classList.remove('hidden'); 
+        document.getElementById('modalFooterSection').classList.add('flex'); 
+        document.getElementById('btnSubmitJadwal').classList.add('hidden'); 
+        document.getElementById('btnSubmitSurat').classList.remove('hidden');
         
         document.getElementById('rowIdxSurat').value = data.row; 
         document.getElementById('nimSurat').value = data.nim; 
@@ -1029,12 +981,13 @@
       }
 
       function setupFormJadwal(data) {
-        document.getElementById('searchSection').style.display = 'none'; 
-        document.getElementById('formSuratSection').style.display = 'none'; 
-        document.getElementById('formSection').style.display = 'block'; 
-        document.getElementById('modalFooterSection').style.display = 'flex'; 
-        document.getElementById('btnSubmitSurat').style.display = 'none'; 
-        document.getElementById('btnSubmitJadwal').style.display = 'block'; 
+        document.getElementById('searchSection').classList.add('hidden'); 
+        document.getElementById('formSuratSection').classList.add('hidden'); 
+        document.getElementById('formSection').classList.remove('hidden'); 
+        document.getElementById('modalFooterSection').classList.remove('hidden'); 
+        document.getElementById('modalFooterSection').classList.add('flex'); 
+        document.getElementById('btnSubmitSurat').classList.add('hidden'); 
+        document.getElementById('btnSubmitJadwal').classList.remove('hidden'); 
         document.getElementById('isNewData').value = data.isNew ? "true" : "false"; 
         document.getElementById('nimField').value = data.nim;
         
@@ -1052,16 +1005,16 @@
         }
         
         if (data.isNew) {
-          document.getElementById('alertNew').style.display = 'block'; 
+          document.getElementById('alertNew').classList.remove('hidden'); 
           
           let formFields = ['nama', 'waMhs', 'perusahaan', 'dosbing', 'tanggal', 'jam', 'spv', 'waSpv', 'emailSpv', 'emailSita', 'kehadiranSpv', 'namaPengganti', 'waPengganti', 'emailPengganti'];
           formFields.forEach(id => setField(id, '', false)); 
           
           togglePenggantiSPV(); 
           document.getElementById('btnSubmitJadwal').innerText = "Daftar Sekarang"; 
-          document.getElementById('btnSubmitJadwal').className = "btn btn-highlight px-4 fw-medium";
+          document.getElementById('btnSubmitJadwal').className = "bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm";
         } else {
-          document.getElementById('alertNew').style.display = 'none'; 
+          document.getElementById('alertNew').classList.add('hidden'); 
           document.getElementById('rowIdx').value = data.row; 
           
           setField('nama', data.nama, true); 
@@ -1081,7 +1034,7 @@
           
           togglePenggantiSPV(); 
           document.getElementById('btnSubmitJadwal').innerText = "Simpan Perubahan"; 
-          document.getElementById('btnSubmitJadwal').className = "btn btn-dark px-4 fw-medium";
+          document.getElementById('btnSubmitJadwal').className = "bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm";
         }
       }
 
@@ -1089,29 +1042,35 @@
           let el = document.getElementById(id); 
           el.value = value; 
           el.disabled = isDisabled; 
-          el.style.backgroundColor = isDisabled ? "#f8fafc" : "#ffffff"; 
+          if(isDisabled) {
+              el.classList.add('bg-slate-50', 'text-slate-500');
+              el.classList.remove('bg-white');
+          } else {
+              el.classList.remove('bg-slate-50', 'text-slate-500');
+              el.classList.add('bg-white');
+          }
       }
 
       function checkEmailSita() { 
           if (document.getElementById('emailSita').value === "Tidak") { 
-              let warningContent = '<span style="color: #475569;">Mohon segera mengganti email SPV di SITA karena rubrik penilaian akan dikirimkan melalui SITA</span>';
-              Swal.fire({ icon: 'warning', title: '<span style="font-weight: 600; color: #1e293b;">Perhatian!</span>', html: warningContent, confirmButtonColor: '#2563eb' }); 
+              let warningContent = '<span class="text-sm text-slate-600">Mohon segera mengganti email SPV di SITA karena rubrik penilaian akan dikirimkan melalui SITA</span>';
+              Swal.fire({ icon: 'warning', title: '<span class="font-semibold text-slate-800">Perhatian!</span>', html: warningContent, confirmButtonColor: '#2563eb', customClass: { confirmButton: 'rounded-lg' } }); 
           } 
       }
 
       function checkEmailSitaSurat() { 
           if (document.getElementById('emailSitaSurat').value === "Tidak") { 
-              let warningContent = '<span style="color: #475569;">Mohon segera mengganti email SPV di SITA karena rubrik penilaian akan dikirimkan melalui SITA</span>';
-              Swal.fire({ icon: 'warning', title: '<span style="font-weight: 600; color: #1e293b;">Perhatian!</span>', html: warningContent, confirmButtonColor: '#2563eb' }); 
+              let warningContent = '<span class="text-sm text-slate-600">Mohon segera mengganti email SPV di SITA karena rubrik penilaian akan dikirimkan melalui SITA</span>';
+              Swal.fire({ icon: 'warning', title: '<span class="font-semibold text-slate-800">Perhatian!</span>', html: warningContent, confirmButtonColor: '#2563eb', customClass: { confirmButton: 'rounded-lg' } }); 
           } 
       }
 
       function togglePenggantiSPV() { 
           let formP = document.getElementById('formPenggantiSPV'); 
           if (document.getElementById('kehadiranSpv').value === "Tidak Hadir") { 
-              formP.style.display = 'block'; 
+              formP.classList.remove('hidden'); 
           } else { 
-              formP.style.display = 'none'; 
+              formP.classList.add('hidden'); 
               document.getElementById('namaPengganti').value = ''; 
               document.getElementById('waPengganti').value = ''; 
               document.getElementById('emailPengganti').value = ''; 
@@ -1119,10 +1078,11 @@
       }
 
       function resetModal() { 
-          document.getElementById('formSection').style.display = 'none'; 
-          document.getElementById('formSuratSection').style.display = 'none'; 
-          document.getElementById('modalFooterSection').style.display = 'none'; 
-          document.getElementById('searchSection').style.display = 'block'; 
+          document.getElementById('formSection').classList.add('hidden'); 
+          document.getElementById('formSuratSection').classList.add('hidden'); 
+          document.getElementById('modalFooterSection').classList.add('hidden'); 
+          document.getElementById('modalFooterSection').classList.remove('flex'); 
+          document.getElementById('searchSection').classList.remove('hidden'); 
           document.getElementById('nimInput').value = ''; 
       }
 
@@ -1130,30 +1090,31 @@
         let required = ['waMhsSurat', 'perusahaanSurat', 'alamatSurat', 'spvSurat', 'waSpvSurat', 'emailSpvSurat', 'emailSitaSurat'];
         for (let id of required) { 
             if (!document.getElementById(id).value.trim()) { 
-                Swal.fire({ icon: 'error', title: 'Form Belum Lengkap', text: 'Semua data wajib diisi.', confirmButtonColor: '#1e293b' }); 
+                Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Form Belum Lengkap</span>', html: '<span class="text-sm text-slate-600">Semua data wajib diisi.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                 return; 
             } 
         }
         
         let emailVal = document.getElementById('emailSpvSurat').value.trim();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) { 
-            Swal.fire({ icon: 'error', title: 'Format Email Salah', text: 'Pastikan format email benar.', confirmButtonColor: '#1e293b' }); 
+            Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Format Email Salah</span>', html: '<span class="text-sm text-slate-600">Pastikan format email benar.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
             return; 
         }
 
         Swal.fire({ 
-            title: '<span style="font-weight: 600; color: #1e293b;">Konfirmasi Data</span>', 
-            html: '<span style="color: #475569;">Anda yakin data sudah benar?</span>', 
+            title: '<span class="font-semibold text-slate-800 text-lg">Konfirmasi Data</span>', 
+            html: '<span class="text-sm text-slate-600">Anda yakin data sudah benar?</span>', 
             icon: 'question', 
             showCancelButton: true, 
             confirmButtonColor: '#2563eb', 
             cancelButtonColor: '#94a3b8', 
             confirmButtonText: 'Ya, Benar', 
             cancelButtonText: 'Batal', 
-            reverseButtons: true
+            reverseButtons: true,
+            customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
         }).then((result) => {
           if (result.isConfirmed) {
-            Swal.fire({ title: 'Menyimpan Surat...', text: 'Mohon tunggu sebentar.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'Menyimpan Surat...', html: '<span class="text-sm text-slate-500">Mohon tunggu sebentar.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
             let info = { 
                 row: document.getElementById('rowIdxSurat').value, 
@@ -1167,7 +1128,6 @@
                 emailSita: document.getElementById('emailSitaSurat').value 
             };
             
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(onSuccess)
               .withFailureHandler(handleError)
@@ -1185,7 +1145,7 @@
         
         for (let id of req) { 
             if (!document.getElementById(id).value.trim()) { 
-                Swal.fire({ icon: 'error', title: 'Form Belum Lengkap', text: 'Semua kolom wajib diisi.', confirmButtonColor: '#1e293b' }); 
+                Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Form Belum Lengkap</span>', html: '<span class="text-sm text-slate-600">Semua data wajib diisi.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                 return; 
             } 
         }
@@ -1194,12 +1154,12 @@
         for (let f of emails) { 
             let emailValue = document.getElementById(f).value.trim();
             if (emailValue !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) { 
-                Swal.fire({ icon: 'error', title: 'Format Email Salah', text: 'Pastikan format email benar.', confirmButtonColor: '#1e293b' }); 
+                Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Format Email Salah</span>', html: '<span class="text-sm text-slate-600">Pastikan format email benar.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                 return; 
             } 
         }
 
-        Swal.fire({ title: 'Menyimpan Jadwal...', text: 'Mohon tunggu sebentar.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+        Swal.fire({ title: 'Menyimpan Jadwal...', html: '<span class="text-sm text-slate-500">Mohon tunggu sebentar.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
        
         let info = { 
             nim: document.getElementById('nimField').value, 
@@ -1220,14 +1180,12 @@
         };
         
         if (document.getElementById('isNewData').value === "true") { 
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(onSuccess)
               .withFailureHandler(handleError)
               .simpanBaru(info); 
         } else { 
             info.row = document.getElementById('rowIdx').value; 
-            // PENAMBAHAN .withFailureHandler()
             google.script.run
               .withSuccessHandler(onSuccess)
               .withFailureHandler(handleError)
@@ -1237,39 +1195,40 @@
 
       function onSuccess(response) {
         if(response && response.status === "error") { 
-            Swal.fire({ icon: 'error', title: 'Gagal Menyimpan', text: response.message, confirmButtonColor: '#1e293b' }); 
+            Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Gagal Menyimpan</span>', html: '<span class="text-sm text-slate-600">' + response.message + '</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
             return; 
         }
         
-        var m = bootstrap.Modal.getInstance(document.getElementById('formModal')); 
-        if(m) m.hide(); 
-        resetModal(); 
+        toggleModal(false); 
+        setTimeout(resetModal, 300); // Tunggu animasi selesai sebelum reset field
 
         if (currentAction === 'jadwal_ubah' || currentAction === 'jadwal_baru') {
-          let btnWaHtml = currentWaPic ? '<a href="https://wa.me/' + currentWaPic + '" target="_blank" class="btn btn-success rounded-pill px-4 fw-medium mt-3 d-block"><i class="fab fa-whatsapp me-2 fs-5"></i>Hubungi PIC Sekarang</a>' : '<div class="text-muted small mt-2 p-2 bg-white rounded border">Nomor PIC belum tersedia</div>';
+          let btnWaHtml = currentWaPic ? '<a href="https://wa.me/' + currentWaPic + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors"><i class="fab fa-whatsapp me-2 text-lg"></i>Hubungi PIC Sekarang</a>' : '<div class="text-slate-400 text-xs mt-4 p-2 bg-white rounded-lg border border-slate-200">Nomor PIC belum tersedia</div>';
           
           let titleMsg = currentAction === 'jadwal_ubah' ? 'Jadwal Berhasil Diubah!' : 'Pendaftaran Berhasil!';
           let descMsg = currentAction === 'jadwal_ubah' ? 'Segera lakukan konfirmasi kepada PIC untuk penjadwalan teknis dari prodi.' : 'Data berhasil disimpan. Jika PIC sudah tersedia, hubungi PIC untuk konfirmasi jadwal.';
           
-          let htmlNotif = '<p style="font-size: 0.95em; color: #475569; margin-bottom: 15px;">' + descMsg + '</p>' +
-                          '<div class="p-3 rounded text-center" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">' +
-                          '<p class="text-muted small mb-1">PIC Bantuan Teknis:</p>' +
-                          '<h5 class="fw-semibold mb-1" style="color: #1e293b;">' + currentPic + '</h5>' +
+          let htmlNotif = '<p class="text-sm text-slate-500 mb-4">' + descMsg + '</p>' +
+                          '<div class="p-4 rounded-xl text-center border border-slate-200 bg-slate-50">' +
+                          '<p class="text-slate-400 text-[11px] font-medium uppercase tracking-wider mb-1">PIC Bantuan Teknis</p>' +
+                          '<h5 class="font-semibold text-slate-800 text-lg mb-0">' + currentPic + '</h5>' +
                           btnWaHtml + '</div>';
 
           Swal.fire({
             icon: 'success', 
-            title: '<span style="font-weight: 600; color: #1e293b;">' + titleMsg + '</span>',
+            title: '<span class="font-semibold text-slate-800 text-lg">' + titleMsg + '</span>',
             html: htmlNotif,
             confirmButtonText: 'Selesai', 
-            confirmButtonColor: '#1e293b'
+            confirmButtonColor: '#1e293b',
+            customClass: { confirmButton: 'rounded-lg', popup: 'rounded-2xl' }
           });
         } else if (currentAction === 'surat') {
           Swal.fire({ 
               icon: 'success', 
-              title: '<span style="font-weight: 600; color: #1e293b;">Berhasil!</span>', 
-              html: '<span style="color: #475569;">Surat akan diproses dalam waktu 2x24 jam kerja.</span>', 
-              confirmButtonColor: '#2563eb' 
+              title: '<span class="font-semibold text-slate-800 text-lg">Berhasil!</span>', 
+              html: '<span class="text-sm text-slate-600">Surat akan diproses dalam waktu 2x24 jam kerja.</span>', 
+              confirmButtonColor: '#2563eb',
+              customClass: { confirmButton: 'rounded-lg' } 
           });
         }
         
