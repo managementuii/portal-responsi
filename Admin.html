@@ -2,119 +2,182 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Panel - Portal Magang</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Tailwind CSS (Development Mode) -->
+  <!-- 
+  ========================================================================
+  Ganti script CDN ini dengan output.css hasil build Tailwind untuk production.
+  ========================================================================
+  -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    body { background-color: #f4f4f5; font-family: 'Inter', sans-serif; color: #27272a; }
-    .admin-header { background: #111827; color: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .phase-card { 
-      background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 30px; 
-      cursor: pointer; transition: all 0.3s ease; text-align: center; height: 100%;
-    }
-    .phase-card:hover { border-color: #2563eb; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.1); }
-    .phase-card.active { border-color: #059669; background-color: #ecfdf5; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
-    .phase-icon { font-size: 3rem; margin-bottom: 15px; }
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; margin: 0; }
+    
+    .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="container mt-5" style="max-width: 800px;">
+<body class="antialiased py-8 px-4 sm:py-12">
 
-  <div class="admin-header text-center">
-    <h3 class="fw-bold mb-1">⚙️ Admin Panel</h3>
-    <p class="mb-0 text-muted" style="color: #9ca3af !important;">Pusat Kontrol Portal Magang UII</p>
-  </div>
-
-  <div class="card p-4 border-0 shadow-sm rounded-4 mb-4">
-    <h5 class="fw-bold mb-4 text-center">Pilih Fase Aplikasi yang Aktif</h5>
+  <div class="max-w-3xl mx-auto">
     
-    <div id="loaderAdmin" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2 text-muted">Membaca status server...</p>
+    <!-- HEADER ADMIN -->
+    <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl mb-8 shadow-md text-center">
+      <h3 class="font-bold text-2xl mb-1.5 flex items-center justify-center gap-2">⚙️ Admin Panel</h3>
+      <p class="text-slate-400 m-0 text-sm font-medium">Pusat Kontrol Portal Magang UII</p>
     </div>
 
-    <div class="row g-4 d-none" id="phaseContainer">
+    <!-- MAIN CARD -->
+    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 mb-6">
+      <h5 class="font-bold text-lg text-center mb-8 text-slate-800">Pilih Fase Aplikasi yang Aktif</h5>
       
-      <!-- KARTU FASE 1 -->
-      <div class="col-md-6">
-        <div class="phase-card" id="cardPhase1" onclick="changePhase(1)">
-          <div class="phase-icon">📝</div>
-          <h5 class="fw-bold text-primary">Fase 1</h5>
-          <h6 class="fw-bold mb-3">Administrasi Surat</h6>
-          <p class="text-muted small mb-0">Hanya menampilkan form Konfirmasi Surat SPV. Tombol dan Jadwal Responsi disembunyikan.</p>
-          <div class="mt-3 badge bg-success d-none" id="badgePhase1">✓ Sedang Aktif</div>
-        </div>
+      <!-- LOADER -->
+      <div id="loaderAdmin" class="flex flex-col items-center justify-center py-10">
+        <div class="spinner-css mb-4"></div>
+        <p class="text-slate-500 font-medium text-sm">Membaca status server...</p>
       </div>
 
-      <!-- KARTU FASE 2 -->
-      <div class="col-md-6">
-        <div class="phase-card" id="cardPhase2" onclick="changePhase(2)">
-          <div class="phase-icon">🗓️</div>
-          <h5 class="fw-bold text-warning">Fase 2</h5>
-          <h6 class="fw-bold mb-3">Jadwal Responsi</h6>
-          <p class="text-muted small mb-0">Menampilkan tabel Jadwal Ujian dan mengaktifkan form Pendaftaran & Ubah Jadwal Responsi.</p>
-          <div class="mt-3 badge bg-success d-none" id="badgePhase2">✓ Sedang Aktif</div>
+      <!-- KONTINER KARTU FASE -->
+      <div class="hidden grid grid-cols-1 md:grid-cols-2 gap-6" id="phaseContainer">
+        
+        <!-- KARTU FASE 1 -->
+        <!-- Kelas awal (Inactive) diatur via JS, tapi sebagai base kita pasang style defaultnya -->
+        <div id="cardPhase1" onclick="changePhase(1)" class="group border-2 rounded-2xl p-8 cursor-pointer transition-all duration-300 text-center h-full flex flex-col items-center justify-center hover:-translate-y-1.5">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📝</div>
+          <h5 class="font-bold text-blue-600 text-lg mb-1">Fase 1</h5>
+          <h6 class="font-bold text-slate-800 mb-3">Administrasi Surat</h6>
+          <p class="text-slate-500 text-xs leading-relaxed mb-0">Hanya menampilkan form Konfirmasi Surat SPV. Tombol dan Jadwal Responsi disembunyikan.</p>
+          <div class="hidden mt-5 bg-emerald-500 text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-md" id="badgePhase1">✓ Sedang Aktif</div>
         </div>
+
+        <!-- KARTU FASE 2 -->
+        <div id="cardPhase2" onclick="changePhase(2)" class="group border-2 rounded-2xl p-8 cursor-pointer transition-all duration-300 text-center h-full flex flex-col items-center justify-center hover:-translate-y-1.5">
+          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">🗓️</div>
+          <h5 class="font-bold text-amber-500 text-lg mb-1">Fase 2</h5>
+          <h6 class="font-bold text-slate-800 mb-3">Jadwal Responsi</h6>
+          <p class="text-slate-500 text-xs leading-relaxed mb-0">Menampilkan tabel Jadwal Ujian dan mengaktifkan form Pendaftaran & Ubah Jadwal Responsi.</p>
+          <div class="hidden mt-5 bg-emerald-500 text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-md" id="badgePhase2">✓ Sedang Aktif</div>
+        </div>
+
+      </div>
+      
+      <!-- TOMBOL PREVIEW -->
+      <div class="text-center mt-10 hidden" id="infoLink">
+        <a href="?page=index" class="inline-block bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 font-medium px-5 py-2.5 rounded-lg text-sm transition-colors shadow-sm">
+          Lihat Tampilan Mahasiswa ➔
+        </a>
       </div>
 
     </div>
-    
-    <div class="text-center mt-5 d-none" id="infoLink">
-      <a href="?page=index" class="btn btn-outline-secondary">Lihat Tampilan Mahasiswa ➔</a>
-    </div>
-
   </div>
 
   <script>
-    // Load current phase from backend when page opens
+    // Memuat status dari backend
     window.onload = function() {
-      google.script.run.withSuccessHandler(function(activePhase) {
-        document.getElementById('loaderAdmin').classList.add('d-none');
-        document.getElementById('phaseContainer').classList.remove('d-none');
-        document.getElementById('infoLink').classList.remove('d-none');
-        
-        updateUI(activePhase);
-      }).getPhaseStatus();
+      if (typeof google === 'undefined') {
+          // Simulasi di lingkungan lokal (Canvas/Browser Biasa)
+          setTimeout(() => {
+              document.getElementById('loaderAdmin').classList.add('hidden');
+              document.getElementById('phaseContainer').classList.remove('hidden');
+              document.getElementById('infoLink').classList.remove('hidden');
+              updateUI(2); // Anggap default Fase 2
+          }, 800);
+      } else {
+          // Mode Produksi Google Apps Script
+          google.script.run.withSuccessHandler(function(activePhase) {
+            document.getElementById('loaderAdmin').classList.add('hidden');
+            document.getElementById('phaseContainer').classList.remove('hidden');
+            document.getElementById('infoLink').classList.remove('hidden');
+            
+            updateUI(activePhase);
+          }).getPhaseStatus();
+      }
     };
 
     function updateUI(activePhase) {
-      // Reset kedua kartu
-      document.getElementById('cardPhase1').classList.remove('active');
-      document.getElementById('cardPhase2').classList.remove('active');
-      document.getElementById('badgePhase1').classList.add('d-none');
-      document.getElementById('badgePhase2').classList.add('d-none');
+      const card1 = document.getElementById('cardPhase1');
+      const card2 = document.getElementById('cardPhase2');
+      const badge1 = document.getElementById('badgePhase1');
+      const badge2 = document.getElementById('badgePhase2');
 
-      // Set kartu yang aktif
+      // Fungsi Helper untuk mengatur state kartu
+      const setInactive = (card, badge) => {
+        card.classList.remove('border-emerald-500', 'bg-emerald-50', 'ring-4', 'ring-emerald-500/10');
+        card.classList.add('border-slate-200', 'bg-white', 'hover:border-blue-500', 'hover:shadow-lg');
+        badge.classList.add('hidden');
+        badge.classList.remove('inline-block');
+      };
+
+      const setActive = (card, badge) => {
+        card.classList.remove('border-slate-200', 'bg-white', 'hover:border-blue-500', 'hover:shadow-lg');
+        card.classList.add('border-emerald-500', 'bg-emerald-50', 'ring-4', 'ring-emerald-500/10');
+        badge.classList.remove('hidden');
+        badge.classList.add('inline-block');
+      };
+
+      // Reset keduanya menjadi tidak aktif
+      setInactive(card1, badge1);
+      setInactive(card2, badge2);
+
+      // Set kartu mana yang sedang aktif
       if (activePhase === 1) {
-        document.getElementById('cardPhase1').classList.add('active');
-        document.getElementById('badgePhase1').classList.remove('d-none');
+        setActive(card1, badge1);
       } else {
-        document.getElementById('cardPhase2').classList.add('active');
-        document.getElementById('badgePhase2').classList.remove('d-none');
+        setActive(card2, badge2);
       }
     }
 
     function changePhase(newPhase) {
       Swal.fire({
-        title: 'Ubah Fase?',
-        text: `Anda yakin ingin memindahkan portal mahasiswa ke Fase ${newPhase}?`,
+        title: '<span class="font-bold text-slate-800 text-xl">Ubah Fase?</span>',
+        html: `<span class="text-sm text-slate-600">Anda yakin ingin memindahkan portal mahasiswa ke <b>Fase ${newPhase}</b>?</span>`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#111827',
-        cancelButtonColor: '#dc3545',
-        confirmButtonText: 'Ya, Ubah Sekarang'
+        confirmButtonColor: '#0f172a', // slate-900
+        cancelButtonColor: '#ef4444',  // rose-500
+        confirmButtonText: 'Ya, Ubah Sekarang',
+        cancelButtonText: 'Batal',
+        customClass: { confirmButton: 'rounded-lg font-medium', cancelButton: 'rounded-lg font-medium' }
       }).then((result) => {
         if (result.isConfirmed) {
           
-          Swal.fire({ title: 'Menyimpan Pengaturan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+          Swal.fire({ 
+              title: 'Menyimpan Pengaturan...', 
+              html: '<span class="text-sm text-slate-500">Memperbarui konfigurasi portal.</span>',
+              allowOutsideClick: false, 
+              didOpen: () => { Swal.showLoading(); }
+          });
           
-          google.script.run.withSuccessHandler(function(updatedPhase) {
-            updateUI(updatedPhase);
-            Swal.fire('Berhasil!', `Aplikasi sekarang berada di Fase ${updatedPhase}. Semua mahasiswa yang mengakses web akan otomatis melihat tampilan Fase ${updatedPhase}.`, 'success');
-          }).setPhaseStatus(newPhase);
-
+          if (typeof google === 'undefined') {
+              // Simulasi penyimpanan lokal
+              setTimeout(() => {
+                 updateUI(newPhase);
+                 Swal.fire({
+                    icon: 'success',
+                    title: '<span class="font-bold text-slate-800 text-xl">Berhasil!</span>',
+                    html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${newPhase}</b>.</span>`,
+                    confirmButtonColor: '#10b981',
+                    customClass: { confirmButton: 'rounded-lg' }
+                 });
+              }, 1000);
+          } else {
+              google.script.run.withSuccessHandler(function(updatedPhase) {
+                updateUI(updatedPhase);
+                Swal.fire({
+                    icon: 'success',
+                    title: '<span class="font-bold text-slate-800 text-xl">Berhasil!</span>',
+                    html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${updatedPhase}</b>. Semua mahasiswa yang mengakses web akan otomatis melihat tampilan Fase ${updatedPhase}.</span>`,
+                    confirmButtonColor: '#10b981',
+                    customClass: { confirmButton: 'rounded-lg' }
+                });
+              }).setPhaseStatus(newPhase);
+          }
         }
       });
     }
