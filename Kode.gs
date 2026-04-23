@@ -80,7 +80,9 @@ function getKamusKolom(sheet) {
     // --- PENAMBAHAN KOLOM EVALUASI BARU ---
     JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
     SPV_BERDAMPAK: cari("SPV Berdampak", 29),
-    JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30)
+    JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
+    // --- KOLOM FLAG NOTIFIKASI PIC ---
+    STATUS_NOTIF: cari("Status Notifikasi", 31)
   };
 }
 
@@ -506,6 +508,9 @@ function simpanUpdate(info) {
     sheet.getRange(row, KOLOM.PIC + 1).setValue(assignedPIC.nama);
     sheet.getRange(row, KOLOM.WA_PIC + 1).setValue(formatWA(assignedPIC.wa));
     
+    // 🔥 TAMBAH FLAG NOTIFIKASI UNTUK PIC 🔥
+    sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue("BARU");
+    
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -518,7 +523,7 @@ function simpanBaru(info) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var newRow = sheet.getLastRow() + 1;
-    var maxCol = Math.max(30, sheet.getLastColumn()); // Pastikan max kolom mengcover tambahan baru
+    var maxCol = Math.max(31, sheet.getLastColumn()); // Pastikan mengcover indeks baru
     var rowData = new Array(maxCol).fill(""); 
 
     var tglIndoStr = toIndoDateString(info.tanggal);
@@ -555,9 +560,10 @@ function simpanBaru(info) {
     rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti);
     rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
 
-    // TERAPKAN HASIL KEPUTUSAN AUTO-ASSIGN
+    // TERAPKAN HASIL KEPUTUSAN AUTO-ASSIGN & FLAG NOTIFIKASI
     rowData[KOLOM.PIC] = assignedPIC.nama;
     rowData[KOLOM.WA_PIC] = formatWA(assignedPIC.wa);
+    rowData[KOLOM.STATUS_NOTIF] = "BARU";
     
     sheet.getRange(newRow, 1, 1, maxCol).setValues([rowData]); 
     sheet.getRange(newRow, 1, 1, maxCol).setBackground('#ecfdf5');
@@ -777,5 +783,44 @@ function simpanEvaluasi(info) {
     return { status: "error", message: e.message }; 
   } finally { 
     lock.releaseLock(); 
+  }
+}
+
+// ==========================================
+// 8. FUNGSI POLLING NOTIFIKASI PIC
+// ==========================================
+function cekNotifPIC(picName) {
+  if (!picName) return [];
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
+  var rawData = sheet.getDataRange().getValues();
+  var notifs = [];
+
+  for (var i = 1; i < rawData.length; i++) {
+    var picRaw = rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString().trim() : "";
+    var statusNotif = rawData[i][KOLOM.STATUS_NOTIF] ? rawData[i][KOLOM.STATUS_NOTIF].toString().trim() : "";
+
+    if (picRaw === picName && statusNotif === "BARU") {
+      notifs.push({
+        row: i + 1,
+        nama: rawData[i][KOLOM.NAMA_MHS],
+        nim: rawData[i][KOLOM.NIM]
+      });
+    }
+  }
+  return notifs;
+}
+
+function tandaiNotifDibaca(row) {
+  var lock = LockService.getScriptLock(); lock.waitLock(5000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
+    return {status: "success"};
+  } catch (e) {
+    return {status: "error", message: e.message};
+  } finally {
+    lock.releaseLock();
   }
 }
