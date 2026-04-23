@@ -106,6 +106,12 @@
         </div>
 
         <div id="dashboardScreen" class="hidden animate__animated animate__fadeIn">
+            
+            <!-- 🔔 WADAH NOTIFIKASI REAL-TIME (POLLING) 🔔 -->
+            <div id="notificationArea" class="hidden mb-5">
+                <!-- Card Notifikasi akan diinject ke sini via Javascript -->
+            </div>
+
             <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm mb-5 relative">
                 <div class="mb-6 pb-5 border-b border-slate-100 flex justify-between items-start gap-4">
                     <div>
@@ -278,7 +284,10 @@
     </div>
 
     <script>
-        let allData = []; let uniquePics = []; let currentActivePic = "";
+        let allData = []; 
+        let uniquePics = []; 
+        let currentActivePic = "";
+        let pollingInterval = null; // Variabel untuk menyimpan interval polling
         
         const attrHref = 'hr' + 'ef';
         const attrOnclick = 'on' + 'click';
@@ -289,10 +298,8 @@
             bar.style.opacity = '1';
             bar.style.width = '0%';
             bar.style.transition = 'none';
-            
-            // Beri jeda kecil agar DOM mereset style sebelum dianimasikan
             setTimeout(() => {
-                bar.style.transition = 'width 2.5s cubic-bezier(0.1, 0.8, 0.3, 1)'; // Bergerak melambat mentok di 85%
+                bar.style.transition = 'width 2.5s cubic-bezier(0.1, 0.8, 0.3, 1)'; 
                 bar.style.width = '85%';
             }, 10);
         }
@@ -300,9 +307,7 @@
         function completeTopProgress() {
             const bar = document.getElementById('top-progress-bar');
             bar.style.transition = 'width 0.3s ease-out';
-            bar.style.width = '100%'; // Penuhkan seketika ke ujung kanan
-            
-            // Sembunyikan transparansinya dan kembalikan ke 0 setelah penuh
+            bar.style.width = '100%'; 
             setTimeout(() => {
                 bar.style.transition = 'opacity 0.4s ease';
                 bar.style.opacity = '0';
@@ -320,11 +325,11 @@
             if (typeof google !== 'undefined') {
                 google.script.run.withSuccessHandler(initPicTerminal).withFailureHandler((e)=>{ completeTopProgress(); Swal.fire('Error',e.message,'error') }).getPreviewData();
             } else {
+                // Dummy data untuk Canvas preview lokal
                 let dummyData = [
                     { row: 2, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "08:15", nim: "20311234", nama: "Ahmad Budi", perusahaan: "PT Pertamina", spv: "Pak Joko", dosbing: "Bpk. Haris", pic: "Siti Rahma", waPic: "0812345", waMhs: "08111", waSpv: "08222", waDosen: "08999", status: "Belum Responsi", isWChecked: false },
                     { row: 3, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "09:00:00", nim: "20311235", nama: "Rini Melati", perusahaan: "PT Telkom", spv: "Ibu Dina", dosbing: "Ibu Maya", pic: "Andi Saputra", waPic: "0812346", waMhs: "08333", waSpv: "08444", waDosen: "", status: "Belum Isi Form Pasca Responsi", isWChecked: true }
                 ];
-                // Simulasi delay ringan di Canvas agar efek loading bar bisa kamu lihat jelas
                 setTimeout(() => { initPicTerminal(dummyData); }, 1200);
             }
         };
@@ -390,11 +395,117 @@
                     container.appendChild(btn);
                 });
             }
-            document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden'); 
+            document.getElementById('gateScreen').classList.remove('hidden');
         }
 
-        function selectPic(picName) { currentActivePic = picName; document.getElementById('activePicName').innerText = picName; document.getElementById('gateScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); renderDashboard(); }
-        function logoutPic() { currentActivePic = ""; document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden'); }
+        // ==========================================
+        // MANAJEMEN NOTIFIKASI & POLLING
+        // ==========================================
+        function selectPic(picName) { 
+            currentActivePic = picName; 
+            document.getElementById('activePicName').innerText = picName; 
+            document.getElementById('gateScreen').classList.add('hidden'); 
+            document.getElementById('dashboardScreen').classList.remove('hidden'); 
+            renderDashboard(); 
+            
+            // Mulai mesin polling background saat PIC masuk dashboard
+            startPolling();
+            cekNotifSekarang();
+        }
+        
+        function logoutPic() { 
+            currentActivePic = ""; 
+            document.getElementById('dashboardScreen').classList.add('hidden'); 
+            document.getElementById('gateScreen').classList.remove('hidden'); 
+            
+            // Matikan polling dan bersihkan UI notifikasi saat keluar
+            stopPolling();
+            document.getElementById('notificationArea').innerHTML = '';
+            document.getElementById('notificationArea').classList.add('hidden');
+        }
+
+        function startPolling() {
+            if(pollingInterval) clearInterval(pollingInterval);
+            // Polling dieksekusi setiap 60 detik (60000 ms)
+            pollingInterval = setInterval(cekNotifSekarang, 60000);
+        }
+
+        function stopPolling() {
+            if(pollingInterval) clearInterval(pollingInterval);
+        }
+
+        function cekNotifSekarang() {
+            if (!currentActivePic || typeof google === 'undefined') return;
+            // Background script run tanpa loading screen
+            google.script.run
+                .withSuccessHandler(renderNotifUI)
+                .cekNotifPIC(currentActivePic);
+        }
+
+        function renderNotifUI(notifs) {
+            let container = document.getElementById('notificationArea');
+            if (!notifs || notifs.length === 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            notifs.forEach(n => {
+                html += '<div id="notif-' + n.row + '" class="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate__animated animate__fadeInDown">' +
+                    '<div class="flex items-start gap-3 w-full sm:w-auto">' +
+                        '<div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5">' +
+                            '<i class="fas fa-bell animate-pulse"></i>' +
+                        '</div>' +
+                        '<div>' +
+                            '<p class="text-amber-800 font-semibold text-sm mb-0.5">Pembaruan dari Mahasiswa!</p>' +
+                            '<p class="text-amber-700/80 text-xs leading-relaxed"><b>' + n.nama + '</b> (' + n.nim + ') baru saja melakukan pendaftaran atau merubah jadwal responsi.</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button onclick="tandaiDibaca(' + n.row + ')" class="shrink-0 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5">' +
+                        '<i class="fas fa-check"></i> Sudah Dicek' +
+                    '</button>' +
+                '</div>';
+            });
+            container.innerHTML = html;
+            container.classList.remove('hidden');
+        }
+
+        function tandaiDibaca(row) {
+            // Optimistic UI update: Sembunyikan elemen secara instan sebelum server selesai
+            let notifElement = document.getElementById('notif-' + row);
+            if(notifElement) {
+                notifElement.classList.replace('animate__fadeInDown', 'animate__fadeOutUp');
+                setTimeout(() => {
+                    notifElement.remove();
+                    let container = document.getElementById('notificationArea');
+                    if(container.children.length === 0) container.classList.add('hidden');
+                }, 500);
+            }
+
+            if(typeof google !== 'undefined') {
+                google.script.run
+                    .withSuccessHandler(() => {
+                        // Jika berhasil ditandai, lakukan refresh (background) untuk memperbarui tabel
+                        refreshDataBackground();
+                    })
+                    .tandaiNotifDibaca(row);
+            }
+        }
+
+        function refreshDataBackground() {
+            if (typeof google !== 'undefined') {
+                 google.script.run
+                    .withSuccessHandler(function(data) {
+                        allData = data || [];
+                        renderDashboard(); // Rerender table tanpa trigger initial-loader
+                    })
+                    .getPreviewData();
+            }
+        }
+        // ==========================================
+
 
         function renderDashboard() {
             let myData = allData.filter(item => item.pic.trim() === currentActivePic);
@@ -496,8 +607,6 @@
             document.getElementById('editIsWChecked').checked = item.isWChecked || false;
             
             modal.classList.remove('hidden'); 
-            
-            // Trik "Reflow": Memaksa browser merekam penghapusan 'hidden' sebelum animasi jalan
             void modal.offsetWidth;
             
             modal.classList.remove('opacity-0'); 
@@ -509,7 +618,6 @@
             modal.classList.add('opacity-0'); 
             modalContent.classList.remove('scale-100', 'opacity-100'); 
             modalContent.classList.add('scale-95', 'opacity-0');
-            
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
