@@ -142,7 +142,7 @@ function setPhaseStatus(phaseNumber) {
 function getPreviewData() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet); 
-  var rawData = sheet.getDataRange().getValues();
+  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
   var previewData = [];
  
   for (var i = 1; i < rawData.length; i++) {
@@ -228,7 +228,7 @@ function getPreviewData() {
 function getPhase1Data() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues();
+  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
   var phase1Data = [];
  
   for (var i = 1; i < rawData.length; i++) {
@@ -247,6 +247,7 @@ function getPhase1Data() {
   return phase1Data;
 }
 
+
 // ==========================================
 // PENGAMAN 1: CLASH CHECKER DOSEN (PINTU DEPAN)
 // ==========================================
@@ -255,7 +256,7 @@ function cekBentrokDosen(sheet, KOLOM, nimToIgnore, dosbing, tglIndoStr, jamStr)
   
   var rawData = sheet.getDataRange().getValues();
   for (var i = 1; i < rawData.length; i++) {
-    // 1. Abaikan baris mahasiswa itu sendiri (penting saat mereka sekadar update data lain)
+    // 1. Abaikan baris mahasiswa itu sendiri
     if (rawData[i][KOLOM.NIM] == nimToIgnore) continue;
     
     // 2. Abaikan jika dosennya berbeda
@@ -611,7 +612,7 @@ function getJadwalPersonalisasi(targetId) {
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues();
+  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
 
   var isDosen = targetId.toLowerCase().startsWith('dos');
   var idColumnIndex = isDosen ? KOLOM.ID_DOSEN : KOLOM.ID_SPV;
