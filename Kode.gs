@@ -76,7 +76,11 @@ function getKamusKolom(sheet) {
     ALAMAT: cari("Alamat Perusahaan", 24),
     ID_SPV: cari("ID SPV", 25),           
     ID_DOSEN: cari("ID Dosen", 26),       
-    STATUS_SURAT: cari("Status Surat", 27)
+    STATUS_SURAT: cari("Status Surat", 27),
+    // --- PENAMBAHAN KOLOM EVALUASI BARU ---
+    JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
+    SPV_BERDAMPAK: cari("SPV Berdampak", 29),
+    JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30)
   };
 }
 
@@ -142,7 +146,7 @@ function setPhaseStatus(phaseNumber) {
 function getPreviewData() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet); 
-  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
+  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT
   var previewData = [];
  
   for (var i = 1; i < rawData.length; i++) {
@@ -228,7 +232,7 @@ function getPreviewData() {
 function getPhase1Data() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
+  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT
   var phase1Data = [];
  
   for (var i = 1; i < rawData.length; i++) {
@@ -514,7 +518,7 @@ function simpanBaru(info) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var newRow = sheet.getLastRow() + 1;
-    var maxCol = Math.max(28, sheet.getLastColumn());
+    var maxCol = Math.max(30, sheet.getLastColumn()); // Pastikan max kolom mengcover tambahan baru
     var rowData = new Array(maxCol).fill(""); 
 
     var tglIndoStr = toIndoDateString(info.tanggal);
@@ -612,7 +616,7 @@ function getJadwalPersonalisasi(targetId) {
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT: HANYA GET VALUES
+  var rawData = sheet.getDataRange().getValues(); 
 
   var isDosen = targetId.toLowerCase().startsWith('dos');
   var idColumnIndex = isDosen ? KOLOM.ID_DOSEN : KOLOM.ID_SPV;
@@ -690,4 +694,88 @@ function getJadwalPersonalisasi(targetId) {
   }
 
   return result;
+}
+
+// ==========================================
+// 7. FUNGSI EVALUASI / KUESIONER PASCA RESPONSI
+// ==========================================
+function getDataForEvaluasi(nim) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
+  var data = sheet.getDataRange().getValues();
+ 
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][KOLOM.NIM] == nim) {
+      var isWChecked = data[i][KOLOM.CENTANG_W] === true || String(data[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
+      var isXChecked = data[i][KOLOM.CENTANG_X] === true || String(data[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
+      
+      // VALIDASI: Belum responsi (Kolom W false)
+      if (!isWChecked) {
+        return { status: "error", message: "Anda belum melaksanakan responsi atau status belum diupdate oleh PIC." };
+      }
+
+      // JIKA SUDAH PERNAH MENGISI SEBELUMNYA, KITA KEMBALIKAN DATA LAMA UNTUK DIEDIT
+      return {
+        status: "success",
+        row: i + 1, 
+        nim: nim, 
+        nama: data[i][KOLOM.NAMA_MHS], 
+        perusahaan: data[i][KOLOM.PERUSAHAAN], 
+        spv: data[i][KOLOM.NAMA_SPV], 
+        alamat: data[i][KOLOM.ALAMAT] || "",
+        
+        isEditEvaluasi: isXChecked, // True jika sudah pernah ngisi (Kolom X = True)
+        
+        // Data lama jika ingin diedit
+        kehadiranSpvEvaluasi: data[i][KOLOM.KEHADIRAN_SPV] || "",
+        namaPenggantiEvaluasi: data[i][KOLOM.NAMA_PENGGANTI] || "",
+        jabatanPenggantiEvaluasi: data[i][KOLOM.JABATAN_PENGGANTI] || "",
+        spvBerdampak: data[i][KOLOM.SPV_BERDAMPAK] || "",
+        jabatanSpvBerdampakManual: data[i][KOLOM.JABATAN_SPV_BERDAMPAK] || ""
+      };
+    }
+  }
+  return { status: "error", message: "Data NIM tidak ditemukan." };
+}
+
+function simpanEvaluasi(info) {
+  if (!info || !info.row) return { status: "error", message: "Data tidak valid." };
+  var lock = LockService.getScriptLock(); lock.waitLock(10000); 
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var KOLOM = getKamusKolom(sheet);
+    var row = info.row;
+
+    // Tulis ke kolom-kolom baru
+    sheet.getRange(row, KOLOM.KEHADIRAN_SPV + 1).setValue(info.kehadiranSpvEvaluasi); 
+    
+    if(info.kehadiranSpvEvaluasi === "Tidak Hadir") {
+      sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(info.namaPenggantiEvaluasi); 
+      sheet.getRange(row, KOLOM.JABATAN_PENGGANTI + 1).setValue(info.jabatanPenggantiEvaluasi); 
+    } else {
+      // Kosongkan kolom jika ternyata hadir (jaga-jaga kalau dia edit dari tidak hadir ke hadir)
+      sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(""); 
+      sheet.getRange(row, KOLOM.JABATAN_PENGGANTI + 1).setValue(""); 
+    }
+
+    sheet.getRange(row, KOLOM.SPV_BERDAMPAK + 1).setValue(info.spvBerdampak); 
+    if(info.spvBerdampak === "Lainnya") {
+      // Jika pilihannya Lainnya, timpa nama SPV berdamapak dengan input manual
+      sheet.getRange(row, KOLOM.SPV_BERDAMPAK + 1).setValue(info.namaSpvBerdampakManual); 
+      sheet.getRange(row, KOLOM.JABATAN_SPV_BERDAMPAK + 1).setValue(info.jabatanSpvBerdampakManual); 
+    } else {
+      // Kosongkan jabatan kalau dia pilih SPV utama miliknya
+      sheet.getRange(row, KOLOM.JABATAN_SPV_BERDAMPAK + 1).setValue(""); 
+    }
+
+    // AUTO-CENTANG KOLOM X (Tanda Kuesioner Selesai)
+    sheet.getRange(row, KOLOM.CENTANG_X + 1).setValue(true); 
+    sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#dcfce3'); // Ubah warna jadi hijau sukses
+
+    return { status: "success" };
+  } catch (e) { 
+    return { status: "error", message: e.message }; 
+  } finally { 
+    lock.releaseLock(); 
+  }
 }
