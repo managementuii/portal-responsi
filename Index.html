@@ -423,7 +423,7 @@
       </div>
     </div>
 
-    <!-- SCRIPT JAVASCRIPT (Logika tidak ada yang diubah, hanya kelas CSS output tabel dan modal) -->
+    <!-- SCRIPT JAVASCRIPT -->
     <script>
       let ACTIVE_PHASE = 2; 
       let availableCompanies = []; 
@@ -581,7 +581,7 @@
             document.getElementById('teksBantuanNIM').innerText = "Sistem akan mendeteksi status jadwal kamu."; 
         }
         resetModal(); 
-        toggleModal(true); // Panggil fungsi modal kustom Tailwind
+        toggleModal(true); 
       }
 
       function mintaBantuanPIC() {
@@ -628,37 +628,59 @@
 
       function tampilkanInfoPIC(data) {
         if (data.isNew) {
-          Swal.fire({ 
-              icon: 'error', 
-              title: '<span class="font-semibold text-slate-800 text-lg">NIM Tidak Ditemukan</span>', 
-              html: '<span class="text-slate-600 text-sm">Kamu belum terdaftar di jadwal responsi. Silakan Daftar Ulang terlebih dahulu.</span>', 
-              confirmButtonColor: '#1e293b',
-              customClass: { confirmButton: 'rounded-lg' }
-          });
-          return;
+            Swal.fire({
+                icon: 'error',
+                title: '<span class="font-semibold text-slate-800 text-lg">NIM Tidak Ditemukan</span>',
+                html: '<span class="text-slate-600 text-sm">Kamu belum terdaftar di jadwal responsi. Silakan Daftar Ulang terlebih dahulu.</span>',
+                confirmButtonColor: '#1e293b',
+                customClass: { confirmButton: 'rounded-lg' }
+            });
+            return;
         }
 
-        let picName = data.pic && data.pic !== "-" ? data.pic : "PIC Belum Ditentukan";
-        let picWa = data.waPic;
-        
-        let btnWaHtml = picWa ? 
-            '<a href="https://wa.me/' + picWa + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors"><i class="fab fa-whatsapp me-2 text-lg"></i>Hubungi PIC Sekarang</a>' : 
-            '<div class="text-slate-400 text-xs mt-4 p-2 bg-white rounded-lg border border-slate-200">Nomor WhatsApp PIC belum tersedia di sistem.</div>';
+        let picName = "";
+        let picWa = "";
+        let isHotlineMode = false;
 
-        let htmlContent = '<p class="text-sm text-slate-500 mb-4">Berikut adalah PIC yang ditugaskan untuk mendampingi responsi kamu:</p>' +
-                          '<div class="p-4 rounded-xl text-center border border-slate-200 bg-slate-50">' +
+        // LOGIKA FRONT/BACK OFFICE (HOTLINE)
+        if (data.pic && data.pic !== "-" && data.pic !== "Menunggu Admin") {
+            // FASE 2: PIC Eksekusi sudah diplot oleh Sistem Auto-Assign
+            picName = data.pic;
+            picWa = data.waPic;
+        } else {
+            // FASE 1 / FALLBACK: PIC di Excel kosong atau bentrok total. Arahkan ke Admin Standby.
+            isHotlineMode = true;
+            picName = "Admin / Helpdesk Pusat";
+            picWa = "6281234567890"; // Ganti dengan Nomor WA Admin Prodi / Standby
+        }
+
+        // PASTIKAN FORMAT WA UNTUK LINK MENGGUNAKAN 62 (Hapus 0 atau 8 di depan)
+        let waLink = picWa ? picWa.replace(/[^0-9]/g, '') : '';
+        if (waLink.startsWith('0')) waLink = '62' + waLink.substring(1);
+        if (waLink.startsWith('8')) waLink = '62' + waLink;
+
+        let btnWaHtml = waLink ?
+            '<a href="https://wa.me/' + waLink + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors shadow-sm"><i class="fab fa-whatsapp text-lg mr-2"></i>Hubungi ' + (isHotlineMode ? 'Hotline' : 'PIC Teknis') + '</a>' :
+            '<div class="text-slate-400 text-xs mt-4 p-3 bg-white rounded-lg border border-slate-200">Nomor WhatsApp belum tersedia.</div>';
+
+        // Pemberitahuan jika ini masih Hotline
+        let notifHelpdesk = isHotlineMode ? '<p class="text-[11px] text-amber-700 mt-3 bg-amber-50 p-2.5 rounded border border-amber-200 text-left"><i class="fas fa-info-circle mr-1"></i> Ini adalah layanan Hotline Administrasi. PIC pendamping ujian Zoom akan muncul setelah jadwal divalidasi sistem.</p>' : '';
+
+        let htmlContent = '<p class="text-sm text-slate-500 mb-4">Informasi Pendampingan Responsi:</p>' +
+                          '<div class="p-5 rounded-xl text-center border border-slate-200 bg-slate-50 shadow-inner">' +
                           '<div class="bg-white rounded-full inline-flex items-center justify-center mb-3 shadow-sm w-12 h-12">' +
-                          '<i class="fas fa-headset text-blue-500 text-xl"></i></div>' +
-                          '<h5 class="font-semibold text-slate-800 text-lg mb-0.5">' + picName + '</h5>' +
-                          '<p class="text-slate-500 text-xs font-medium">NIM: ' + data.nim + '</p>' +
-                          btnWaHtml + '</div>';
+                          (isHotlineMode ? '<i class="fas fa-headset text-blue-500 text-xl"></i>' : '<i class="fas fa-user-check text-emerald-500 text-xl"></i>') +
+                          '</div>' +
+                          '<h5 class="font-bold text-slate-800 text-lg mb-0.5">' + picName + '</h5>' +
+                          '<p class="text-slate-500 text-xs font-mono bg-white inline-block px-2 py-1 rounded border border-slate-100 mt-1">NIM: ' + data.nim + '</p>' +
+                          btnWaHtml + notifHelpdesk + '</div>';
 
         Swal.fire({
-            title: '<span class="font-semibold text-slate-800 text-lg">PIC Bantuan Teknis</span>',
+            title: '<span class="font-bold text-slate-800 text-xl">Bantuan Responsi</span>',
             html: htmlContent,
-            showConfirmButton: false, 
+            showConfirmButton: false,
             showCloseButton: true,
-            customClass: { popup: 'rounded-2xl' }
+            customClass: { popup: 'rounded-2xl', closeButton: 'text-slate-400 hover:text-slate-800 focus:outline-none' }
         });
       }
 
@@ -1194,34 +1216,45 @@
       }
 
       function onSuccess(response) {
+        // TANGKAP PENOLAKAN DARI SERVER (BENTROK DOSEN DLL)
         if(response && response.status === "error") { 
             Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Gagal Menyimpan</span>', html: '<span class="text-sm text-slate-600">' + response.message + '</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
             return; 
         }
         
         toggleModal(false); 
-        setTimeout(resetModal, 300); // Tunggu animasi selesai sebelum reset field
+        setTimeout(resetModal, 300); 
 
+        // NOTIFIKASI SUKSES (LANGSUNG TAMPILKAN HASIL AUTO-ASSIGN PIC)
         if (currentAction === 'jadwal_ubah' || currentAction === 'jadwal_baru') {
-          let btnWaHtml = currentWaPic ? '<a href="https://wa.me/' + currentWaPic + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors"><i class="fab fa-whatsapp me-2 text-lg"></i>Hubungi PIC Sekarang</a>' : '<div class="text-slate-400 text-xs mt-4 p-2 bg-white rounded-lg border border-slate-200">Nomor PIC belum tersedia</div>';
+          let nimSubmitted = document.getElementById('nimField').value;
           
-          let titleMsg = currentAction === 'jadwal_ubah' ? 'Jadwal Berhasil Diubah!' : 'Pendaftaran Berhasil!';
-          let descMsg = currentAction === 'jadwal_ubah' ? 'Segera lakukan konfirmasi kepada PIC untuk penjadwalan teknis dari prodi.' : 'Data berhasil disimpan. Jika PIC sudah tersedia, hubungi PIC untuk konfirmasi jadwal.';
-          
-          let htmlNotif = '<p class="text-sm text-slate-500 mb-4">' + descMsg + '</p>' +
-                          '<div class="p-4 rounded-xl text-center border border-slate-200 bg-slate-50">' +
-                          '<p class="text-slate-400 text-[11px] font-medium uppercase tracking-wider mb-1">PIC Bantuan Teknis</p>' +
-                          '<h5 class="font-semibold text-slate-800 text-lg mb-0">' + currentPic + '</h5>' +
-                          btnWaHtml + '</div>';
-
-          Swal.fire({
-            icon: 'success', 
-            title: '<span class="font-semibold text-slate-800 text-lg">' + titleMsg + '</span>',
-            html: htmlNotif,
-            confirmButtonText: 'Selesai', 
-            confirmButtonColor: '#1e293b',
-            customClass: { confirmButton: 'rounded-lg', popup: 'rounded-2xl' }
+          // Tampilkan loading sesaat untuk mengambil data PIC yang baru saja di-plot oleh sistem
+          Swal.fire({ 
+              title: 'Memproses Penugasan PIC...', 
+              html: '<span class="text-sm text-slate-500">Menyinkronkan jadwal Anda dengan sistem.</span>', 
+              allowOutsideClick: false, 
+              didOpen: () => { Swal.showLoading(); } 
           });
+
+          if (typeof google !== 'undefined') {
+              google.script.run
+                .withSuccessHandler(function(updatedData) {
+                    tampilkanSuksesPIC(updatedData);
+                    loadGlobalData();
+                    loadDropdownOptions();
+                })
+                .withFailureHandler(function() {
+                    // Fallback jika gagal ambil data terbaru
+                    tampilkanSuksesPIC({ pic: currentPic, waPic: currentWaPic });
+                    loadGlobalData();
+                })
+                .getDataByNIM(nimSubmitted);
+          } else {
+              setTimeout(() => {
+                  tampilkanSuksesPIC({ pic: 'Admin Prodi (Simulasi)', waPic: '081234567890' });
+              }, 800);
+          }
         } else if (currentAction === 'surat') {
           Swal.fire({ 
               icon: 'success', 
@@ -1230,12 +1263,57 @@
               confirmButtonColor: '#2563eb',
               customClass: { confirmButton: 'rounded-lg' } 
           });
+          if (ACTIVE_PHASE === 1) loadPhase1Data(); else loadGlobalData();
+          loadDropdownOptions(); 
         }
-        
-        if (ACTIVE_PHASE === 1) loadPhase1Data(); else loadGlobalData();
-        loadDropdownOptions(); 
+      }
+
+      function tampilkanSuksesPIC(data) {
+        // Cek apakah mendapat PIC Teknis atau masih menunggu/jatuh ke Hotline Admin
+        let picName = data.pic && data.pic !== "-" && data.pic !== "Menunggu Admin" ? data.pic : "Admin / Helpdesk Pusat";
+        let picWa = data.waPic || "6281234567890"; // Ganti dengan nomor WA Hotline Admin Prodi (Format 62xxx)
+        let isHotlineMode = (!data.pic || data.pic === "-" || data.pic === "Menunggu Admin");
+
+        // PASTIKAN FORMAT WA UNTUK LINK MENGGUNAKAN 62 (Hapus 0 atau 8 di depan)
+        let waLink = picWa ? picWa.replace(/[^0-9]/g, '') : '';
+        if (waLink.startsWith('0')) waLink = '62' + waLink.substring(1);
+        if (waLink.startsWith('8')) waLink = '62' + waLink;
+
+        let btnWaHtml = waLink ?
+            '<a href="https://wa.me/' + waLink + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors shadow-sm"><i class="fab fa-whatsapp text-lg mr-2"></i>Hubungi ' + (isHotlineMode ? 'Hotline' : 'PIC Teknis') + '</a>' :
+            '<div class="text-slate-400 text-xs mt-4 p-3 bg-white rounded-lg border border-slate-200">Nomor WhatsApp belum tersedia.</div>';
+
+        let titleMsg = currentAction === 'jadwal_ubah' ? 'Jadwal Berhasil Diubah!' : 'Pendaftaran Berhasil!';
+        let descMsg = currentAction === 'jadwal_ubah' ?
+            'Jadwal baru Anda telah tersimpan. Silakan hubungi kontak di bawah ini untuk konfirmasi.' :
+            'Jadwal berhasil disimpan! Berikut adalah kontak yang ditugaskan untuk mendampingi Anda.';
+
+        let notifHelpdesk = isHotlineMode ? '<p class="text-[11px] text-amber-700 mt-3 bg-amber-50 p-2.5 rounded border border-amber-200 text-left"><i class="fas fa-info-circle mr-1"></i> Ini adalah layanan Hotline Administrasi. PIC pendamping Zoom akan muncul setelah jadwal divalidasi sistem.</p>' : '';
+
+        let htmlNotif = '<p class="text-sm text-slate-500 mb-4">' + descMsg + '</p>' +
+                        '<div class="p-5 rounded-xl text-center border border-slate-200 bg-slate-50 shadow-inner">' +
+                        '<div class="bg-white rounded-full inline-flex items-center justify-center mb-3 shadow-sm w-12 h-12">' +
+                        (isHotlineMode ? '<i class="fas fa-headset text-blue-500 text-xl"></i>' : '<i class="fas fa-user-check text-emerald-500 text-xl"></i>') +
+                        '</div>' +
+                        '<h5 class="font-bold text-slate-800 text-lg mb-0.5">' + picName + '</h5>' +
+                        btnWaHtml + notifHelpdesk + '</div>';
+
+        Swal.fire({
+            icon: 'success',
+            title: '<span class="font-bold text-slate-800 text-xl">' + titleMsg + '</span>',
+            html: htmlNotif,
+            showConfirmButton: false,
+            showCloseButton: true,
+            customClass: { popup: 'rounded-2xl', closeButton: 'text-slate-400 hover:text-slate-800 focus:outline-none' }
+        });
       }
     </script>
   </div> <!-- END WRAPPER KONTEN UTAMA -->
+
+  <!-- FOOTER CREAGIEVITY -->
+  <footer class="text-center mt-auto mb-6 no-print w-full pt-8">
+      <p class="text-[11px] text-slate-400 font-medium">Aplikasi dikembangkan oleh:</p>
+      <p class="text-xs font-semibold text-slate-500 tracking-wide mt-1">creagievity® UI/UX App Development</p>
+  </footer>
 </body>
 </html>
