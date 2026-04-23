@@ -142,10 +142,30 @@ function setPhaseStatus(phaseNumber) {
   return parseInt(phaseNumber);
 }
 
+
 // ==========================================
-// 3. FUNGSI MENGAMBIL DATA (OPTIMIZED)
+// 🚀 FUNGSI PEMBERSIH CACHE (BARU)
+// Wajib dipanggil tiap kali ada data disave/diupdate
+// ==========================================
+function clearCache() {
+  var cache = CacheService.getScriptCache();
+  cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN"]);
+}
+
+
+// ==========================================
+// 3. FUNGSI MENGAMBIL DATA (OPTIMIZED DENGAN CACHE)
 // ==========================================
 function getPreviewData() {
+  var cache = CacheService.getScriptCache();
+  var cachedData = cache.get("CACHE_PREVIEW");
+  
+  // ⚡ 1. Jika data ada di Cache, langsung kirim ke frontend! (Sangat Cepat)
+  if (cachedData) {
+    return JSON.parse(cachedData);
+  }
+
+  // 🐌 2. Jika tidak ada di cache, baru baca ke Spreadsheet
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet); 
   var rawData = sheet.getDataRange().getValues(); // SUPER CEPAT
@@ -228,6 +248,10 @@ function getPreviewData() {
     if (a.timestamp > 0 && b.timestamp > 0) return a.timestamp - b.timestamp; 
     return 0; 
   });
+
+  // 💾 3. Simpan hasilnya ke cache selama 30 menit (1800 detik)
+  cache.put("CACHE_PREVIEW", JSON.stringify(previewData), 1800);
+
   return previewData;
 }
 
@@ -251,6 +275,38 @@ function getPhase1Data() {
   }
   phase1Data.sort(function(a, b) { return a.nama.localeCompare(b.nama); });
   return phase1Data;
+}
+
+function getDropdownOptions() {
+  var cache = CacheService.getScriptCache();
+  var cachedData = cache.get("CACHE_DROPDOWN");
+  
+  // ⚡ 1. Ambil dari cache jika ada
+  if (cachedData) {
+    return JSON.parse(cachedData);
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+  var KOLOM = getKamusKolom(sheet);
+  var rawData = sheet.getDataRange().getValues();
+  var companies = []; var spvs = [];
+  
+  for (var i = 1; i < rawData.length; i++) {
+    if (rawData[i][KOLOM.PERUSAHAAN] && rawData[i][KOLOM.PERUSAHAAN] !== "" && companies.indexOf(rawData[i][KOLOM.PERUSAHAAN]) === -1) {
+      companies.push(rawData[i][KOLOM.PERUSAHAAN]);
+    }
+    if (rawData[i][KOLOM.NAMA_SPV] && rawData[i][KOLOM.NAMA_SPV] !== "" && spvs.indexOf(rawData[i][KOLOM.NAMA_SPV]) === -1) {
+      spvs.push(rawData[i][KOLOM.NAMA_SPV]);
+    }
+  }
+  companies.sort(); spvs.sort();
+  
+  var result = { companies: companies, spvs: spvs };
+  
+  // 💾 2. Simpan hasilnya ke cache selama 1 jam (3600 detik)
+  cache.put("CACHE_DROPDOWN", JSON.stringify(result), 3600);
+
+  return result;
 }
 
 
@@ -426,6 +482,10 @@ function updateByPIC(info) {
     }
 
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#fef9c3');
+    
+    // 🧹 HAPUS CACHE KARENA DATA BERUBAH
+    clearCache();
+    
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -512,6 +572,10 @@ function simpanUpdate(info) {
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue("BARU");
     
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
+    
+    // 🧹 HAPUS CACHE KARENA DATA BERUBAH
+    clearCache();
+
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -568,6 +632,9 @@ function simpanBaru(info) {
     sheet.getRange(newRow, 1, 1, maxCol).setValues([rowData]); 
     sheet.getRange(newRow, 1, 1, maxCol).setBackground('#ecfdf5');
     
+    // 🧹 HAPUS CACHE KARENA DATA BERUBAH
+    clearCache();
+
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -591,28 +658,12 @@ function simpanSurat(info) {
     sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamat); 
     sheet.getRange(row, KOLOM.STATUS_SURAT + 1).setValue("Sudah Konfirmasi");  
     
+    // 🧹 HAPUS CACHE KARENA DATA BERUBAH
+    clearCache();
+
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
-
-function getDropdownOptions() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
-  var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues();
-  var companies = []; var spvs = [];
-  
-  for (var i = 1; i < rawData.length; i++) {
-    if (rawData[i][KOLOM.PERUSAHAAN] && rawData[i][KOLOM.PERUSAHAAN] !== "" && companies.indexOf(rawData[i][KOLOM.PERUSAHAAN]) === -1) {
-      companies.push(rawData[i][KOLOM.PERUSAHAAN]);
-    }
-    if (rawData[i][KOLOM.NAMA_SPV] && rawData[i][KOLOM.NAMA_SPV] !== "" && spvs.indexOf(rawData[i][KOLOM.NAMA_SPV]) === -1) {
-      spvs.push(rawData[i][KOLOM.NAMA_SPV]);
-    }
-  }
-  companies.sort(); spvs.sort();
-  return { companies: companies, spvs: spvs };
-}
-
 
 // ==========================================
 // 6. FUNGSI PORTAL PERSONALISASI (DOSEN & SPV)
@@ -777,6 +828,9 @@ function simpanEvaluasi(info) {
     // AUTO-CENTANG KOLOM X (Tanda Kuesioner Selesai)
     sheet.getRange(row, KOLOM.CENTANG_X + 1).setValue(true); 
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#dcfce3'); // Ubah warna jadi hijau sukses
+
+    // 🧹 HAPUS CACHE KARENA DATA BERUBAH
+    clearCache();
 
     return { status: "success" };
   } catch (e) { 
