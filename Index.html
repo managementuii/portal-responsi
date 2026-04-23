@@ -6,42 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Portal Administrasi & Responsi Magang</title>
   
-  <!-- Tailwind CSS (Development Mode) -->
-  <!-- 
-  ========================================================================
-  🔥 THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🔥
-  ========================================================================
-  Ganti script CDN ini dengan output.css hasil build jika akan rilis ke production.
-  ========================================================================
-  -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
  
   <style>
-    /* CSS Kustom Tambahan (Animasi & Scrollbar) */
     body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
-    
     .table-container { -webkit-overflow-scrolling: touch; }
     .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
     .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    
     .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-
     .pulse-dot { position: absolute; top: -4px; right: -4px; display: flex; height: 12px; width: 12px; }
     .pulse-dot-anim { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #f59e0b; opacity: 0.75; }
     .pulse-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 12px; width: 12px; background-color: #f59e0b; border: 2px solid #ffffff; }
     @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-
-    /* Dropdown Autocomplete Styles */
     .custom-dropdown-item { padding: 0.5rem 1rem; font-size: 0.875rem; color: #475569; cursor: pointer; border-bottom: 1px solid #f1f5f9; white-space: normal; }
     .custom-dropdown-item:hover, .custom-dropdown-item.active-item { background-color: #f1f5f9; color: #1e293b; }
-    
     .swal2-html-container { overflow: visible !important; }
   </style>
 </head>
@@ -93,6 +78,10 @@
           <button id="btnUbah" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="showWarningUbahData()">
             <i class="fas fa-edit text-slate-400"></i> Ubah Data Responsi
           </button>
+          <!-- TOMBOL EVALUASI BARU -->
+          <button id="btnEvaluasi" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('evaluasi')">
+            <i class="fas fa-clipboard-check opacity-80"></i> Evaluasi Pasca Responsi
+          </button>
           <button id="btnSurat" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('surat')">
             <i class="fas fa-envelope opacity-80"></i> Konfirmasi Surat SPV
           </button>
@@ -138,6 +127,7 @@
 
       <!-- FASE 1: TABEL KONFIRMASI SURAT -->
       <div class="hidden bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm mb-5" id="tablePhase1Container">
+        <!-- (Kode Tabel Fase 1 tetap sama) -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h5 class="font-semibold text-lg text-slate-800 mb-1">Daftar Konfirmasi SPV</h5>
@@ -153,7 +143,6 @@
             <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 px-3 rounded-lg transition-colors" onclick="loadPhase1Data()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
           </div>
         </div>
-        
         <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-lg">
           <table class="min-w-full divide-y divide-slate-200" id="mainTablePhase1">
             <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
@@ -171,12 +160,12 @@
             </tbody>
           </table>
         </div>
-
         <div id="tabelBodyPhase1Mobile" class="grid md:hidden gap-4"></div>
       </div>
 
       <!-- FASE 2: TABEL JADWAL RESPONSI -->
       <div class="hidden bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm mb-5" id="tablePhase2Container">
+        <!-- (Kode Tabel Fase 2 tetap sama) -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h5 class="font-semibold text-lg text-slate-800 mb-1">Daftar Jadwal Masuk</h5>
@@ -192,7 +181,6 @@
             <button class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 px-3 rounded-lg transition-colors" onclick="loadGlobalData()" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
           </div>
         </div>
-
         <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-lg">
           <table class="min-w-full divide-y divide-slate-200" id="mainTable">
             <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider font-medium">
@@ -211,12 +199,11 @@
             </tbody>
           </table>
         </div>
-
         <div id="tabelBodyMobile" class="grid md:hidden gap-4"></div>
       </div>
     </div> <!-- End Main Content -->
 
-    <!-- MODAL UTAMA MULTIFUNGSI (Versi Tailwind) -->
+    <!-- MODAL UTAMA MULTIFUNGSI -->
     <div id="formModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
       <div id="formModalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300">
         
@@ -253,6 +240,7 @@
             <input type="hidden" id="isNewData">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- (Kode input form jadwal sama persis) -->
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">NIM <span class="text-rose-500">*</span></label>
                 <input type="text" id="nimField" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
@@ -274,12 +262,9 @@
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Dosen Pembimbing <span class="text-rose-500">*</span></label>
                 <input type="text" id="dosbing" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
               </div>
-              
-              <!-- Divider -->
               <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
                 <h6 class="font-semibold text-slate-800 text-sm mb-3">Detail Pelaksanaan Responsi</h6>
               </div>
-              
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Tanggal <span class="text-rose-500">*</span></label>
                 <input type="date" id="tanggal" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors">
@@ -288,12 +273,9 @@
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Jam <span class="text-rose-500">*</span></label>
                 <select id="jam" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white"></select>
               </div>
-              
-              <!-- Divider -->
               <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
                 <h6 class="font-semibold text-slate-800 text-sm mb-3">Informasi Supervisor (SPV)</h6>
               </div>
-              
               <div class="md:col-span-2 relative">
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama SPV <span class="text-rose-500">*</span></label>
                 <input type="text" id="spv" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatTitleCase(this); showDropdown('spv', 'customSpvList', availableSpvs);" onfocus="showDropdown('spv', 'customSpvList', availableSpvs)">
@@ -324,8 +306,6 @@
                   <option value="Tentatif">Tentatif</option>
                 </select>
               </div>
-              
-              <!-- Pengganti SPV Block -->
               <div class="md:col-span-2 mt-2 hidden" id="formPenggantiSPV">
                 <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl">
                   <h6 class="text-rose-600 font-semibold text-sm mb-3">Pengganti Supervisor</h6>
@@ -350,6 +330,7 @@
 
           <!-- FORM 2: SURAT SPV -->
           <div id="formSuratSection" class="hidden">
+            <!-- (Kode input form surat sama persis) -->
             <div class="mb-5 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm font-medium text-center">
               <i class="fas fa-info-circle me-1.5"></i>Mohon Perhatian! Lengkapi data sesuai surat resmi.
             </div>
@@ -364,7 +345,6 @@
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">No. WA Mahasiswa <span class="text-rose-500">*</span></label>
                 <input type="text" id="waMhsSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" oninput="formatWAInput(this)">
               </div>
-              
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Mahasiswa</label>
                 <input type="text" id="namaMhsSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
@@ -373,12 +353,9 @@
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Dosen Pembimbing</label>
                 <input type="text" id="dosbingSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm bg-slate-50 text-slate-500 font-medium outline-none" disabled>
               </div>
-
-              <!-- Divider -->
               <div class="md:col-span-2 border-t border-slate-100 mt-2 pt-4">
                 <h6 class="font-semibold text-slate-800 text-sm mb-3">Data Perusahaan & Supervisor</h6>
               </div>
-              
               <div class="md:col-span-2 relative">
                 <label class="block text-sm font-medium text-slate-600 mb-1.5">Nama Perusahaan <span class="text-rose-500">*</span></label>
                 <textarea id="perusahaanSurat" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors" rows="2" oninput="this.value = this.value.toUpperCase(); showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies);" onfocus="showDropdown('perusahaanSurat', 'customCompanyListSurat', availableCompanies)"></textarea>
@@ -412,13 +389,104 @@
             </div>
           </div>
 
+          <!-- FORM 3: EVALUASI PASCA RESPONSI -->
+          <div id="formEvaluasiSection" class="hidden">
+            <div class="mb-6 bg-purple-50 border border-purple-200 text-purple-700 px-4 py-4 rounded-lg text-sm font-medium text-left flex gap-3 items-start shadow-sm">
+              <i class="fas fa-check-circle text-purple-600 mt-0.5 text-lg"></i>
+              <div>
+                <p class="font-bold text-base mb-1" id="evaluasiTitleBadge">Selamat! Responsi Anda Telah Selesai</p>
+                <p class="font-normal" id="evaluasiSubBadge">Lengkapi data evaluasi berikut untuk keperluan pengiriman apresiasi kepada pihak perusahaan.</p>
+              </div>
+            </div>
+            
+            <input type="hidden" id="rowIdxEvaluasi">
+            
+            <div class="grid grid-cols-1 gap-5">
+              
+              <!-- Review Data Pendahuluan -->
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h6 class="font-semibold text-slate-800 text-sm mb-3 border-b border-slate-200 pb-2">Konfirmasi Data Utama</h6>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">NIM & Nama</label>
+                    <div class="font-medium text-slate-800 text-sm" id="teksNamaEvaluasi">-</div>
+                    <div class="text-xs text-slate-500 font-mono" id="teksNimEvaluasi">-</div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Supervisor Utama</label>
+                    <div class="font-medium text-slate-800 text-sm" id="teksSpvEvaluasi">-</div>
+                    <div class="text-xs text-slate-500 truncate" id="teksPerusahaanEvaluasi">-</div>
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Alamat Pengiriman Surat / Sertifikat</label>
+                    <div class="text-sm text-slate-700 p-2.5 bg-white border border-slate-200 rounded-md min-h-[40px]" id="teksAlamatEvaluasi">-</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Evaluasi Lapangan -->
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">1. Apakah Supervisor Utama hadir saat sesi responsi? <span class="text-rose-500">*</span></label>
+                <div class="flex flex-col sm:flex-row gap-3">
+                  <label class="flex-1 border border-slate-200 rounded-lg p-3 cursor-pointer hover:bg-slate-50 transition flex items-center">
+                    <input type="radio" name="kehadiranSpvEvaluasi" value="Hadir" onchange="togglePenggantiEvaluasi()" class="w-4 h-4 text-purple-600 focus:ring-purple-500">
+                    <span class="ml-2 text-sm font-medium text-slate-700">Ya, Hadir</span>
+                  </label>
+                  <label class="flex-1 border border-slate-200 rounded-lg p-3 cursor-pointer hover:bg-slate-50 transition flex items-center">
+                    <input type="radio" name="kehadiranSpvEvaluasi" value="Tidak Hadir" onchange="togglePenggantiEvaluasi()" class="w-4 h-4 text-purple-600 focus:ring-purple-500">
+                    <span class="ml-2 text-sm font-medium text-slate-700">Tidak, Diwakilkan</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="divPenggantiEvaluasi" class="hidden bg-amber-50 p-4 rounded-xl border border-amber-200 ml-4 border-l-4 border-l-amber-500 shadow-sm">
+                <p class="text-xs text-amber-700 font-semibold mb-3"><i class="fas fa-info-circle mr-1"></i> Mohon lengkapi data perwakilan yang hadir saat responsi:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nama Lengkap Pengganti <span class="text-rose-500">*</span></label>
+                    <input type="text" id="namaPenggantiEvaluasi" class="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-white transition-colors" oninput="formatTitleCase(this)">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Jabatan Pengganti <span class="text-rose-500">*</span></label>
+                    <input type="text" id="jabatanPenggantiEvaluasi" class="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none bg-white transition-colors" oninput="formatTitleCase(this)">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">2. Siapakah yang memberikan bimbingan/dampak paling besar selama Anda magang? <span class="text-rose-500">*</span></label>
+                <select id="spvBerdampakDropdown" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-colors bg-white" onchange="toggleSpvBerdampakManual()">
+                  <!-- Opsi akan diisi dari Javascript HANYA dengan SPV miliknya -->
+                </select>
+              </div>
+
+              <div id="divSpvBerdampakManual" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-200 ml-4 border-l-4 border-l-blue-500 shadow-sm">
+                <p class="text-xs text-blue-700 font-semibold mb-3">Mohon masukkan data pembimbing yang Anda maksud:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
+                    <input type="text" id="namaSpvBerdampakManual" class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors" oninput="formatTitleCase(this)">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Jabatan <span class="text-rose-500">*</span></label>
+                    <input type="text" id="jabatanSpvBerdampakManual" class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white transition-colors" oninput="formatTitleCase(this)">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
         
         <!-- Modal Footer -->
         <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-2xl shrink-0 hidden" id="modalFooterSection">
           <button type="button" class="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-5 py-2 rounded-lg font-medium text-sm transition-colors" onclick="toggleModal(false); resetModal()">Batal</button>
+          
           <button type="button" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm" id="btnSubmitJadwal" onclick="submitDataJadwal()">Simpan Perubahan</button>
           <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm hidden" id="btnSubmitSurat" onclick="submitDataSurat()">Simpan Data Surat</button>
+          
+          <button type="button" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm hidden" id="btnSubmitEvaluasi" onclick="submitDataEvaluasi()">Simpan Evaluasi</button>
         </div>
       </div>
     </div>
@@ -435,13 +503,12 @@
       let phase1MasterData = []; 
       let phase2MasterData = [];
 
-      // Fungsi Modal Custom (Menggantikan Bootstrap)
       function toggleModal(show) {
           const m = document.getElementById('formModal');
           const c = document.getElementById('formModalContent');
           if(show) {
               m.classList.remove('hidden');
-              void m.offsetWidth; // Trigger reflow browser untuk animasi
+              void m.offsetWidth; 
               m.classList.remove('opacity-0');
               c.classList.remove('scale-95', 'opacity-0');
               c.classList.add('scale-100', 'opacity-100');
@@ -490,13 +557,15 @@
 
       window.onload = function() {
         if (typeof google === 'undefined') {
-          // Mode lokal testing (tanpa GAS)
+          // Mode lokal testing
           document.getElementById('appLoader').classList.add('hidden'); 
           document.getElementById('mainContent').classList.remove('hidden'); 
           document.getElementById('btnDaftar').classList.remove('hidden'); 
           document.getElementById('btnDaftar').classList.add('flex');
           document.getElementById('btnUbah').classList.remove('hidden'); 
           document.getElementById('btnUbah').classList.add('flex');
+          document.getElementById('btnEvaluasi').classList.remove('hidden'); 
+          document.getElementById('btnEvaluasi').classList.add('flex');
           document.getElementById('actionCenterDivider').classList.remove('hidden'); 
           document.getElementById('actionCenterSection').classList.remove('hidden'); 
           document.getElementById('tablePhase2Container').classList.remove('hidden'); 
@@ -517,11 +586,13 @@
                   document.getElementById('actionCenterSection').classList.add('hidden');
                   loadPhase1Data();
                 } else {
-                  document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar atau mengubah Jadwal Responsi.";
+                  document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar, mengubah jadwal, atau mengisi kuesioner.";
                   document.getElementById('btnDaftar').classList.remove('hidden'); 
                   document.getElementById('btnDaftar').classList.add('flex');
                   document.getElementById('btnUbah').classList.remove('hidden'); 
                   document.getElementById('btnUbah').classList.add('flex');
+                  document.getElementById('btnEvaluasi').classList.remove('hidden'); 
+                  document.getElementById('btnEvaluasi').classList.add('flex');
                   document.getElementById('btnSurat').classList.add('hidden'); 
                   document.getElementById('btnSurat').classList.remove('flex');
                   document.getElementById('tablePhase2Container').classList.remove('hidden');
@@ -576,6 +647,9 @@
         if (actionType === 'surat') { 
             document.getElementById('formModalLabel').innerText = "Konfirmasi Surat Undangan SPV"; 
             document.getElementById('teksBantuanNIM').innerText = "Silakan masukkan NIM untuk memverifikasi data Anda."; 
+        } else if (actionType === 'evaluasi') {
+            document.getElementById('formModalLabel').innerText = "Evaluasi Pasca Responsi"; 
+            document.getElementById('teksBantuanNIM').innerText = "Masukkan NIM untuk memulai kuesioner."; 
         } else { 
             document.getElementById('formModalLabel').innerText = "Data Jadwal Responsi"; 
             document.getElementById('teksBantuanNIM').innerText = "Sistem akan mendeteksi status jadwal kamu."; 
@@ -642,19 +716,15 @@
         let picWa = "";
         let isHotlineMode = false;
 
-        // LOGIKA FRONT/BACK OFFICE (HOTLINE)
         if (data.pic && data.pic !== "-" && data.pic !== "Menunggu Admin") {
-            // FASE 2: PIC Eksekusi sudah diplot oleh Sistem Auto-Assign
             picName = data.pic;
             picWa = data.waPic;
         } else {
-            // FASE 1 / FALLBACK: PIC di Excel kosong atau bentrok total. Arahkan ke Admin Standby.
             isHotlineMode = true;
             picName = "Admin / Helpdesk Pusat";
-            picWa = "6281234567890"; // Ganti dengan Nomor WA Admin Prodi / Standby
+            picWa = "6281234567890"; 
         }
 
-        // PASTIKAN FORMAT WA UNTUK LINK MENGGUNAKAN 62 (Hapus 0 atau 8 di depan)
         let waLink = picWa ? picWa.replace(/[^0-9]/g, '') : '';
         if (waLink.startsWith('0')) waLink = '62' + waLink.substring(1);
         if (waLink.startsWith('8')) waLink = '62' + waLink;
@@ -663,7 +733,6 @@
             '<a href="https://wa.me/' + waLink + '" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium mt-4 block transition-colors shadow-sm"><i class="fab fa-whatsapp text-lg mr-2"></i>Hubungi ' + (isHotlineMode ? 'Hotline' : 'PIC Teknis') + '</a>' :
             '<div class="text-slate-400 text-xs mt-4 p-3 bg-white rounded-lg border border-slate-200">Nomor WhatsApp belum tersedia.</div>';
 
-        // Pemberitahuan jika ini masih Hotline
         let notifHelpdesk = isHotlineMode ? '<p class="text-[11px] text-amber-700 mt-3 bg-amber-50 p-2.5 rounded border border-amber-200 text-left"><i class="fas fa-info-circle mr-1"></i> Ini adalah layanan Hotline Administrasi. PIC pendamping ujian Zoom akan muncul setelah jadwal divalidasi sistem.</p>' : '';
 
         let htmlContent = '<p class="text-sm text-slate-500 mb-4">Informasi Pendampingan Responsi:</p>' +
@@ -735,7 +804,7 @@
       });
 
       // ==========================================
-      // RENDER PHASE 1
+      // RENDER PHASE 1 & 2 (Tetap Sama)
       // ==========================================
       function loadPhase1Data() { 
           document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat data...</td></tr>'; 
@@ -804,9 +873,6 @@
         tMobile.innerHTML = htmlMobile;
       }
 
-      // ==========================================
-      // RENDER PHASE 2
-      // ==========================================
       function loadGlobalData() { 
           document.getElementById('tabelBodyDesktop').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat jadwal...</td></tr>'; 
           document.getElementById('tabelBodyMobile').innerHTML = '<div class="text-center py-6 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat jadwal...</div>'; 
@@ -848,7 +914,7 @@
           let badgeClass = 'bg-slate-100 text-slate-600 border border-slate-200'; 
           
           if (stat.includes('selesai')) badgeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100'; 
-          else if (stat.includes('belum isi')) badgeClass = 'bg-blue-50 text-blue-600 border border-blue-200'; 
+          else if (stat.includes('belum isi')) badgeClass = 'bg-purple-50 text-purple-600 border border-purple-200'; 
           else if (stat.includes('belum responsi')) badgeClass = 'bg-amber-50 text-amber-600 border border-amber-100';
           
           let tglDisplay = row.tanggal === "" ? '<span class="text-slate-400 italic text-xs">Belum ditentukan</span>' : '<div class="font-medium text-slate-800 text-sm">' + row.tanggal + '</div>'; 
@@ -956,7 +1022,48 @@
             setTimeout(() => { Swal.close(); setupFormJadwal({ isNew: true, nim: nim }); }, 600);
             return;
         }
+
+        // LOGIKA BARU UNTUK KUESIONER EVALUASI (DENGAN CEGATAN EDIT)
+        if (currentAction === 'evaluasi') {
+            google.script.run
+              .withSuccessHandler(function(data) {
+                  if (data.status === "error") {
+                      Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Akses Ditolak</span>', html: '<span class="text-sm text-slate-600">' + data.message + '</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } });
+                      return;
+                  }
+                  Swal.close();
+
+                  // Cek apakah mahasiswa sudah pernah ngisi kuesioner
+                  if (data.isEditEvaluasi) {
+                      Swal.fire({
+                          title: '<span class="font-semibold text-slate-800 text-lg">Sudah Mengisi Evaluasi</span>',
+                          html: '<span class="text-sm text-slate-600">Anda sudah mengisi evaluasi pasca responsi sebelumnya. Apakah Anda ingin mengubah data tersebut?</span>',
+                          icon: 'info',
+                          showCancelButton: true,
+                          confirmButtonText: 'Ya, Ubah Data',
+                          cancelButtonText: 'Batal',
+                          confirmButtonColor: '#9333ea', // Ungu
+                          cancelButtonColor: '#94a3b8',
+                          customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
+                      }).then((res) => {
+                          if (res.isConfirmed) {
+                              setupFormEvaluasi(data);
+                          } else {
+                              toggleModal(false);
+                              resetModal();
+                          }
+                      });
+                  } else {
+                      // Belum pernah ngisi, langsung buka form
+                      setupFormEvaluasi(data);
+                  }
+              })
+              .withFailureHandler(handleError)
+              .getDataForEvaluasi(nim);
+            return;
+        }
         
+        // Logika aslinya (Surat / Jadwal)
         google.script.run
           .withSuccessHandler(function(data) {
             if (data.isFinished) { 
@@ -980,13 +1087,122 @@
           .getDataByNIM(nim);
       }
 
+      function setupFormEvaluasi(data) {
+          document.getElementById('searchSection').classList.add('hidden'); 
+          document.getElementById('formSection').classList.add('hidden'); 
+          document.getElementById('formSuratSection').classList.add('hidden'); 
+          document.getElementById('formEvaluasiSection').classList.remove('hidden'); 
+
+          document.getElementById('modalFooterSection').classList.remove('hidden'); 
+          document.getElementById('modalFooterSection').classList.add('flex'); 
+          document.getElementById('btnSubmitJadwal').classList.add('hidden'); 
+          document.getElementById('btnSubmitSurat').classList.add('hidden');
+          document.getElementById('btnSubmitEvaluasi').classList.remove('hidden');
+
+          // Ganti Judul Jika Mode Edit
+          if (data.isEditEvaluasi) {
+              document.getElementById('evaluasiTitleBadge').innerText = "Ubah Data Evaluasi";
+              document.getElementById('evaluasiSubBadge').innerText = "Silakan perbarui data evaluasi pasca responsi Anda di bawah ini.";
+          } else {
+              document.getElementById('evaluasiTitleBadge').innerText = "Selamat! Responsi Anda Telah Selesai";
+              document.getElementById('evaluasiSubBadge').innerText = "Lengkapi data evaluasi berikut untuk keperluan pengiriman apresiasi kepada pihak perusahaan.";
+          }
+
+          // Isi Data Readonly
+          document.getElementById('rowIdxEvaluasi').value = data.row;
+          document.getElementById('teksNamaEvaluasi').innerText = data.nama;
+          document.getElementById('teksNimEvaluasi').innerText = data.nim;
+          document.getElementById('teksSpvEvaluasi').innerText = data.spv;
+          document.getElementById('teksPerusahaanEvaluasi').innerText = data.perusahaan;
+          document.getElementById('teksAlamatEvaluasi').innerText = data.alamat || "Data alamat kosong";
+
+          // Populate Dropdown SPV Berdampak (HANYA SPV miliknya + Lainnya)
+          const selectSpv = document.getElementById('spvBerdampakDropdown');
+          selectSpv.innerHTML = '<option value="" disabled selected>Pilih Pembimbing...</option>';
+          if (data.spv && data.spv !== "-") {
+              selectSpv.appendChild(new Option(data.spv, data.spv));
+          }
+          selectSpv.appendChild(new Option("Pilih Lainnya... (Masukkan Manual)", "Lainnya"));
+          
+          // PRE-FILL DATA LAMA JIKA MODE EDIT
+          if (data.isEditEvaluasi) {
+              // 1. Kehadiran SPV
+              const radios = document.getElementsByName('kehadiranSpvEvaluasi');
+              radios.forEach(r => {
+                  if (r.value === data.kehadiranSpvEvaluasi) {
+                      r.checked = true;
+                  }
+              });
+              togglePenggantiEvaluasi();
+
+              // Jika tidak hadir, isikan nama pengganti
+              if (data.kehadiranSpvEvaluasi === "Tidak Hadir") {
+                  document.getElementById('namaPenggantiEvaluasi').value = data.namaPenggantiEvaluasi || "";
+                  document.getElementById('jabatanPenggantiEvaluasi').value = data.jabatanPenggantiEvaluasi || "";
+              }
+
+              // 2. SPV Berdampak
+              if (data.spvBerdampak) {
+                  if (data.spvBerdampak === data.spv) {
+                      // Jika dia pilih SPV utama
+                      selectSpv.value = data.spv;
+                      toggleSpvBerdampakManual();
+                  } else {
+                      // Pasti dia pilih Lainnya dan nulis manual
+                      selectSpv.value = "Lainnya";
+                      toggleSpvBerdampakManual();
+                      document.getElementById('namaSpvBerdampakManual').value = data.spvBerdampak || "";
+                      document.getElementById('jabatanSpvBerdampakManual').value = data.jabatanSpvBerdampakManual || "";
+                  }
+              }
+
+          } else {
+              // BUKAN MODE EDIT (KOSONGKAN SEMUA INPUT)
+              const radios = document.getElementsByName('kehadiranSpvEvaluasi');
+              radios.forEach(r => r.checked = false);
+              
+              document.getElementById('divPenggantiEvaluasi').classList.add('hidden');
+              document.getElementById('namaPenggantiEvaluasi').value = "";
+              document.getElementById('jabatanPenggantiEvaluasi').value = "";
+
+              document.getElementById('divSpvBerdampakManual').classList.add('hidden');
+              document.getElementById('namaSpvBerdampakManual').value = "";
+              document.getElementById('jabatanSpvBerdampakManual').value = "";
+          }
+      }
+
+      function togglePenggantiEvaluasi() {
+          let selectedValue = "";
+          const radios = document.getElementsByName('kehadiranSpvEvaluasi');
+          radios.forEach(r => { if(r.checked) selectedValue = r.value; });
+
+          if (selectedValue === "Tidak Hadir") {
+              document.getElementById('divPenggantiEvaluasi').classList.remove('hidden');
+          } else {
+              document.getElementById('divPenggantiEvaluasi').classList.add('hidden');
+          }
+      }
+
+      function toggleSpvBerdampakManual() {
+          const val = document.getElementById('spvBerdampakDropdown').value;
+          if (val === "Lainnya") {
+              document.getElementById('divSpvBerdampakManual').classList.remove('hidden');
+          } else {
+              document.getElementById('divSpvBerdampakManual').classList.add('hidden');
+          }
+      }
+
+
       function setupFormSurat(data) {
         document.getElementById('searchSection').classList.add('hidden'); 
         document.getElementById('formSection').classList.add('hidden'); 
+        document.getElementById('formEvaluasiSection').classList.add('hidden'); 
         document.getElementById('formSuratSection').classList.remove('hidden'); 
+        
         document.getElementById('modalFooterSection').classList.remove('hidden'); 
         document.getElementById('modalFooterSection').classList.add('flex'); 
         document.getElementById('btnSubmitJadwal').classList.add('hidden'); 
+        document.getElementById('btnSubmitEvaluasi').classList.add('hidden'); 
         document.getElementById('btnSubmitSurat').classList.remove('hidden');
         
         document.getElementById('rowIdxSurat').value = data.row; 
@@ -1005,11 +1221,15 @@
       function setupFormJadwal(data) {
         document.getElementById('searchSection').classList.add('hidden'); 
         document.getElementById('formSuratSection').classList.add('hidden'); 
+        document.getElementById('formEvaluasiSection').classList.add('hidden'); 
         document.getElementById('formSection').classList.remove('hidden'); 
+        
         document.getElementById('modalFooterSection').classList.remove('hidden'); 
         document.getElementById('modalFooterSection').classList.add('flex'); 
         document.getElementById('btnSubmitSurat').classList.add('hidden'); 
+        document.getElementById('btnSubmitEvaluasi').classList.add('hidden'); 
         document.getElementById('btnSubmitJadwal').classList.remove('hidden'); 
+        
         document.getElementById('isNewData').value = data.isNew ? "true" : "false"; 
         document.getElementById('nimField').value = data.nim;
         
@@ -1102,11 +1322,78 @@
       function resetModal() { 
           document.getElementById('formSection').classList.add('hidden'); 
           document.getElementById('formSuratSection').classList.add('hidden'); 
+          document.getElementById('formEvaluasiSection').classList.add('hidden'); 
           document.getElementById('modalFooterSection').classList.add('hidden'); 
           document.getElementById('modalFooterSection').classList.remove('flex'); 
           document.getElementById('searchSection').classList.remove('hidden'); 
           document.getElementById('nimInput').value = ''; 
       }
+
+      function submitDataEvaluasi() {
+          // Validasi Radio Kehadiran
+          let kehadiranVal = "";
+          const radios = document.getElementsByName('kehadiranSpvEvaluasi');
+          radios.forEach(r => { if(r.checked) kehadiranVal = r.value; });
+
+          if (!kehadiranVal) {
+              Swal.fire({ icon: 'error', title: 'Belum Lengkap', text: 'Pilih apakah SPV Utama hadir atau tidak.', confirmButtonColor: '#1e293b' }); 
+              return;
+          }
+
+          if (kehadiranVal === "Tidak Hadir") {
+              if (!document.getElementById('namaPenggantiEvaluasi').value.trim() || !document.getElementById('jabatanPenggantiEvaluasi').value.trim()) {
+                  Swal.fire({ icon: 'error', title: 'Belum Lengkap', text: 'Nama dan Jabatan pengganti wajib diisi.', confirmButtonColor: '#1e293b' }); 
+                  return;
+              }
+          }
+
+          // Validasi SPV Berdampak
+          let spvBerdampakVal = document.getElementById('spvBerdampakDropdown').value;
+          if (!spvBerdampakVal) {
+              Swal.fire({ icon: 'error', title: 'Belum Lengkap', text: 'Silakan pilih SPV yang paling berdampak.', confirmButtonColor: '#1e293b' }); 
+              return;
+          }
+
+          if (spvBerdampakVal === "Lainnya") {
+              if (!document.getElementById('namaSpvBerdampakManual').value.trim() || !document.getElementById('jabatanSpvBerdampakManual').value.trim()) {
+                  Swal.fire({ icon: 'error', title: 'Belum Lengkap', text: 'Nama dan Jabatan SPV Berdampak wajib diisi jika memilih opsi Lainnya.', confirmButtonColor: '#1e293b' }); 
+                  return;
+              }
+          }
+
+          Swal.fire({ 
+              title: '<span class="font-semibold text-slate-800 text-lg">Konfirmasi Simpan</span>', 
+              html: '<span class="text-sm text-slate-600">Pastikan data apresiasi pengiriman SPV sudah benar. Yakin simpan?</span>', 
+              icon: 'question', 
+              showCancelButton: true, 
+              confirmButtonColor: '#9333ea', // warna ungu
+              cancelButtonColor: '#94a3b8', 
+              confirmButtonText: 'Yakin', 
+              cancelButtonText: 'Kembali', 
+              reverseButtons: true,
+              customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Swal.fire({ title: 'Menyimpan Kuesioner...', html: '<span class="text-sm text-slate-500">Mohon tunggu sebentar.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+              
+              let info = {
+                  row: document.getElementById('rowIdxEvaluasi').value,
+                  kehadiranSpvEvaluasi: kehadiranVal,
+                  namaPenggantiEvaluasi: document.getElementById('namaPenggantiEvaluasi').value.trim(),
+                  jabatanPenggantiEvaluasi: document.getElementById('jabatanPenggantiEvaluasi').value.trim(),
+                  spvBerdampak: spvBerdampakVal,
+                  namaSpvBerdampakManual: document.getElementById('namaSpvBerdampakManual').value.trim(),
+                  jabatanSpvBerdampakManual: document.getElementById('jabatanSpvBerdampakManual').value.trim()
+              };
+
+              google.script.run
+                .withSuccessHandler(onSuccess)
+                .withFailureHandler(handleError)
+                .simpanEvaluasi(info);
+            }
+          });
+      }
+
 
       function submitDataSurat() {
         let required = ['waMhsSurat', 'perusahaanSurat', 'alamatSurat', 'spvSurat', 'waSpvSurat', 'emailSpvSurat', 'emailSitaSurat'];
@@ -1125,13 +1412,13 @@
 
         Swal.fire({ 
             title: '<span class="font-semibold text-slate-800 text-lg">Konfirmasi Data</span>', 
-            html: '<span class="text-sm text-slate-600">Anda yakin data sudah benar?</span>', 
+            html: '<span class="text-sm text-slate-600">Apakah Anda yakin data ini sudah benar?</span>', 
             icon: 'question', 
             showCancelButton: true, 
             confirmButtonColor: '#2563eb', 
             cancelButtonColor: '#94a3b8', 
-            confirmButtonText: 'Ya, Benar', 
-            cancelButtonText: 'Batal', 
+            confirmButtonText: 'Yakin', 
+            cancelButtonText: 'Kembali', 
             reverseButtons: true,
             customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
         }).then((result) => {
@@ -1181,42 +1468,56 @@
             } 
         }
 
-        Swal.fire({ title: 'Menyimpan Jadwal...', html: '<span class="text-sm text-slate-500">Mohon tunggu sebentar.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-       
-        let info = { 
-            nim: document.getElementById('nimField').value, 
-            nama: document.getElementById('nama').value, 
-            waMhs: document.getElementById('waMhs').value, 
-            perusahaan: document.getElementById('perusahaan').value, 
-            dosbing: document.getElementById('dosbing').value, 
-            tanggal: document.getElementById('tanggal').value, 
-            jam: document.getElementById('jam').value, 
-            spv: document.getElementById('spv').value, 
-            waSpv: document.getElementById('waSpv').value, 
-            emailSpv: document.getElementById('emailSpv').value, 
-            emailSita: document.getElementById('emailSita').value, 
-            kehadiranSpv: document.getElementById('kehadiranSpv').value, 
-            namaPengganti: document.getElementById('namaPengganti').value, 
-            waPengganti: document.getElementById('waPengganti').value, 
-            emailPengganti: document.getElementById('emailPengganti').value 
-        };
-        
-        if (document.getElementById('isNewData').value === "true") { 
-            google.script.run
-              .withSuccessHandler(onSuccess)
-              .withFailureHandler(handleError)
-              .simpanBaru(info); 
-        } else { 
-            info.row = document.getElementById('rowIdx').value; 
-            google.script.run
-              .withSuccessHandler(onSuccess)
-              .withFailureHandler(handleError)
-              .simpanUpdate(info); 
-        }
+        Swal.fire({ 
+            title: '<span class="font-semibold text-slate-800 text-lg">Konfirmasi Simpan</span>', 
+            html: '<span class="text-sm text-slate-600">Apakah Anda yakin data jadwal ini sudah benar?</span>', 
+            icon: 'question', 
+            showCancelButton: true, 
+            confirmButtonColor: '#2563eb', 
+            cancelButtonColor: '#94a3b8', 
+            confirmButtonText: 'Yakin', 
+            cancelButtonText: 'Kembali', 
+            reverseButtons: true,
+            customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            Swal.fire({ title: 'Menyimpan Jadwal...', html: '<span class="text-sm text-slate-500">Mohon tunggu sebentar.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+           
+            let info = { 
+                nim: document.getElementById('nimField').value, 
+                nama: document.getElementById('nama').value, 
+                waMhs: document.getElementById('waMhs').value, 
+                perusahaan: document.getElementById('perusahaan').value, 
+                dosbing: document.getElementById('dosbing').value, 
+                tanggal: document.getElementById('tanggal').value, 
+                jam: document.getElementById('jam').value, 
+                spv: document.getElementById('spv').value, 
+                waSpv: document.getElementById('waSpv').value, 
+                emailSpv: document.getElementById('emailSpv').value, 
+                emailSita: document.getElementById('emailSita').value, 
+                kehadiranSpv: document.getElementById('kehadiranSpv').value, 
+                namaPengganti: document.getElementById('namaPengganti').value, 
+                waPengganti: document.getElementById('waPengganti').value, 
+                emailPengganti: document.getElementById('emailPengganti').value 
+            };
+            
+            if (document.getElementById('isNewData').value === "true") { 
+                google.script.run
+                  .withSuccessHandler(onSuccess)
+                  .withFailureHandler(handleError)
+                  .simpanBaru(info); 
+            } else { 
+                info.row = document.getElementById('rowIdx').value; 
+                google.script.run
+                  .withSuccessHandler(onSuccess)
+                  .withFailureHandler(handleError)
+                  .simpanUpdate(info); 
+            }
+          }
+        });
       }
 
       function onSuccess(response) {
-        // TANGKAP PENOLAKAN DARI SERVER (BENTROK DOSEN DLL)
         if(response && response.status === "error") { 
             Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Gagal Menyimpan</span>', html: '<span class="text-sm text-slate-600">' + response.message + '</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
             return; 
@@ -1225,11 +1526,18 @@
         toggleModal(false); 
         setTimeout(resetModal, 300); 
 
-        // NOTIFIKASI SUKSES (LANGSUNG TAMPILKAN HASIL AUTO-ASSIGN PIC)
-        if (currentAction === 'jadwal_ubah' || currentAction === 'jadwal_baru') {
+        if (currentAction === 'evaluasi') {
+            Swal.fire({ 
+              icon: 'success', 
+              title: '<span class="font-semibold text-slate-800 text-lg">Terima Kasih!</span>', 
+              html: '<span class="text-sm text-slate-600">Evaluasi pasca responsi Anda telah tersimpan. Data ini sangat membantu prodi kami.</span>', 
+              confirmButtonColor: '#9333ea', // ungu
+              customClass: { confirmButton: 'rounded-lg' } 
+            });
+            loadGlobalData();
+        } else if (currentAction === 'jadwal_ubah' || currentAction === 'jadwal_baru') {
           let nimSubmitted = document.getElementById('nimField').value;
           
-          // Tampilkan loading sesaat untuk mengambil data PIC yang baru saja di-plot oleh sistem
           Swal.fire({ 
               title: 'Memproses Penugasan PIC...', 
               html: '<span class="text-sm text-slate-500">Menyinkronkan jadwal Anda dengan sistem.</span>', 
@@ -1245,7 +1553,6 @@
                     loadDropdownOptions();
                 })
                 .withFailureHandler(function() {
-                    // Fallback jika gagal ambil data terbaru
                     tampilkanSuksesPIC({ pic: currentPic, waPic: currentWaPic });
                     loadGlobalData();
                 })
@@ -1269,12 +1576,10 @@
       }
 
       function tampilkanSuksesPIC(data) {
-        // Cek apakah mendapat PIC Teknis atau masih menunggu/jatuh ke Hotline Admin
         let picName = data.pic && data.pic !== "-" && data.pic !== "Menunggu Admin" ? data.pic : "Admin / Helpdesk Pusat";
-        let picWa = data.waPic || "6281234567890"; // Ganti dengan nomor WA Hotline Admin Prodi (Format 62xxx)
+        let picWa = data.waPic || "6281234567890"; 
         let isHotlineMode = (!data.pic || data.pic === "-" || data.pic === "Menunggu Admin");
 
-        // PASTIKAN FORMAT WA UNTUK LINK MENGGUNAKAN 62 (Hapus 0 atau 8 di depan)
         let waLink = picWa ? picWa.replace(/[^0-9]/g, '') : '';
         if (waLink.startsWith('0')) waLink = '62' + waLink.substring(1);
         if (waLink.startsWith('8')) waLink = '62' + waLink;
