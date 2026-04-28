@@ -7,7 +7,7 @@
     
     <!-- 
     ========================================================================
-    🔥 THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🔥
+    🛠️ THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🛠️
     ========================================================================
     Langkah saat kamu memindahkan kode ini ke Google Apps Script:
     1. Hapus tag <script src="https://cdn.tailwindcss.com"></script> di bawah.
@@ -107,7 +107,7 @@
 
         <div id="dashboardScreen" class="hidden animate__animated animate__fadeIn">
             
-            <!-- 🔔 WADAH NOTIFIKASI REAL-TIME (POLLING) 🔔 -->
+            <!-- 🛎️ WADAH NOTIFIKASI REAL-TIME (POLLING) 🛎️ -->
             <div id="notificationArea" class="hidden mb-5">
                 <!-- Card Notifikasi akan diinject ke sini via Javascript -->
             </div>
@@ -400,7 +400,7 @@
         }
 
         // ==========================================
-        // MANAJEMEN NOTIFIKASI & POLLING
+        // MANAJEMEN NOTIFIKASI & POLLING (HEMAT KUOTA)
         // ==========================================
         function selectPic(picName) { 
             currentActivePic = picName; 
@@ -427,8 +427,15 @@
 
         function startPolling() {
             if(pollingInterval) clearInterval(pollingInterval);
-            // Polling dieksekusi setiap 60 detik (60000 ms)
-            pollingInterval = setInterval(cekNotifSekarang, 60000);
+            
+            // Polling dieksekusi setiap 60 detik (60000 ms), tapi HANYA jika tab browser aktif/terlihat
+            pollingInterval = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    cekNotifSekarang();
+                } else {
+                    console.log("Tab tidak aktif. Polling notifikasi ditunda untuk menghemat kuota Google Apps Script.");
+                }
+            }, 60000);
         }
 
         function stopPolling() {
