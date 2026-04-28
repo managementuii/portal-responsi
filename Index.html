@@ -417,9 +417,12 @@
                     <div class="font-medium text-slate-800 text-sm" id="teksSpvEvaluasi">-</div>
                     <div class="text-xs text-slate-500 truncate" id="teksPerusahaanEvaluasi">-</div>
                   </div>
-                  <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Alamat Pengiriman Surat / Sertifikat</label>
-                    <div class="text-sm text-slate-700 p-2.5 bg-white border border-slate-200 rounded-md min-h-[40px]" id="teksAlamatEvaluasi">-</div>
+                  
+                  <!-- PERUBAHAN DI SINI: Alamat menjadi Editable Textarea -->
+                  <div class="md:col-span-2 mt-2">
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Alamat Pengiriman Ucapan Terima Kasih <span class="text-rose-500">*</span></label>
+                    <textarea id="alamatEvaluasi" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-colors bg-white shadow-sm" rows="3" placeholder="Masukkan alamat lengkap pengiriman ucapan terima kasih ke perusahaan..."></textarea>
+                    <p class="text-xs text-slate-500 mt-1">Pastikan alamat ini benar dan lengkap (jalan, RT/RW, kelurahan, kecamatan, kota, kode pos) agar paket tidak nyasar.</p>
                   </div>
                 </div>
               </div>
@@ -557,7 +560,6 @@
 
       window.onload = function() {
         if (typeof google === 'undefined') {
-          // Mode lokal testing
           document.getElementById('appLoader').classList.add('hidden'); 
           document.getElementById('mainContent').classList.remove('hidden'); 
           document.getElementById('btnDaftar').classList.remove('hidden'); 
@@ -804,7 +806,7 @@
       });
 
       // ==========================================
-      // RENDER PHASE 1 & 2 (Tetap Sama)
+      // RENDER PHASE 1 & 2 
       // ==========================================
       function loadPhase1Data() { 
           document.getElementById('tabelBodyPhase1Desktop').innerHTML = '<tr><td colspan="4" class="text-center py-10 text-slate-500"><div class="spinner-css inline-block align-middle me-2 w-5 h-5 border-[3px]"></div> Memuat data...</td></tr>'; 
@@ -921,6 +923,26 @@
           let jamDisplay = row.jam === "" ? '' : '<div class="text-xs text-slate-500 mt-1">' + row.jam + ' WIB</div>'; 
           let jadwalDisplay = '<div>' + tglDisplay + jamDisplay + '</div>';
           
+          // Logika untuk menampilkan nama PIC & Link WA
+          let picDisplay = '';
+          if (row.pic && row.pic !== '-' && row.pic !== 'Menunggu Admin' && row.pic !== '') {
+              let picText = row.pic;
+              let cleanWaPic = row.waPic ? row.waPic.replace(/[^0-9]/g, '') : '';
+              
+              if (cleanWaPic.startsWith('0')) cleanWaPic = '62' + cleanWaPic.substring(1);
+              if (cleanWaPic.startsWith('8')) cleanWaPic = '62' + cleanWaPic;
+              
+              if (cleanWaPic) {
+                  // Membuat nama PIC bisa diklik ke WA
+                  picText = '<a href="https://wa.me/' + cleanWaPic + '" target="_blank" class="text-blue-600 hover:text-blue-800 underline decoration-blue-300 hover:decoration-blue-600 transition-colors" title="Chat WA PIC">' + row.pic + '</a>';
+              }
+              
+              picDisplay = '<div class="text-[11px] text-blue-600 font-medium mt-1">PIC: ' + picText + '</div>';
+          }
+
+          // Nama SPV text plain (tanpa hyperlink)
+          let spvText = row.spv;
+          
           htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
                          '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
                          '<td class="px-5 py-4">' + jadwalDisplay + '</td>' +
@@ -930,7 +952,8 @@
                          '</td>' +
                          '<td class="px-5 py-4">' +
                             '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-slate-500 text-xs">SPV: ' + row.spv + '</div>' +
+                            '<div class="text-slate-500 text-xs">SPV: ' + spvText + '</div>' +
+                            picDisplay +
                          '</td>' +
                          '<td class="px-5 py-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></td></tr>';
           
@@ -949,7 +972,8 @@
                         '<div class="pt-1">' +
                             '<div class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Mitra Evaluasi</div>' +
                             '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-xs text-slate-500">SPV: ' + row.spv + '</div>' +
+                            '<div class="text-xs text-slate-500">SPV: ' + spvText + '</div>' +
+                            picDisplay +
                         '</div></div>';
         });
         
@@ -1108,13 +1132,15 @@
               document.getElementById('evaluasiSubBadge').innerText = "Lengkapi data evaluasi berikut untuk keperluan pengiriman apresiasi kepada pihak perusahaan.";
           }
 
-          // Isi Data Readonly
+          // Isi Data Readonly & Pre-fill Alamat
           document.getElementById('rowIdxEvaluasi').value = data.row;
           document.getElementById('teksNamaEvaluasi').innerText = data.nama;
           document.getElementById('teksNimEvaluasi').innerText = data.nim;
           document.getElementById('teksSpvEvaluasi').innerText = data.spv;
           document.getElementById('teksPerusahaanEvaluasi').innerText = data.perusahaan;
-          document.getElementById('teksAlamatEvaluasi').innerText = data.alamat || "Data alamat kosong";
+          
+          // ALAMAT MENJADI TEXTAREA
+          document.getElementById('alamatEvaluasi').value = data.alamat || "";
 
           // Populate Dropdown SPV Berdampak (HANYA SPV miliknya + Lainnya)
           const selectSpv = document.getElementById('spvBerdampakDropdown');
@@ -1330,6 +1356,13 @@
       }
 
       function submitDataEvaluasi() {
+          // Validasi Alamat (TAMBAHAN BARU)
+          let alamatVal = document.getElementById('alamatEvaluasi').value.trim();
+          if (!alamatVal) {
+              Swal.fire({ icon: 'error', title: 'Belum Lengkap', text: 'Alamat pengiriman ucapan terima kasih wajib diisi.', confirmButtonColor: '#1e293b' }); 
+              return;
+          }
+
           // Validasi Radio Kehadiran
           let kehadiranVal = "";
           const radios = document.getElementsByName('kehadiranSpvEvaluasi');
@@ -1378,6 +1411,8 @@
               
               let info = {
                   row: document.getElementById('rowIdxEvaluasi').value,
+                  nim: document.getElementById('teksNimEvaluasi').innerText.trim(), 
+                  alamatEvaluasi: alamatVal, // MENGIRIM DATA ALAMAT BARU KE BACKEND
                   kehadiranSpvEvaluasi: kehadiranVal,
                   namaPenggantiEvaluasi: document.getElementById('namaPenggantiEvaluasi').value.trim(),
                   jabatanPenggantiEvaluasi: document.getElementById('jabatanPenggantiEvaluasi').value.trim(),
