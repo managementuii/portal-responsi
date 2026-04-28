@@ -68,17 +68,29 @@
       
       <!-- MENU TOMBOL MAHASISWA -->
       <div class="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm mb-5">
-        <h5 class="font-semibold text-lg text-slate-800 mb-1">Menu Mahasiswa</h5>
-        <p class="text-slate-500 font-medium text-sm mb-5" id="teksMenu">Pilih menu di bawah ini sesuai dengan tahapan magang yang sedang berlangsung.</p>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+          <div>
+            <h5 class="font-semibold text-lg text-slate-800 mb-1">Menu Mahasiswa</h5>
+            <p class="text-slate-500 font-medium text-sm" id="teksMenu">Pilih menu di bawah ini sesuai dengan tahapan magang yang sedang berlangsung.</p>
+          </div>
+          
+          <!-- TOMBOL PEMANCING PANDUAN (BARU) -->
+          <button onclick="togglePanduanModal(true)" class="relative shrink-0 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
+            <span class="absolute -top-1 -right-1 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border border-white"></span>
+            </span>
+            <i class="fas fa-map-signs"></i> Alur & Panduan
+          </button>
+        </div>
         
-        <div class="flex flex-wrap gap-3 mb-2">
+        <div class="flex flex-wrap gap-3 mb-2 pt-2 border-t border-slate-100">
           <button id="btnDaftar" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('jadwal_baru')">
             <i class="fas fa-calendar-plus opacity-80"></i> Daftar Ulang Responsi
           </button>
           <button id="btnUbah" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="showWarningUbahData()">
             <i class="fas fa-edit text-slate-400"></i> Ubah Data Responsi
           </button>
-          <!-- TOMBOL EVALUASI BARU -->
           <button id="btnEvaluasi" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('evaluasi')">
             <i class="fas fa-clipboard-check opacity-80"></i> Evaluasi Pasca Responsi
           </button>
@@ -109,10 +121,6 @@
             <div class="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto">
               <a href="https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09" target="_blank" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
                 <i class="fas fa-video opacity-80"></i> <span>Masuk Zoom</span>
-              </a>
-              <a href="#" target="_blank" class="relative w-full sm:w-auto bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
-                <span class="pulse-dot"><span class="pulse-dot-anim"></span><span class="pulse-dot-core"></span></span>
-                <i class="fas fa-book-open opacity-80"></i> <span>Panduan</span>
               </a>
               <a href="https://drive.google.com/uc?export=download&id=1sm1Vq4V6LwssqkOb4MPtux_7mLntaUHg" target="_blank" class="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 font-medium py-2.5 px-5 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
                 <i class="fas fa-download text-slate-400"></i> <span>Unduh VB</span>
@@ -203,15 +211,101 @@
       </div>
     </div> <!-- End Main Content -->
 
-    <!-- MODAL UTAMA MULTIFUNGSI -->
-    <div id="formModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+    <!-- MODAL ALUR PANDUAN (BARU) -->
+    <div id="panduanModal" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+      <div id="panduanModalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300">
+        
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl shrink-0">
+          <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+            <i class="fas fa-map-signs text-blue-500"></i> Alur & Panduan Responsi
+          </h3>
+          <button onclick="togglePanduanModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex justify-center items-center">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="p-6 overflow-y-auto grow bg-slate-50/50">
+          <p class="text-sm text-slate-600 mb-6 bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <i class="fas fa-info-circle text-blue-500 mr-1"></i> Mohon baca alur berikut dengan seksama agar proses responsi Anda berjalan lancar tanpa kendala.
+          </p>
+
+          <div class="border-l-2 border-slate-200 ml-3 space-y-8 pb-4 mt-2">
+            
+            <!-- Tahap 1 -->
+            <div class="relative pl-6">
+              <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">1</div>
+              <h4 class="font-bold text-slate-800 mb-2">Administrasi & Koordinasi Jadwal</h4>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Waktu pelaksanaan responsi: <b>1 – 30 Mei 2026 (08.00–17.00 WIB)</b>.</li>
+                <li>Wajib mengisi data melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Konfirmasi Surat SPV</span>.</li>
+                <li>Surat undangan akan diproses setelah <b>seluruh data mahasiswa lengkap</b>, dan akan dikirim ke email SPV & Mahasiswa.</li>
+                <li>Koordinasikan jadwal dengan SPV (dapat diwakilkan) lalu konfirmasikan ke Dosen Pembimbing.</li>
+              </ul>
+            </div>
+
+            <!-- Tahap 2 -->
+            <div class="relative pl-6">
+              <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">2</div>
+              <h4 class="font-bold text-slate-800 mb-2">Pendaftaran & Persiapan</h4>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Daftarkan jadwal di portal pada menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Daftar Ulang Responsi</span>.</li>
+                <li class="text-rose-600 font-medium">Sangat Penting: Pastikan email SPV valid & sinkron dengan SITA, karena Rubrik Penilaian akan dikirim ke email tersebut.</li>
+                <li>Upload Laporan Magang ke SITA <b>Maksimal H-3</b> sebelum jadwal responsi.</li>
+                <li>Pastikan Dosen Pembimbing menyetujui di SITA (Klik <i>"Siap Responsi"</i>). Jika H-2 belum disetujui, segera lapor ke PIC melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Bantuan Responsi</span>.</li>.</li>
+              </ul>
+            </div>
+
+            <!-- Tahap 3 -->
+            <div class="relative pl-6">
+              <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">3</div>
+              <h4 class="font-bold text-slate-800 mb-2">Pelaksanaan & Perubahan Jadwal</h4>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Pantau jadwal melalui portal dan akses Zoom melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Masuk Zoom</span>.</li>
+                <li>Siapkan PPT presentasi Anda. Virtual Background (VB) dapat ditemukan di menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Unduh VB</span>.</li>
+              </ul>
+              
+              <div class="mt-3 mb-1.5 text-sm font-semibold text-slate-800">Jika perlu perubahan jadwal:</div>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Sepakati waktu baru dengan SPV dan Dosen Pembimbing.</li>
+                <li>Perbarui data di portal melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Ubah Data Responsi</span>.</li>
+              </ul>
+
+              <div class="mt-3 mb-1.5 text-sm font-semibold text-slate-800">Jika Dosen Pembimbing berhalangan mendadak:</div>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Responsi <b>tetap dilaksanakan</b> dengan dosen pengganti dari Prodi.</li>
+                <li>Dosen utama dapat meninjau rekaman dan meminta penjadwalan ulang jika diperlukan.</li>
+              </ul>
+            </div>
+
+            <!-- Tahap 4 -->
+            <div class="relative pl-6">
+              <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">4</div>
+              <h4 class="font-bold text-slate-800 mb-2">Pasca Responsi</h4>
+              <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
+                <li>Setelah responsi selesai, mahasiswa <b>wajib</b> mengisi form <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Evaluasi Pasca Responsi</span> di portal ini.</li>
+                <li>Data evaluasi akan digunakan untuk memproses pengiriman ucapan terima kasih resmi kepada perusahaan.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+        
+        <div class="px-6 py-4 border-t border-slate-100 flex justify-end bg-white rounded-b-2xl shrink-0">
+          <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm w-full sm:w-auto" onclick="togglePanduanModal(false)">Saya Mengerti</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- MODAL UTAMA MULTIFUNGSI (JADWAL/SURAT/EVALUASI) -->
+    <div id="formModal" class="fixed inset-0 z-[100] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
       <div id="formModalContent" class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300">
         
         <!-- Modal Header -->
         <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl shrink-0">
           <h3 class="font-semibold text-slate-800 text-lg" id="formModalLabel">Form Responsi</h3>
-          <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors bg-transparent border-none">
-            <i class="fas fa-times text-xl"></i>
+          <button onclick="toggleModal(false)" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex justify-center items-center">
+            <i class="fas fa-times text-sm"></i>
           </button>
         </div>
         
@@ -418,7 +512,6 @@
                     <div class="text-xs text-slate-500 truncate" id="teksPerusahaanEvaluasi">-</div>
                   </div>
                   
-                  <!-- PERUBAHAN DI SINI: Alamat menjadi Editable Textarea -->
                   <div class="md:col-span-2 mt-2">
                     <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Alamat Pengiriman Ucapan Terima Kasih <span class="text-rose-500">*</span></label>
                     <textarea id="alamatEvaluasi" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-colors bg-white shadow-sm" rows="3" placeholder="Masukkan alamat lengkap pengiriman ucapan terima kasih ke perusahaan..."></textarea>
@@ -509,6 +602,23 @@
       function toggleModal(show) {
           const m = document.getElementById('formModal');
           const c = document.getElementById('formModalContent');
+          if(show) {
+              m.classList.remove('hidden');
+              void m.offsetWidth; 
+              m.classList.remove('opacity-0');
+              c.classList.remove('scale-95', 'opacity-0');
+              c.classList.add('scale-100', 'opacity-100');
+          } else {
+              m.classList.add('opacity-0');
+              c.classList.remove('scale-100', 'opacity-100');
+              c.classList.add('scale-95', 'opacity-0');
+              setTimeout(() => m.classList.add('hidden'), 300);
+          }
+      }
+
+      function togglePanduanModal(show) {
+          const m = document.getElementById('panduanModal');
+          const c = document.getElementById('panduanModalContent');
           if(show) {
               m.classList.remove('hidden');
               void m.offsetWidth; 
