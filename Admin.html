@@ -5,15 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Panel - Portal Magang</title>
   
-  <!-- Tailwind CSS (Development Mode) -->
-  <!-- 
-  ========================================================================
-  Ganti script CDN ini dengan output.css hasil build Tailwind untuk production.
-  ========================================================================
-  -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
@@ -21,116 +17,179 @@
     
     .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .table-container { -webkit-overflow-scrolling: touch; }
+    .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
+    .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   </style>
 </head>
-<body class="antialiased py-8 px-4 sm:py-12">
+<body class="antialiased py-8 px-4 sm:py-12 max-w-5xl mx-auto flex flex-col min-h-screen">
 
-  <div class="max-w-3xl mx-auto">
-    
+  <div class="flex-grow">
     <!-- HEADER ADMIN -->
-    <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl mb-8 shadow-md text-center">
-      <h3 class="font-bold text-2xl mb-1.5 flex items-center justify-center gap-2">⚙️ Admin Panel</h3>
-      <p class="text-slate-400 m-0 text-sm font-medium">Pusat Kontrol Portal Magang UII</p>
+    <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl mb-8 shadow-md flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="text-center sm:text-left">
+        <h3 class="font-bold text-2xl mb-1.5 flex items-center justify-center sm:justify-start gap-2">⚙️ Admin Panel</h3>
+        <p class="text-slate-400 m-0 text-sm font-medium">Pusat Kontrol Portal Magang UII</p>
+      </div>
+      <a href="?page=index" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors backdrop-blur-sm flex items-center gap-2">
+        <i class="fas fa-external-link-alt"></i> Buka Portal Mahasiswa
+      </a>
     </div>
 
-    <!-- MAIN CARD -->
-    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 mb-6">
-      <h5 class="font-bold text-lg text-center mb-8 text-slate-800">Pilih Fase Aplikasi yang Aktif</h5>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       
-      <!-- LOADER -->
-      <div id="loaderAdmin" class="flex flex-col items-center justify-center py-10">
-        <div class="spinner-css mb-4"></div>
-        <p class="text-slate-500 font-medium text-sm">Membaca status server...</p>
+      <!-- KOLOM KIRI: PENGATURAN FASE (1 Kolom di Desktop) -->
+      <div class="lg:col-span-1 flex flex-col gap-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex-grow">
+          <h5 class="font-bold text-base mb-6 text-slate-800 flex items-center gap-2">
+            <i class="fas fa-toggle-on text-blue-500"></i> Mode Aplikasi Aktif
+          </h5>
+          
+          <!-- LOADER -->
+          <div id="loaderAdmin" class="flex flex-col items-center justify-center py-6">
+            <div class="spinner-css mb-3 w-8 h-8 border-[3px]"></div>
+            <p class="text-slate-500 font-medium text-xs">Membaca server...</p>
+          </div>
+
+          <!-- KONTINER KARTU FASE -->
+          <div class="hidden flex flex-col gap-4" id="phaseContainer">
+            <!-- KARTU FASE 1 -->
+            <div id="cardPhase1" onclick="changePhase(1)" class="group border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden">
+              <div class="flex items-center gap-4 relative z-10">
+                <div class="text-3xl group-hover:scale-110 transition-transform duration-300">📝</div>
+                <div>
+                  <h5 class="font-bold text-blue-600 text-base mb-0.5">Fase 1</h5>
+                  <h6 class="font-semibold text-slate-800 text-sm">Administrasi Surat</h6>
+                </div>
+              </div>
+              <div class="hidden absolute top-3 right-3 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded" id="badgePhase1">Aktif</div>
+            </div>
+
+            <!-- KARTU FASE 2 -->
+            <div id="cardPhase2" onclick="changePhase(2)" class="group border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 relative overflow-hidden">
+              <div class="flex items-center gap-4 relative z-10">
+                <div class="text-3xl group-hover:scale-110 transition-transform duration-300">🗓️</div>
+                <div>
+                  <h5 class="font-bold text-amber-500 text-base mb-0.5">Fase 2</h5>
+                  <h6 class="font-semibold text-slate-800 text-sm">Jadwal Responsi</h6>
+                </div>
+              </div>
+              <div class="hidden absolute top-3 right-3 bg-emerald-500 text-white text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded" id="badgePhase2">Aktif</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- KONTINER KARTU FASE -->
-      <div class="hidden grid grid-cols-1 md:grid-cols-2 gap-6" id="phaseContainer">
-        
-        <!-- KARTU FASE 1 -->
-        <!-- Kelas awal (Inactive) diatur via JS, tapi sebagai base kita pasang style defaultnya -->
-        <div id="cardPhase1" onclick="changePhase(1)" class="group border-2 rounded-2xl p-8 cursor-pointer transition-all duration-300 text-center h-full flex flex-col items-center justify-center hover:-translate-y-1.5">
-          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">📝</div>
-          <h5 class="font-bold text-blue-600 text-lg mb-1">Fase 1</h5>
-          <h6 class="font-bold text-slate-800 mb-3">Administrasi Surat</h6>
-          <p class="text-slate-500 text-xs leading-relaxed mb-0">Hanya menampilkan form Konfirmasi Surat SPV. Tombol dan Jadwal Responsi disembunyikan.</p>
-          <div class="hidden mt-5 bg-emerald-500 text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-md" id="badgePhase1">✓ Sedang Aktif</div>
-        </div>
+      <!-- KOLOM KANAN: JADWAL HARI INI (2 Kolom di Desktop) -->
+      <div class="lg:col-span-2">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
+            <div>
+              <h5 class="font-bold text-lg text-slate-800 flex items-center gap-2 mb-1">
+                <i class="fas fa-calendar-day text-blue-500"></i> Jadwal Responsi Hari Ini
+              </h5>
+              <p id="todayDateLabel" class="text-sm font-medium text-slate-500">Memuat tanggal...</p>
+            </div>
+            <button onclick="loadTodaySchedule()" class="text-sm bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+              <i class="fas fa-sync-alt text-xs"></i> Muat Ulang
+            </button>
+          </div>
 
-        <!-- KARTU FASE 2 -->
-        <div id="cardPhase2" onclick="changePhase(2)" class="group border-2 rounded-2xl p-8 cursor-pointer transition-all duration-300 text-center h-full flex flex-col items-center justify-center hover:-translate-y-1.5">
-          <div class="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">🗓️</div>
-          <h5 class="font-bold text-amber-500 text-lg mb-1">Fase 2</h5>
-          <h6 class="font-bold text-slate-800 mb-3">Jadwal Responsi</h6>
-          <p class="text-slate-500 text-xs leading-relaxed mb-0">Menampilkan tabel Jadwal Ujian dan mengaktifkan form Pendaftaran & Ubah Jadwal Responsi.</p>
-          <div class="hidden mt-5 bg-emerald-500 text-white text-[11px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-md" id="badgePhase2">✓ Sedang Aktif</div>
-        </div>
+          <!-- Loader Jadwal -->
+          <div id="scheduleLoader" class="flex flex-col items-center justify-center py-12 flex-grow">
+            <div class="spinner-css mb-3 w-8 h-8 border-[3px]"></div>
+            <p class="text-slate-500 font-medium text-sm">Menarik jadwal terbaru...</p>
+          </div>
 
+          <!-- Empty State (Tidak ada jadwal) -->
+          <div id="emptySchedule" class="hidden flex-col items-center justify-center py-10 flex-grow text-center">
+            <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <i class="fas fa-mug-hot text-2xl text-slate-300"></i>
+            </div>
+            <p class="font-semibold text-slate-700 text-lg mb-1">Tidak ada responsi hari ini</p>
+            <p class="text-slate-500 text-sm">Waktunya istirahat atau fokus pada tugas lain.</p>
+          </div>
+
+          <!-- Tabel Jadwal Hari Ini (Desktop) -->
+          <div id="scheduleContainer" class="hidden flex-grow flex flex-col">
+            <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-xl">
+              <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold">
+                  <tr>
+                    <th class="px-4 py-3 text-center">Jam</th>
+                    <th class="px-4 py-3 text-left">Mahasiswa</th>
+                    <th class="px-4 py-3 text-left">Tim Penguji</th>
+                    <th class="px-4 py-3 text-left">Perusahaan</th>
+                    <th class="px-4 py-3 text-left">PIC Teknis</th>
+                  </tr>
+                </thead>
+                <tbody id="todayTableBody" class="bg-white divide-y divide-slate-100 text-sm">
+                  <!-- Data di-inject via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- List Jadwal Hari Ini (Mobile) -->
+            <div id="todayMobileList" class="grid md:hidden gap-3">
+              <!-- Data di-inject via JS -->
+            </div>
+          </div>
+
+        </div>
       </div>
       
-      <!-- TOMBOL PREVIEW -->
-      <div class="text-center mt-10 hidden" id="infoLink">
-        <a href="?page=index" class="inline-block bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 font-medium px-5 py-2.5 rounded-lg text-sm transition-colors shadow-sm">
-          Lihat Tampilan Mahasiswa ➔
-        </a>
-      </div>
-
     </div>
   </div>
 
   <script>
-    // Memuat status dari backend
+    // Memuat status dari backend saat aplikasi dibuka
     window.onload = function() {
+      // 1. Muat Pengaturan Fase
       if (typeof google === 'undefined') {
-          // Simulasi di lingkungan lokal (Canvas/Browser Biasa)
           setTimeout(() => {
               document.getElementById('loaderAdmin').classList.add('hidden');
               document.getElementById('phaseContainer').classList.remove('hidden');
-              document.getElementById('infoLink').classList.remove('hidden');
               updateUI(2); // Anggap default Fase 2
           }, 800);
       } else {
-          // Mode Produksi Google Apps Script
           google.script.run.withSuccessHandler(function(activePhase) {
             document.getElementById('loaderAdmin').classList.add('hidden');
             document.getElementById('phaseContainer').classList.remove('hidden');
-            document.getElementById('infoLink').classList.remove('hidden');
-            
             updateUI(activePhase);
           }).getPhaseStatus();
       }
+
+      // 2. Muat Jadwal Hari Ini
+      loadTodaySchedule();
     };
 
+    // ==========================================
+    // LOGIKA PENGATURAN FASE (MODUL KIRI)
+    // ==========================================
     function updateUI(activePhase) {
       const card1 = document.getElementById('cardPhase1');
       const card2 = document.getElementById('cardPhase2');
       const badge1 = document.getElementById('badgePhase1');
       const badge2 = document.getElementById('badgePhase2');
 
-      // Fungsi Helper untuk mengatur state kartu
       const setInactive = (card, badge) => {
         card.classList.remove('border-emerald-500', 'bg-emerald-50', 'ring-4', 'ring-emerald-500/10');
-        card.classList.add('border-slate-200', 'bg-white', 'hover:border-blue-500', 'hover:shadow-lg');
+        card.classList.add('border-slate-200', 'bg-white', 'hover:border-blue-300');
         badge.classList.add('hidden');
-        badge.classList.remove('inline-block');
       };
 
       const setActive = (card, badge) => {
-        card.classList.remove('border-slate-200', 'bg-white', 'hover:border-blue-500', 'hover:shadow-lg');
+        card.classList.remove('border-slate-200', 'bg-white', 'hover:border-blue-300');
         card.classList.add('border-emerald-500', 'bg-emerald-50', 'ring-4', 'ring-emerald-500/10');
         badge.classList.remove('hidden');
-        badge.classList.add('inline-block');
       };
 
-      // Reset keduanya menjadi tidak aktif
       setInactive(card1, badge1);
       setInactive(card2, badge2);
 
-      // Set kartu mana yang sedang aktif
-      if (activePhase === 1) {
-        setActive(card1, badge1);
-      } else {
-        setActive(card2, badge2);
-      }
+      if (activePhase === 1) setActive(card1, badge1);
+      else setActive(card2, badge2);
     }
 
     function changePhase(newPhase) {
@@ -139,47 +198,162 @@
         html: `<span class="text-sm text-slate-600">Anda yakin ingin memindahkan portal mahasiswa ke <b>Fase ${newPhase}</b>?</span>`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#0f172a', // slate-900
-        cancelButtonColor: '#ef4444',  // rose-500
+        confirmButtonColor: '#0f172a',
+        cancelButtonColor: '#ef4444',
         confirmButtonText: 'Ya, Ubah Sekarang',
         cancelButtonText: 'Batal',
         customClass: { confirmButton: 'rounded-lg font-medium', cancelButton: 'rounded-lg font-medium' }
       }).then((result) => {
         if (result.isConfirmed) {
-          
-          Swal.fire({ 
-              title: 'Menyimpan Pengaturan...', 
-              html: '<span class="text-sm text-slate-500">Memperbarui konfigurasi portal.</span>',
-              allowOutsideClick: false, 
-              didOpen: () => { Swal.showLoading(); }
-          });
+          Swal.fire({ title: 'Menyimpan Pengaturan...', html: '<span class="text-sm text-slate-500">Memperbarui konfigurasi portal.</span>', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
           
           if (typeof google === 'undefined') {
-              // Simulasi penyimpanan lokal
               setTimeout(() => {
                  updateUI(newPhase);
-                 Swal.fire({
-                    icon: 'success',
-                    title: '<span class="font-bold text-slate-800 text-xl">Berhasil!</span>',
-                    html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${newPhase}</b>.</span>`,
-                    confirmButtonColor: '#10b981',
-                    customClass: { confirmButton: 'rounded-lg' }
-                 });
+                 Swal.fire({ icon: 'success', title: 'Berhasil!', html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${newPhase}</b>.</span>`, confirmButtonColor: '#10b981', customClass: { confirmButton: 'rounded-lg' } });
               }, 1000);
           } else {
               google.script.run.withSuccessHandler(function(updatedPhase) {
                 updateUI(updatedPhase);
-                Swal.fire({
-                    icon: 'success',
-                    title: '<span class="font-bold text-slate-800 text-xl">Berhasil!</span>',
-                    html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${updatedPhase}</b>. Semua mahasiswa yang mengakses web akan otomatis melihat tampilan Fase ${updatedPhase}.</span>`,
-                    confirmButtonColor: '#10b981',
-                    customClass: { confirmButton: 'rounded-lg' }
-                });
+                Swal.fire({ icon: 'success', title: 'Berhasil!', html: `<span class="text-sm text-slate-600">Aplikasi sekarang berada di <b>Fase ${updatedPhase}</b>.</span>`, confirmButtonColor: '#10b981', customClass: { confirmButton: 'rounded-lg' } });
               }).setPhaseStatus(newPhase);
           }
         }
       });
+    }
+
+
+    // ==========================================
+    // LOGIKA JADWAL HARI INI (MODUL KANAN)
+    // ==========================================
+    function getTodayString() {
+        // Mendapatkan tanggal hari ini dalam format YYYY-MM-DD sesuai zona waktu Jakarta
+        const today = new Date();
+        const options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
+        const formatter = new Intl.DateTimeFormat('en-CA', options); // en-CA menghasilkan YYYY-MM-DD
+        return formatter.format(today);
+    }
+
+    function getTodayIndoString() {
+        const today = new Date();
+        const options = { timeZone: 'Asia/Jakarta', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return new Intl.DateTimeFormat('id-ID', options).format(today);
+    }
+
+    function loadTodaySchedule() {
+        document.getElementById('scheduleContainer').classList.add('hidden');
+        document.getElementById('emptySchedule').classList.add('hidden');
+        document.getElementById('scheduleLoader').classList.remove('hidden');
+        
+        const todayStr = getTodayString(); // Format: YYYY-MM-DD
+        document.getElementById('todayDateLabel').innerText = getTodayIndoString();
+
+        if (typeof google === 'undefined') {
+            // Dummy Data untuk testing di Canvas
+            setTimeout(() => {
+                let mockData = [
+                    { tanggalInput: todayStr, jam: "08:15", nama: "Ahmad Budi", nim: "20311234", dosbing: "Bpk. Haris", spv: "Pak Joko", perusahaan: "PT Pertamina", pic: "Siti Rahma", status: "Belum Responsi" },
+                    { tanggalInput: "2026-01-01", jam: "09:00", nama: "Bukan Hari Ini", nim: "20311000" }, // Tidak akan tampil
+                    { tanggalInput: todayStr, jam: "13:00", nama: "Rini Melati", nim: "20311235", dosbing: "Ibu Maya", spv: "Ibu Dina", perusahaan: "PT Telkom", pic: "Andi Saputra", status: "Responsi Selesai" }
+                ];
+                renderTodaySchedule(mockData, todayStr);
+            }, 800);
+        } else {
+            google.script.run
+                .withSuccessHandler((data) => renderTodaySchedule(data, todayStr))
+                .withFailureHandler((err) => {
+                    document.getElementById('scheduleLoader').classList.add('hidden');
+                    document.getElementById('emptySchedule').classList.remove('hidden');
+                    document.getElementById('emptySchedule').innerHTML = `<p class="text-rose-500 font-medium">Gagal memuat jadwal: ${err.message}</p>`;
+                })
+                .getPreviewData(); // Mendaur ulang fungsi yang sudah ada di backend
+        }
+    }
+
+    function renderTodaySchedule(allData, todayStr) {
+        document.getElementById('scheduleLoader').classList.add('hidden');
+
+        // Filter hanya untuk data hari ini dan jadwal tidak kosong
+        let todayData = allData.filter(item => item.tanggalInput === todayStr && item.jam !== "");
+        
+        // Urutkan berdasarkan jam dari pagi ke sore
+        todayData.sort((a, b) => (a.jam || "23:59").localeCompare(b.jam || "23:59"));
+
+        if (todayData.length === 0) {
+            document.getElementById('emptySchedule').classList.remove('hidden');
+            return;
+        }
+
+        document.getElementById('scheduleContainer').classList.remove('hidden');
+        document.getElementById('scheduleContainer').classList.add('flex');
+
+        let htmlDesktop = '';
+        let htmlMobile = '';
+
+        todayData.forEach(item => {
+            // Style badge status
+            let stat = (item.status || "").toLowerCase();
+            let dotColor = "bg-rose-500";
+            if (stat.includes('selesai')) dotColor = "bg-emerald-500";
+            else if (stat.includes('belum isi')) dotColor = "bg-amber-500";
+
+            let displayJam = item.jam.substring(0,5); // Hilangkan detik jika ada (08:00:00 -> 08:00)
+
+            // Render Table Row (Desktop)
+            htmlDesktop += `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-4 py-3 text-center">
+                        <span class="font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">${displayJam}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="w-2 h-2 rounded-full ${dotColor} shrink-0" title="${item.status}"></span>
+                            <span class="font-semibold text-slate-800">${item.nama}</span>
+                        </div>
+                        <span class="text-xs text-slate-500 ml-4 font-mono">${item.nim}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <p class="text-xs text-slate-600 mb-0.5"><span class="font-medium text-slate-400">DPL:</span> ${item.dosbing || '-'}</p>
+                        <p class="text-xs text-slate-600"><span class="font-medium text-slate-400">SPV:</span> ${item.spv || '-'}</p>
+                    </td>
+                    <td class="px-4 py-3 text-xs font-medium text-slate-700">
+                        ${item.perusahaan || '-'}
+                    </td>
+                    <td class="px-4 py-3 text-xs">
+                        <span class="text-blue-700 font-semibold">${item.pic && item.pic !== '-' ? item.pic : '<span class="italic text-slate-400">Menunggu Admin</span>'}</span>
+                    </td>
+                </tr>
+            `;
+
+            // Render Card (Mobile)
+            htmlMobile += `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full ${dotColor}"></div>
+                    <div class="flex justify-between items-start mb-2 pl-2">
+                        <div>
+                            <p class="font-bold text-slate-800 leading-tight">${item.nama}</p>
+                            <p class="text-xs text-slate-500 font-mono">${item.nim}</p>
+                        </div>
+                        <span class="font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-md text-xs border border-slate-200 shrink-0">${displayJam}</span>
+                    </div>
+                    <div class="pl-2 mt-3 grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Penguji</p>
+                            <p class="text-xs text-slate-700 line-clamp-1" title="${item.dosbing}">DPL: ${item.dosbing || '-'}</p>
+                            <p class="text-xs text-slate-700 line-clamp-1" title="${item.spv}">SPV: ${item.spv || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Mitra & PIC</p>
+                            <p class="text-xs text-slate-700 font-medium truncate" title="${item.perusahaan}">${item.perusahaan || '-'}</p>
+                            <p class="text-xs text-blue-600 font-semibold truncate mt-0.5">PIC: ${item.pic && item.pic !== '-' ? item.pic : 'Admin'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('todayTableBody').innerHTML = htmlDesktop;
+        document.getElementById('todayMobileList').innerHTML = htmlMobile;
     }
   </script>
 </body>
