@@ -848,3 +848,198 @@ function tandaiNotifDibaca(row) {
     lock.releaseLock();
   }
 }
+
+// ==========================================
+// 9. FUNGSI AUTO-GENERATE SURAT (ADMIN PANEL)
+// ==========================================
+
+// A. Fungsi untuk menarik daftar mahasiswa yang butuh surat
+function getAntreanSurat() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
+  var rawData = sheet.getDataRange().getValues();
+  var antrean = [];
+ 
+  for (var i = 1; i < rawData.length; i++) {
+    if (rawData[i][KOLOM.NAMA_MHS] !== "") { 
+      var statusSrt = rawData[i][KOLOM.STATUS_SURAT] ? rawData[i][KOLOM.STATUS_SURAT].toString().trim() : "";
+      
+      antrean.push({ 
+        nim: rawData[i][KOLOM.NIM].toString(),
+        nama: rawData[i][KOLOM.NAMA_MHS].toString(),
+        perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-",
+        spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
+        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", // PASTIKAN BARIS INI ADA
+        status: (statusSrt === "Sudah Konfirmasi") ? "Sudah Konfirmasi" : "Belum Konfirmasi"
+      });
+    }
+  }
+  return antrean;
+}
+
+
+// B. Fungsi Mesin Cetak PDF
+function generateSuratPengantar(nim) {
+  // ID yang sudah Anda siapkan
+  var TEMPLATE_ID = "1gV8AJI-VrQ9rSwIhm_BuTQ_M9DHEvL0GafWMyZvi5Cg"; 
+  var FOLDER_ID = "1q9q1rLXBAeUHkxL_WcBRIYc73UeWIoP1";
+  var PORTAL_URL = "https://management.uii.ac.id/portal-responsi/?"; 
+
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    var data = sheet.getDataRange().getValues();
+
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][KOLOM.NIM] == nim) {
+        
+        var namaSpv = data[i][KOLOM.NAMA_SPV] || "-";
+        var perusahaan = data[i][KOLOM.PERUSAHAAN] || "-";
+        // Ambil ID SPV (yang ?spv1122 dll)
+        var idSpv = data[i][KOLOM.ID_SPV] ? data[i][KOLOM.ID_SPV].toString().trim() : ""; 
+        var mhsName = data[i][KOLOM.NAMA_MHS] || nim;
+
+        // Cegat jika ID SPV belum ada di Spreadsheet
+        if(!idSpv || idSpv === "") {
+            return {status: "error", message: "ID SPV belum tersedia di Spreadsheet (Kolom ID SPV). Pastikan ID SPV sudah di-generate agar link Dashboard valid."};
+        }
+
+        var linkDashboard = PORTAL_URL + idSpv;
+        var namaFilePdf = "Surat_Undangan_SPV_" + perusahaan.replace(/[^a-zA-Z0-9]/g, "") + "_" + mhsName.replace(/[^a-zA-Z0-9]/g, "");
+
+        // 1. Duplikasi Template Docs
+        var fileTemplate = DriveApp.getFileById(TEMPLATE_ID);
+        var folderTujuan = DriveApp.getFolderById(FOLDER_ID);
+        var docCopy = fileTemplate.makeCopy(namaFilePdf, folderTujuan);
+        
+        // 2. Buka file duplikat dan lakukan Replace Text (Mail Merge)
+        var doc = DocumentApp.openById(docCopy.getId());
+        var body = doc.getBody();
+        
+        body.replaceText("<<Nama SPV>>", namaSpv);
+        body.replaceText("<<Perusahaan>>", perusahaan);
+        body.replaceText("<<Link>>", linkDashboard);
+        
+        doc.saveAndClose();
+
+        // 3. Konversi menjadi PDF
+        var blobPdf = docCopy.getAs('application/pdf');
+        var filePdf = folderTujuan.createFile(blobPdf);
+        filePdf.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+        // 4. Hapus file Docs Temporary agar drive bersih
+        docCopy.setTrashed(true);
+        
+        // (Opsional) Jika ingin otomatis menandai di sheet bahwa surat sudah dibuat, Anda bisa uncomment kode di bawah:
+        // sheet.getRange(i + 1, KOLOM.STATUS_SURAT + 1).setValue("Surat Telah Di-Generate");
+
+        return {status: "success", url: filePdf.getUrl(), message: "Surat berhasil dibuat!"};
+      }
+    }
+    return {status: "error", message: "NIM Mahasiswa tidak ditemukan."};
+  } catch (error) {
+    return {status: "error", message: error.message};
+  }
+}
+
+function tandaiNotifDibaca(row) {
+  var lock = LockService.getScriptLock(); lock.waitLock(5000);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
+    return {status: "success"};
+  } catch (e) {
+    return {status: "error", message: e.message};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ==========================================
+// 10. FUNGSI AUTO-GENERATE SURAT BULK (GROUPING SPV)
+// ==========================================
+function generateSuratGrupSPV(groupsToProcess) {
+  var TEMPLATE_ID = "1gV8AJI-VrQ9rSwIhm_BuTQ_M9DHEvL0GafWMyZvi5Cg"; 
+  var FOLDER_ID = "1q9q1rLXBAeUHkxL_WcBRIYc73UeWIoP1";
+  var PORTAL_URL = "https://management.uii.ac.id/portal-responsi/?"; 
+
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    var data = sheet.getDataRange().getValues();
+
+    var hasil = { sukses: 0, gagal: 0, pesan: [] };
+
+    // Looping sebanyak jumlah SPV yang dicentang
+    for (var g = 0; g < groupsToProcess.length; g++) {
+      var group = groupsToProcess[g];
+      var namaSpv = group.spv || "-";
+      var perusahaan = group.perusahaan || "-";
+
+      // Karena 1 grup memiliki SPV yang sama, kita ambil ID SPV dari mhs pertama saja
+      var firstNim = group.mahasiswa[0].nim;
+      var idSpv = "";
+
+      // Cari ID SPV di Spreadsheet
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][KOLOM.NIM] == firstNim) {
+           idSpv = data[i][KOLOM.ID_SPV] ? data[i][KOLOM.ID_SPV].toString().trim() : "";
+           break;
+        }
+      }
+
+      if(!idSpv || idSpv === "") {
+         hasil.gagal++;
+         hasil.pesan.push("Gagal: ID SPV untuk " + namaSpv + " belum di-generate di Spreadsheet.");
+         continue; // Lanjut ke SPV berikutnya (skip yang ini)
+      }
+
+      var linkDashboard = PORTAL_URL + idSpv;
+      var namaFilePdf = "Surat_Undangan_SPV_" + perusahaan.replace(/[^a-zA-Z0-9]/g, "") + "_" + namaSpv.replace(/[^a-zA-Z0-9]/g, "");
+
+      // Rangkai Teks Daftar Mahasiswa (misal: "1. Budi (20311...)\n2. Andi (20311...)")
+      var daftarMahasiswaTeks = "";
+      for(var m = 0; m < group.mahasiswa.length; m++) {
+         var mhs = group.mahasiswa[m];
+         daftarMahasiswaTeks += (m + 1) + ". " + mhs.nama + " (" + mhs.nim + ")\n";
+      }
+
+      // 1. Duplikasi Template
+      var fileTemplate = DriveApp.getFileById(TEMPLATE_ID);
+      var folderTujuan = DriveApp.getFolderById(FOLDER_ID);
+      var docCopy = fileTemplate.makeCopy(namaFilePdf, folderTujuan);
+      
+      // 2. Buka duplikat dan lakukan Replace Text (Mail Merge)
+      var doc = DocumentApp.openById(docCopy.getId());
+      var body = doc.getBody();
+      
+      body.replaceText("<<Nama SPV>>", namaSpv);
+      body.replaceText("<<Perusahaan>>", perusahaan);
+      body.replaceText("<<Link>>", linkDashboard);
+      
+      // MENGGANTI PLACEHOLDER DAFTAR MAHASISWA
+      body.replaceText("<<Daftar Mahasiswa>>", daftarMahasiswaTeks.trim());
+      
+      doc.saveAndClose();
+
+      // 3. Konversi ke PDF & Buka Akses
+      var blobPdf = docCopy.getAs('application/pdf');
+      var filePdf = folderTujuan.createFile(blobPdf);
+      filePdf.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+      // 4. Bersihkan file Docs
+      docCopy.setTrashed(true);
+
+      // (Opsi) Tandai baris mahasiswa ini bahwa suratnya sudah selesai
+      // Bisa dilooping lagi untuk menulis ke kolom STATUS_SURAT
+
+      hasil.sukses++;
+    }
+
+    return { status: "success", summary: hasil };
+
+  } catch (error) {
+    return { status: "error", message: error.message };
+  }
+}
