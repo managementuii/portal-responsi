@@ -3,7 +3,7 @@
 // ==========================================
 var NAMA_BULAN = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 var NAMA_HARI = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-var TIMEZONE_JKT = "Asia/Jakarta"; // HARDCODE ZONA WAKTU (Mencegah Bug Timezone Shift)
+var TIMEZONE_JKT = "Asia/Jakarta"; 
 
 function toIndoDateString(yyyy_mm_dd) {
   if (!yyyy_mm_dd) return "";
@@ -37,9 +37,8 @@ function formatWA(wa) {
   return str;
 }
 
-
 // ==========================================
-// OTOMATISASI KAMUS HEADER (PENGAMAN STRUKTUR KOLOM)
+// OTOMATISASI KAMUS HEADER
 // ==========================================
 function getKamusKolom(sheet) {
   if (sheet.getLastColumn() === 0) return {};
@@ -52,81 +51,48 @@ function getKamusKolom(sheet) {
   }
 
   return {
-    NO: cari("No", 0),
-    TANGGAL: cari("Tanggal", 1),
-    JAM: cari("Jam", 2),
-    NIM: cari("NIM", 3),
-    NAMA_MHS: cari("Nama Mahasiswa", 4),
-    WA_MHS: cari("No. WA Mahasiswa", 5),
-    PERUSAHAAN: cari("Perusahaan", 6),
-    NAMA_SPV: cari("Nama Supervisor", 7),
-    WA_SPV: cari("No. WA Supervisor", 8),
-    DOSBING: cari("Dosen Pembimbing", 10),
-    WA_DOSEN: cari("No. WA Dosen", 11),
-    PIC: cari("PIC Teknis", 13),
-    WA_PIC: cari("WA PIC", 14),
-    STATUS: cari("Status Responsi", 15),
-    EMAIL_SPV: cari("Email SPV", 16),
-    EMAIL_SITA: cari("Email SITA", 17),
-    KEHADIRAN_SPV: cari("Kehadiran SPV", 18),
-    NAMA_PENGGANTI: cari("Pengganti SPV", 19),
-    WA_PENGGANTI: cari("WA Pengganti", 20),
-    EMAIL_PENGGANTI: cari("Email Pengganti", 21),
-    CENTANG_W: cari("Kolom W", 22),       
-    CENTANG_X: cari("Kolom X", 23),       
-    ALAMAT: cari("Alamat Perusahaan", 24),
-    ID_SPV: cari("ID SPV", 25),           
-    ID_DOSEN: cari("ID Dosen", 26),       
-    STATUS_SURAT: cari("Status Surat", 27),
-    JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
-    SPV_BERDAMPAK: cari("SPV Berdampak", 29),
-    JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
-    STATUS_NOTIF: cari("Status Notifikasi", 31)
+    NO: cari("No", 0), TANGGAL: cari("Tanggal", 1), JAM: cari("Jam", 2),
+    NIM: cari("NIM", 3), NAMA_MHS: cari("Nama Mahasiswa", 4), WA_MHS: cari("No. WA Mahasiswa", 5),
+    PERUSAHAAN: cari("Perusahaan", 6), NAMA_SPV: cari("Nama Supervisor", 7), WA_SPV: cari("No. WA Supervisor", 8),
+    DOSBING: cari("Dosen Pembimbing", 10), WA_DOSEN: cari("No. WA Dosen", 11),
+    PIC: cari("PIC Teknis", 13), WA_PIC: cari("WA PIC", 14), STATUS: cari("Status Responsi", 15),
+    EMAIL_SPV: cari("Email SPV", 16), EMAIL_SITA: cari("Email SITA", 17), KEHADIRAN_SPV: cari("Kehadiran SPV", 18),
+    NAMA_PENGGANTI: cari("Pengganti SPV", 19), WA_PENGGANTI: cari("WA Pengganti", 20),
+    EMAIL_PENGGANTI: cari("Email Pengganti", 21), CENTANG_W: cari("Kolom W", 22), CENTANG_X: cari("Kolom X", 23),       
+    ALAMAT: cari("Alamat Perusahaan", 24), ID_SPV: cari("ID SPV", 25), ID_DOSEN: cari("ID Dosen", 26),       
+    STATUS_SURAT: cari("Status Surat", 27), JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
+    SPV_BERDAMPAK: cari("SPV Berdampak", 29), JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
+    STATUS_NOTIF: cari("Status Notifikasi", 31),
+    LINK_SURAT: cari("Link Surat", 32), LINK_SURAT_DOSEN: cari("Link Surat Dosen", 33),
+    EMAIL_DOSEN: cari("Email Dosen", 34) // <-- BARU: Email Dosen
   };
 }
 
-
 // ==========================================
-// 1. ROUTING MULTI-PAGE DENGAN IZIN IFRAME
+// 1. ROUTING MULTI-PAGE
 // ==========================================
 function doGet(e) {
   var params = Object.keys(e.parameter);
 
   if (e.parameter.page == 'admin') {
-    return HtmlService.createHtmlOutputFromFile('Admin')
-        .setTitle('Admin Panel - Portal Magang')
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return HtmlService.createHtmlOutputFromFile('Admin').setTitle('Admin Panel - Portal Magang').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
-
   if (e.parameter.page == 'pic-123' || params.includes('pic-123')) {
-    return HtmlService.createHtmlOutputFromFile('pic-123')
-        .setTitle('Command Center PIC - UII')
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return HtmlService.createHtmlOutputFromFile('pic-123').setTitle('Command Center PIC - UII').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
-
   for (var i = 0; i < params.length; i++) {
     var p = params[i].toLowerCase();
     if (p.startsWith('dos') || p.startsWith('spv')) {
       var template = HtmlService.createTemplateFromFile('Portal');
       template.targetId = p; 
-      
-      return template.evaluate()
-          .setTitle('Jadwal Responsi Magang - UII')
-          .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-          .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+      return template.evaluate().setTitle('Jadwal Responsi Magang - UII').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     }
   }
-
-  return HtmlService.createHtmlOutputFromFile('Index')
-      .setTitle('Portal Administrasi Magang')
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  return HtmlService.createHtmlOutputFromFile('Index').setTitle('Portal Administrasi Magang').addMetaTag('viewport', 'width=device-width, initial-scale=1').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 // ==========================================
-// 2. FUNGSI PENGATURAN FASE
+// 2. PENGATURAN FASE & CACHE
 // ==========================================
 function getPhaseStatus() {
   var props = PropertiesService.getScriptProperties();
@@ -134,33 +100,23 @@ function getPhaseStatus() {
   if (!phase) { props.setProperty('ACTIVE_PHASE', '1'); return 1; }
   return parseInt(phase);
 }
-
 function setPhaseStatus(phaseNumber) {
   var props = PropertiesService.getScriptProperties();
   props.setProperty('ACTIVE_PHASE', phaseNumber.toString());
   return parseInt(phaseNumber);
 }
-
-
-// ==========================================
-// 🚀 FUNGSI PEMBERSIH CACHE
-// ==========================================
 function clearCache() {
   var cache = CacheService.getScriptCache();
   cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN"]);
 }
 
-
 // ==========================================
-// 3. FUNGSI MENGAMBIL DATA (OPTIMIZED DENGAN CACHE)
+// 3. GET DATA (PREVIEW & DROPDOWN)
 // ==========================================
 function getPreviewData() {
   var cache = CacheService.getScriptCache();
   var cachedData = cache.get("CACHE_PREVIEW");
-  
-  if (cachedData) {
-    return JSON.parse(cachedData);
-  }
+  if (cachedData) return JSON.parse(cachedData);
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet); 
@@ -171,11 +127,7 @@ function getPreviewData() {
     if (rawData[i][KOLOM.NAMA_MHS] !== "") { 
       var rawTanggal = rawData[i][KOLOM.TANGGAL]; 
       var rawJam = rawData[i][KOLOM.JAM]; 
-      var timestamp = 0;
-      var tglInput = "";
-      var tglDisplay = "";
-      var jamDisplay = "";
-      var dateObj = null;
+      var timestamp = 0; var tglInput = ""; var tglDisplay = ""; var jamDisplay = ""; var dateObj = null;
 
       if (rawJam !== "") jamDisplay = (rawJam instanceof Date) ? Utilities.formatDate(rawJam, TIMEZONE_JKT, "HH:mm") : rawJam.toString();
 
@@ -217,36 +169,22 @@ function getPreviewData() {
       var waDosenRaw = rawData[i][KOLOM.WA_DOSEN] || "";
       
       previewData.push({ 
-        row: i + 1,
-        timestamp: timestamp, 
-        tanggal: tglDisplay, 
-        tanggalInput: tglInput,
-        jam: jamDisplay, 
-        nim: rawData[i][KOLOM.NIM] ? rawData[i][KOLOM.NIM].toString() : "-",
-        nama: rawData[i][KOLOM.NAMA_MHS].toString(), 
-        perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-",
-        spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
-        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-",
-        waMhs: waMhsRaw !== "" ? formatWA(waMhsRaw) : "",
-        waSpv: waSpvRaw !== "" ? formatWA(waSpvRaw) : "",
-        waDosen: waDosenRaw !== "" ? formatWA(waDosenRaw) : "",
-        pic: picTeknis, 
-        waPic: waPicRaw !== "" ? formatWA(waPicRaw) : "", 
-        status: finalStatus,
-        isWChecked: isWChecked 
+        row: i + 1, timestamp: timestamp, tanggal: tglDisplay, tanggalInput: tglInput, jam: jamDisplay, 
+        nim: rawData[i][KOLOM.NIM] ? rawData[i][KOLOM.NIM].toString() : "-", nama: rawData[i][KOLOM.NAMA_MHS].toString(), 
+        perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-", spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
+        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", waMhs: waMhsRaw !== "" ? formatWA(waMhsRaw) : "",
+        waSpv: waSpvRaw !== "" ? formatWA(waSpvRaw) : "", waDosen: waDosenRaw !== "" ? formatWA(waDosenRaw) : "",
+        pic: picTeknis, waPic: waPicRaw !== "" ? formatWA(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked 
       });
     }
   }
-  
   previewData.sort(function(a, b) {
     if (a.timestamp > 0 && b.timestamp === 0) return -1;
     if (a.timestamp === 0 && b.timestamp > 0) return 1; 
     if (a.timestamp > 0 && b.timestamp > 0) return a.timestamp - b.timestamp; 
     return 0; 
   });
-
   cache.put("CACHE_PREVIEW", JSON.stringify(previewData), 1800);
-
   return previewData;
 }
 
@@ -255,15 +193,12 @@ function getPhase1Data() {
   var KOLOM = getKamusKolom(sheet);
   var rawData = sheet.getDataRange().getValues();
   var phase1Data = [];
- 
   for (var i = 1; i < rawData.length; i++) {
     if (rawData[i][KOLOM.NAMA_MHS] !== "") { 
       var statusKolomAB = rawData[i][KOLOM.STATUS_SURAT];
       phase1Data.push({ 
-        nama: rawData[i][KOLOM.NAMA_MHS] ? rawData[i][KOLOM.NAMA_MHS].toString() : "-", 
-        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-",
-        perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-", 
-        spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-", 
+        nama: rawData[i][KOLOM.NAMA_MHS] ? rawData[i][KOLOM.NAMA_MHS].toString() : "-", dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-",
+        perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-", spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-", 
         status: (statusKolomAB && statusKolomAB.toString().trim() !== "") ? "Sudah Konfirmasi" : "Belum Konfirmasi" 
       });
     }
@@ -275,167 +210,106 @@ function getPhase1Data() {
 function getDropdownOptions() {
   var cache = CacheService.getScriptCache();
   var cachedData = cache.get("CACHE_DROPDOWN");
-  
-  if (cachedData) {
-    return JSON.parse(cachedData);
-  }
+  if (cachedData) return JSON.parse(cachedData);
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
   var KOLOM = getKamusKolom(sheet);
   var rawData = sheet.getDataRange().getValues();
   var companies = []; var spvs = [];
-  
   for (var i = 1; i < rawData.length; i++) {
-    if (rawData[i][KOLOM.PERUSAHAAN] && rawData[i][KOLOM.PERUSAHAAN] !== "" && companies.indexOf(rawData[i][KOLOM.PERUSAHAAN]) === -1) {
-      companies.push(rawData[i][KOLOM.PERUSAHAAN]);
-    }
-    if (rawData[i][KOLOM.NAMA_SPV] && rawData[i][KOLOM.NAMA_SPV] !== "" && spvs.indexOf(rawData[i][KOLOM.NAMA_SPV]) === -1) {
-      spvs.push(rawData[i][KOLOM.NAMA_SPV]);
-    }
+    if (rawData[i][KOLOM.PERUSAHAAN] && rawData[i][KOLOM.PERUSAHAAN] !== "" && companies.indexOf(rawData[i][KOLOM.PERUSAHAAN]) === -1) { companies.push(rawData[i][KOLOM.PERUSAHAAN]); }
+    if (rawData[i][KOLOM.NAMA_SPV] && rawData[i][KOLOM.NAMA_SPV] !== "" && spvs.indexOf(rawData[i][KOLOM.NAMA_SPV]) === -1) { spvs.push(rawData[i][KOLOM.NAMA_SPV]); }
   }
   companies.sort(); spvs.sort();
-  
   var result = { companies: companies, spvs: spvs };
   cache.put("CACHE_DROPDOWN", JSON.stringify(result), 3600);
-
   return result;
 }
 
-
 // ==========================================
-// PENGAMAN 1: CLASH CHECKER DOSEN
+// 4. PENGAMAN CLASH & AUTO ASSIGN PIC
 // ==========================================
 function cekBentrokDosen(sheet, KOLOM, nimToIgnore, dosbing, tglIndoStr, jamStr) {
   if (!dosbing || dosbing === "" || dosbing === "-") return false;
-  
   var rawData = sheet.getDataRange().getValues();
   for (var i = 1; i < rawData.length; i++) {
     if (rawData[i][KOLOM.NIM] == nimToIgnore) continue;
-    
     var rDosen = rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString().trim() : "";
     if (rDosen !== dosbing.trim()) continue;
     
-    var rTgl = rawData[i][KOLOM.TANGGAL];
-    var rawTglStr = "";
-    if (rTgl !== "") {
-      rawTglStr = (rTgl instanceof Date) ? toIndoDateString(Utilities.formatDate(rTgl, TIMEZONE_JKT, "yyyy-MM-dd")) : rTgl.toString().trim();
-    }
+    var rTgl = rawData[i][KOLOM.TANGGAL]; var rawTglStr = "";
+    if (rTgl !== "") rawTglStr = (rTgl instanceof Date) ? toIndoDateString(Utilities.formatDate(rTgl, TIMEZONE_JKT, "yyyy-MM-dd")) : rTgl.toString().trim();
     
-    var rJam = rawData[i][KOLOM.JAM];
-    var rawJamStr = "";
-    if (rJam !== "") {
-      rawJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
-    }
+    var rJam = rawData[i][KOLOM.JAM]; var rawJamStr = "";
+    if (rJam !== "") rawJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
     
-    if (rawTglStr === tglIndoStr && rawJamStr === jamStr) {
-      return rawData[i][KOLOM.NAMA_MHS]; 
-    }
+    if (rawTglStr === tglIndoStr && rawJamStr === jamStr) return rawData[i][KOLOM.NAMA_MHS]; 
   }
   return false; 
 }
 
-
-// ==========================================
-// PENGAMAN 2: ALGORITMA AUTO-ASSIGN PIC
-// ==========================================
 function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetMain = ss.getSheets()[0];
   var sheetPic = ss.getSheetByName("PIC Teknis");
   
   if (!sheetPic) return {nama: "Menunggu Admin", wa: ""};
-
   var picData = sheetPic.getDataRange().getValues();
   var masterPics = [];
   for(var i = 1; i < picData.length; i++) {
-      if(picData[i][1]) {
-          masterPics.push({
-              nama: picData[i][1].toString().trim(), 
-              wa: picData[i][2] ? picData[i][2].toString().trim() : ""
-          });
-      }
+      if(picData[i][1]) masterPics.push({ nama: picData[i][1].toString().trim(), wa: picData[i][2] ? picData[i][2].toString().trim() : "" });
   }
   if (masterPics.length === 0) return {nama: "Menunggu Admin", wa: ""};
 
   var rawData = sheetMain.getDataRange().getValues();
   var KOLOM = getKamusKolom(sheetMain);
-
-  var busyPics = [];          
-  var dosenTally = {};        
-  var workloadTally = {};     
+  var busyPics = []; var dosenTally = {}; var workloadTally = {};     
   
   masterPics.forEach(function(p) { workloadTally[p.nama] = 0; });
 
   for (var j = 1; j < rawData.length; j++) {
-      var rTgl = rawData[j][KOLOM.TANGGAL];
-      var rJam = rawData[j][KOLOM.JAM];
+      var rTgl = rawData[j][KOLOM.TANGGAL]; var rJam = rawData[j][KOLOM.JAM];
       var rDosen = rawData[j][KOLOM.DOSBING] ? rawData[j][KOLOM.DOSBING].toString().trim() : "";
       var rPic = rawData[j][KOLOM.PIC] ? rawData[j][KOLOM.PIC].toString().trim() : "";
 
       if (!rPic || rPic === "-" || rPic === "Menunggu Admin") continue;
 
-      var rTglStr = "";
-      if (rTgl && rTgl !== "") rTglStr = (rTgl instanceof Date) ? toIndoDateString(Utilities.formatDate(rTgl, TIMEZONE_JKT, "yyyy-MM-dd")) : rTgl.toString().trim();
-      
-      var rJamStr = "";
-      if (rJam && rJam !== "") rJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
+      var rTglStr = ""; if (rTgl && rTgl !== "") rTglStr = (rTgl instanceof Date) ? toIndoDateString(Utilities.formatDate(rTgl, TIMEZONE_JKT, "yyyy-MM-dd")) : rTgl.toString().trim();
+      var rJamStr = ""; if (rJam && rJam !== "") rJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
 
       if (workloadTally[rPic] !== undefined) workloadTally[rPic]++;
-
-      if (rTglStr === tanggalRequestStr && rJamStr === jamRequestStr) {
-          busyPics.push(rPic);
-      }
-
-      if (rDosen === namaDosen) {
-          dosenTally[rPic] = (dosenTally[rPic] || 0) + 1;
-      }
+      if (rTglStr === tanggalRequestStr && rJamStr === jamRequestStr) busyPics.push(rPic);
+      if (rDosen === namaDosen) dosenTally[rPic] = (dosenTally[rPic] || 0) + 1;
   }
 
   function getWaPIC(namaPIC) {
-      for (var k=0; k < masterPics.length; k++) {
-          if (masterPics[k].nama === namaPIC) return masterPics[k].wa;
-      }
-      return "";
+      for (var k=0; k < masterPics.length; k++) { if (masterPics[k].nama === namaPIC) return masterPics[k].wa; } return "";
   }
 
   if (picLama && picLama !== "-" && picLama !== "Menunggu Admin") {
       var picLamaTerdaftar = false;
       for (var k=0; k < masterPics.length; k++) { if (masterPics[k].nama === picLama) picLamaTerdaftar = true; }
-      
-      if (picLamaTerdaftar && busyPics.indexOf(picLama) === -1) {
-          return { nama: picLama, wa: getWaPIC(picLama) }; 
-      }
+      if (picLamaTerdaftar && busyPics.indexOf(picLama) === -1) return { nama: picLama, wa: getWaPIC(picLama) }; 
   }
 
-  var favoritePic = "";
-  var maxAssisted = 0;
+  var favoritePic = ""; var maxAssisted = 0;
   for (var p in dosenTally) {
-      if (dosenTally[p] > maxAssisted) {
-          maxAssisted = dosenTally[p];
-          favoritePic = p;
-      }
+      if (dosenTally[p] > maxAssisted) { maxAssisted = dosenTally[p]; favoritePic = p; }
   }
   
   if (favoritePic !== "") {
       var favTerdaftar = false;
       for (var k=0; k < masterPics.length; k++) { if (masterPics[k].nama === favoritePic) favTerdaftar = true; }
-      
-      if (favTerdaftar && busyPics.indexOf(favoritePic) === -1) {
-          return { nama: favoritePic, wa: getWaPIC(favoritePic) }; 
-      }
+      if (favTerdaftar && busyPics.indexOf(favoritePic) === -1) return { nama: favoritePic, wa: getWaPIC(favoritePic) }; 
   }
 
   var availablePics = [];
   for (var i=0; i < masterPics.length; i++) {
-      if (busyPics.indexOf(masterPics[i].nama) === -1) {
-          availablePics.push(masterPics[i]);
-      }
+      if (busyPics.indexOf(masterPics[i].nama) === -1) availablePics.push(masterPics[i]);
   }
 
   if (availablePics.length > 0) {
-      availablePics.sort(function(a, b) {
-          return workloadTally[a.nama] - workloadTally[b.nama];
-      });
+      availablePics.sort(function(a, b) { return workloadTally[a.nama] - workloadTally[b.nama]; });
       return { nama: availablePics[0].nama, wa: availablePics[0].wa }; 
   }
 
@@ -444,7 +318,7 @@ function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
 
 
 // ==========================================
-// 5. FUNGSI CARI & SIMPAN DATA (MAHASISWA & PIC)
+// 5. UPDATE DATA (Fase 1 & Fase 2)
 // ==========================================
 function updateByPIC(info) {
   if (!info || !info.row) return { status: "error", message: "Gagal: Data baris tidak valid." };
@@ -464,9 +338,7 @@ function updateByPIC(info) {
     if (info.isWChecked !== undefined) {
         sheet.getRange(row, KOLOM.CENTANG_W + 1).setValue(info.isWChecked ? true : false);
     }
-
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#fef9c3');
-    
     clearCache();
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -481,7 +353,6 @@ function getDataByNIM(nim) {
     if (data[i][KOLOM.NIM] == nim) {
       var tglFormat = (data[i][KOLOM.TANGGAL] instanceof Date) ? Utilities.formatDate(data[i][KOLOM.TANGGAL], TIMEZONE_JKT, "yyyy-MM-dd") : fromIndoDateString(data[i][KOLOM.TANGGAL].toString());
       var jamFormat = (data[i][KOLOM.JAM] instanceof Date) ? Utilities.formatDate(data[i][KOLOM.JAM], TIMEZONE_JKT, "HH:mm") : data[i][KOLOM.JAM];
-
       var isWChecked = data[i][KOLOM.CENTANG_W] === true || String(data[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
       var isXChecked = data[i][KOLOM.CENTANG_X] === true || String(data[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
       
@@ -509,48 +380,30 @@ function simpanUpdate(info) {
     var KOLOM = getKamusKolom(sheet);
     var row = info.row;
     
-    // VALIDASI ROW & NIM (Mencegah manipulasi Inspect Element / Overwriting)
-    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) {
-      return { status: "error", message: "Akses Ditolak: Data tidak sinkron. Gagal melakukan otentikasi identitas." };
-    }
+    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
 
     var isWChecked = sheet.getRange(row, KOLOM.CENTANG_W + 1).getValue() === true || String(sheet.getRange(row, KOLOM.CENTANG_W + 1).getValue()).toUpperCase() === "TRUE"; 
     var isXChecked = sheet.getRange(row, KOLOM.CENTANG_X + 1).getValue() === true || String(sheet.getRange(row, KOLOM.CENTANG_X + 1).getValue()).toUpperCase() === "TRUE"; 
     if (isWChecked && isXChecked) return { status: "error", message: "Responsi telah selesai." };
 
     var tglIndoStr = toIndoDateString(info.tanggal);
-
     var mhsBentrok = cekBentrokDosen(sheet, KOLOM, info.nim, info.dosbing, tglIndoStr, info.jam);
-    if (mhsBentrok) {
-      return { 
-        status: "error", 
-        message: "Jadwal Bentrok! Dosen pembimbing ini sudah dijadwalkan untuk menguji mahasiswa bernama '" + mhsBentrok + "' pada hari dan jam tersebut. Silakan pilih waktu yang lain." 
-      };
-    }
+    if (mhsBentrok) return { status: "error", message: "Jadwal Bentrok! Dosen pembimbing ini sudah dijadwalkan untuk menguji mahasiswa bernama '" + mhsBentrok + "' pada waktu tersebut." };
 
     var picSaatIni = sheet.getRange(row, KOLOM.PIC + 1).getValue() ? sheet.getRange(row, KOLOM.PIC + 1).getValue().toString().trim() : "";
     var assignedPIC = autoAssignPIC(tglIndoStr, info.jam, info.dosbing, picSaatIni);
 
-    sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(tglIndoStr); 
-    sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
-    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); 
-    sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan); 
-    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); 
-    sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));      
-    sheet.getRange(row, KOLOM.STATUS + 1).setValue("Belum Responsi"); 
-    sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv);  
-    sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita); 
-    sheet.getRange(row, KOLOM.KEHADIRAN_SPV + 1).setValue(info.kehadiranSpv);
-    sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(info.namaPengganti); 
-    sheet.getRange(row, KOLOM.WA_PENGGANTI + 1).setValue(formatWA(info.waPengganti));
+    sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(tglIndoStr); sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
+    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan); 
+    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));      
+    sheet.getRange(row, KOLOM.STATUS + 1).setValue("Belum Responsi"); sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv);  
+    sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita); sheet.getRange(row, KOLOM.KEHADIRAN_SPV + 1).setValue(info.kehadiranSpv);
+    sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(info.namaPengganti); sheet.getRange(row, KOLOM.WA_PENGGANTI + 1).setValue(formatWA(info.waPengganti));
     sheet.getRange(row, KOLOM.EMAIL_PENGGANTI + 1).setValue(info.emailPengganti);
-
-    sheet.getRange(row, KOLOM.PIC + 1).setValue(assignedPIC.nama);
-    sheet.getRange(row, KOLOM.WA_PIC + 1).setValue(formatWA(assignedPIC.wa));
+    sheet.getRange(row, KOLOM.PIC + 1).setValue(assignedPIC.nama); sheet.getRange(row, KOLOM.WA_PIC + 1).setValue(formatWA(assignedPIC.wa));
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue("BARU");
     
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
-    
     clearCache();
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -563,46 +416,25 @@ function simpanBaru(info) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var newRow = sheet.getLastRow() + 1;
-    var maxCol = Math.max(31, sheet.getLastColumn()); 
+    var maxCol = Math.max(35, sheet.getLastColumn()); 
     var rowData = new Array(maxCol).fill(""); 
 
     var tglIndoStr = toIndoDateString(info.tanggal);
-
     var mhsBentrok = cekBentrokDosen(sheet, KOLOM, info.nim, info.dosbing, tglIndoStr, info.jam);
-    if (mhsBentrok) {
-      return { 
-        status: "error", 
-        message: "Jadwal Bentrok! Dosen pembimbing ini sudah dijadwalkan untuk menguji mahasiswa bernama '" + mhsBentrok + "' pada hari dan jam tersebut. Silakan pilih waktu yang lain." 
-      };
-    }
+    if (mhsBentrok) return { status: "error", message: "Jadwal Bentrok! Dosen pembimbing ini sudah dijadwalkan untuk menguji mahasiswa bernama '" + mhsBentrok + "' pada waktu tersebut." };
 
     var assignedPIC = autoAssignPIC(tglIndoStr, info.jam, info.dosbing, "");
     
-    rowData[KOLOM.NO] = newRow - 1; 
-    rowData[KOLOM.TANGGAL] = tglIndoStr; 
-    rowData[KOLOM.JAM] = info.jam; 
-    rowData[KOLOM.NIM] = info.nim;                       
-    rowData[KOLOM.NAMA_MHS] = info.nama; 
-    rowData[KOLOM.WA_MHS] = formatWA(info.waMhs); 
-    rowData[KOLOM.PERUSAHAAN] = info.perusahaan; 
-    rowData[KOLOM.NAMA_SPV] = info.spv;                       
-    rowData[KOLOM.WA_SPV] = formatWA(info.waSpv); 
-    rowData[KOLOM.DOSBING] = info.dosbing; 
-    rowData[KOLOM.STATUS] = "Belum Responsi"; 
-    rowData[KOLOM.EMAIL_SPV] = info.emailSpv;                 
-    rowData[KOLOM.EMAIL_SITA] = info.emailSita; 
-    rowData[KOLOM.KEHADIRAN_SPV] = info.kehadiranSpv; 
-    rowData[KOLOM.NAMA_PENGGANTI] = info.namaPengganti; 
-    rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti);
-    rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
-
-    rowData[KOLOM.PIC] = assignedPIC.nama;
-    rowData[KOLOM.WA_PIC] = formatWA(assignedPIC.wa);
-    rowData[KOLOM.STATUS_NOTIF] = "BARU";
+    rowData[KOLOM.NO] = newRow - 1; rowData[KOLOM.TANGGAL] = tglIndoStr; rowData[KOLOM.JAM] = info.jam; 
+    rowData[KOLOM.NIM] = info.nim; rowData[KOLOM.NAMA_MHS] = info.nama; rowData[KOLOM.WA_MHS] = formatWA(info.waMhs); 
+    rowData[KOLOM.PERUSAHAAN] = info.perusahaan; rowData[KOLOM.NAMA_SPV] = info.spv; rowData[KOLOM.WA_SPV] = formatWA(info.waSpv); 
+    rowData[KOLOM.DOSBING] = info.dosbing; rowData[KOLOM.STATUS] = "Belum Responsi"; rowData[KOLOM.EMAIL_SPV] = info.emailSpv;                 
+    rowData[KOLOM.EMAIL_SITA] = info.emailSita; rowData[KOLOM.KEHADIRAN_SPV] = info.kehadiranSpv; rowData[KOLOM.NAMA_PENGGANTI] = info.namaPengganti; 
+    rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti); rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
+    rowData[KOLOM.PIC] = assignedPIC.nama; rowData[KOLOM.WA_PIC] = formatWA(assignedPIC.wa); rowData[KOLOM.STATUS_NOTIF] = "BARU";
     
     sheet.getRange(newRow, 1, 1, maxCol).setValues([rowData]); 
     sheet.getRange(newRow, 1, 1, maxCol).setBackground('#ecfdf5');
-    
     clearCache();
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -616,20 +448,12 @@ function simpanSurat(info) {
     var KOLOM = getKamusKolom(sheet);
     var row = info.row;
     
-    // VALIDASI ROW & NIM
-    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) {
-        return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
-    }
+    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
     
-    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); 
-    sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan);      
-    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); 
-    sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));              
-    sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv); 
-    sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita);      
-    sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamat); 
-    sheet.getRange(row, KOLOM.STATUS_SURAT + 1).setValue("Sudah Konfirmasi");  
-    
+    sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan);      
+    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));              
+    sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv); sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita);      
+    sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamat); sheet.getRange(row, KOLOM.STATUS_SURAT + 1).setValue("Sudah Konfirmasi");  
     clearCache();
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
@@ -640,7 +464,6 @@ function simpanSurat(info) {
 // ==========================================
 function getJadwalPersonalisasi(targetId) {
   if (!targetId) return { isFound: false };
-
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
   var rawData = sheet.getDataRange().getValues(); 
@@ -648,26 +471,15 @@ function getJadwalPersonalisasi(targetId) {
   var isDosen = targetId.toLowerCase().startsWith('dos');
   var idColumnIndex = isDosen ? KOLOM.ID_DOSEN : KOLOM.ID_SPV;
 
-  var result = {
-    isFound: false,
-    role: isDosen ? "Dosen Pembimbing" : "Supervisor",
-    name: "",
-    isDosen: isDosen,
-    company: "-",
-    email: "-",
-    data: []
-  };
+  var result = { isFound: false, role: isDosen ? "Dosen Pembimbing" : "Supervisor", name: "", isDosen: isDosen, company: "-", email: "-", data: [] };
 
   for (var i = 1; i < rawData.length; i++) {
     var currentId = rawData[i][idColumnIndex] ? rawData[i][idColumnIndex].toString().trim().toLowerCase() : "";
-
     if (currentId === targetId.toLowerCase()) {
-      
       if (!result.isFound) {
         result.isFound = true;
-        if (isDosen) {
-          result.name = rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-"; 
-        } else {
+        if (isDosen) result.name = rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-"; 
+        else {
           result.name = rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-";  
           result.company = rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-"; 
           result.email = rawData[i][KOLOM.EMAIL_SPV] ? rawData[i][KOLOM.EMAIL_SPV].toString() : "-";  
@@ -678,48 +490,29 @@ function getJadwalPersonalisasi(targetId) {
       var isXChecked = rawData[i][KOLOM.CENTANG_X] === true || String(rawData[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE";
       var finalStatus = "Belum Responsi";
 
-      if (isWChecked && isXChecked) {
-        finalStatus = "Responsi Selesai";
-      } else if (isWChecked && !isXChecked) {
-        finalStatus = "Belum Isi Form"; 
-      }
+      if (isWChecked && isXChecked) finalStatus = "Responsi Selesai";
+      else if (isWChecked && !isXChecked) finalStatus = "Belum Isi Form"; 
 
-      var rawTanggal = rawData[i][KOLOM.TANGGAL]; 
-      var rawJam = rawData[i][KOLOM.JAM]; 
-      var tglDisplay = "Belum ditentukan";
-      var jamDisplay = "-";
-
-      if (rawJam !== "") {
-        jamDisplay = (rawJam instanceof Date) ? Utilities.formatDate(rawJam, TIMEZONE_JKT, "HH:mm") : rawJam.toString();
-      }
-
+      var rawTanggal = rawData[i][KOLOM.TANGGAL]; var rawJam = rawData[i][KOLOM.JAM]; 
+      var tglDisplay = "Belum ditentukan"; var jamDisplay = "-";
+      if (rawJam !== "") jamDisplay = (rawJam instanceof Date) ? Utilities.formatDate(rawJam, TIMEZONE_JKT, "HH:mm") : rawJam.toString();
       if (rawTanggal && rawTanggal !== "") {
-        if (rawTanggal instanceof Date) {
-          var ymd = Utilities.formatDate(rawTanggal, TIMEZONE_JKT, "yyyy-MM-dd");
-          tglDisplay = toIndoDateString(ymd);
-        } else {
-          tglDisplay = rawTanggal.toString();
-        }
+        if (rawTanggal instanceof Date) { var ymd = Utilities.formatDate(rawTanggal, TIMEZONE_JKT, "yyyy-MM-dd"); tglDisplay = toIndoDateString(ymd); } 
+        else tglDisplay = rawTanggal.toString();
       }
 
       var waPicRaw = rawData[i][KOLOM.WA_PIC] || "";
-
       result.data.push({
-        tanggal: tglDisplay,
-        jam: jamDisplay,
-        nim: rawData[i][KOLOM.NIM] ? rawData[i][KOLOM.NIM].toString() : "-",
+        tanggal: tglDisplay, jam: jamDisplay, nim: rawData[i][KOLOM.NIM] ? rawData[i][KOLOM.NIM].toString() : "-",
         nama: rawData[i][KOLOM.NAMA_MHS] ? rawData[i][KOLOM.NAMA_MHS].toString() : "-",
         mitra: isDosen ? (rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-") : (rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-"), 
         perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-",
         spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
-        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-",
-        status: finalStatus,
-        pic: rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString() : "-",
-        waPic: waPicRaw !== "" ? formatWA(waPicRaw) : ""
+        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", status: finalStatus,
+        pic: rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString() : "-", waPic: waPicRaw !== "" ? formatWA(waPicRaw) : ""
       });
     }
   }
-
   return result;
 }
 
@@ -735,27 +528,13 @@ function getDataForEvaluasi(nim) {
     if (data[i][KOLOM.NIM] == nim) {
       var isWChecked = data[i][KOLOM.CENTANG_W] === true || String(data[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
       var isXChecked = data[i][KOLOM.CENTANG_X] === true || String(data[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
-      
-      if (!isWChecked) {
-        return { status: "error", message: "Anda belum melaksanakan responsi atau status belum diupdate oleh PIC." };
-      }
+      if (!isWChecked) return { status: "error", message: "Anda belum melaksanakan responsi atau status belum diupdate oleh PIC." };
 
       return {
-        status: "success",
-        row: i + 1, 
-        nim: nim, 
-        nama: data[i][KOLOM.NAMA_MHS], 
-        perusahaan: data[i][KOLOM.PERUSAHAAN], 
-        spv: data[i][KOLOM.NAMA_SPV], 
-        alamat: data[i][KOLOM.ALAMAT] || "",
-        
-        isEditEvaluasi: isXChecked, 
-        
-        kehadiranSpvEvaluasi: data[i][KOLOM.KEHADIRAN_SPV] || "",
-        namaPenggantiEvaluasi: data[i][KOLOM.NAMA_PENGGANTI] || "",
-        jabatanPenggantiEvaluasi: data[i][KOLOM.JABATAN_PENGGANTI] || "",
-        spvBerdampak: data[i][KOLOM.SPV_BERDAMPAK] || "",
-        jabatanSpvBerdampakManual: data[i][KOLOM.JABATAN_SPV_BERDAMPAK] || ""
+        status: "success", row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], perusahaan: data[i][KOLOM.PERUSAHAAN], spv: data[i][KOLOM.NAMA_SPV], 
+        alamat: data[i][KOLOM.ALAMAT] || "", isEditEvaluasi: isXChecked, kehadiranSpvEvaluasi: data[i][KOLOM.KEHADIRAN_SPV] || "",
+        namaPenggantiEvaluasi: data[i][KOLOM.NAMA_PENGGANTI] || "", jabatanPenggantiEvaluasi: data[i][KOLOM.JABATAN_PENGGANTI] || "",
+        spvBerdampak: data[i][KOLOM.SPV_BERDAMPAK] || "", jabatanSpvBerdampakManual: data[i][KOLOM.JABATAN_SPV_BERDAMPAK] || ""
       };
     }
   }
@@ -763,74 +542,45 @@ function getDataForEvaluasi(nim) {
 }
 
 function simpanEvaluasi(info) {
-  if (!info || !info.row || !info.nim) return { status: "error", message: "Data tidak valid atau kosong." };
+  if (!info || !info.row || !info.nim) return { status: "error", message: "Data tidak valid." };
   var lock = LockService.getScriptLock(); lock.waitLock(10000); 
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var row = info.row;
 
-    // VALIDASI ROW & NIM (Mencegah manipulasi Inspect Element / Overwriting)
-    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) {
-      return { status: "error", message: "Akses Ditolak: Data tidak sinkron. Gagal melakukan otentikasi identitas." };
-    }
-
-    // SIMPAN DATA ALAMAT BARU
-    if (info.alamatEvaluasi !== undefined) {
-      sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamatEvaluasi);
-    }
+    if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) return { status: "error", message: "Akses Ditolak." };
+    if (info.alamatEvaluasi !== undefined) sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamatEvaluasi);
 
     sheet.getRange(row, KOLOM.KEHADIRAN_SPV + 1).setValue(info.kehadiranSpvEvaluasi); 
-    
     if(info.kehadiranSpvEvaluasi === "Tidak Hadir") {
       sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(info.namaPenggantiEvaluasi); 
       sheet.getRange(row, KOLOM.JABATAN_PENGGANTI + 1).setValue(info.jabatanPenggantiEvaluasi); 
     } else {
-      sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(""); 
-      sheet.getRange(row, KOLOM.JABATAN_PENGGANTI + 1).setValue(""); 
+      sheet.getRange(row, KOLOM.NAMA_PENGGANTI + 1).setValue(""); sheet.getRange(row, KOLOM.JABATAN_PENGGANTI + 1).setValue(""); 
     }
 
     sheet.getRange(row, KOLOM.SPV_BERDAMPAK + 1).setValue(info.spvBerdampak); 
     if(info.spvBerdampak === "Lainnya") {
       sheet.getRange(row, KOLOM.SPV_BERDAMPAK + 1).setValue(info.namaSpvBerdampakManual); 
       sheet.getRange(row, KOLOM.JABATAN_SPV_BERDAMPAK + 1).setValue(info.jabatanSpvBerdampakManual); 
-    } else {
-      sheet.getRange(row, KOLOM.JABATAN_SPV_BERDAMPAK + 1).setValue(""); 
-    }
+    } else { sheet.getRange(row, KOLOM.JABATAN_SPV_BERDAMPAK + 1).setValue(""); }
 
-    sheet.getRange(row, KOLOM.CENTANG_X + 1).setValue(true); 
-    sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#dcfce3'); 
-
-    clearCache();
-    return { status: "success" };
-  } catch (e) { 
-    return { status: "error", message: e.message }; 
-  } finally { 
-    lock.releaseLock(); 
-  }
+    sheet.getRange(row, KOLOM.CENTANG_X + 1).setValue(true); sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#dcfce3'); 
+    clearCache(); return { status: "success" };
+  } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
 
-// ==========================================
-// 8. FUNGSI POLLING NOTIFIKASI PIC
-// ==========================================
 function cekNotifPIC(picName) {
   if (!picName) return [];
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
   var rawData = sheet.getDataRange().getValues();
   var notifs = [];
-
   for (var i = 1; i < rawData.length; i++) {
     var picRaw = rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString().trim() : "";
     var statusNotif = rawData[i][KOLOM.STATUS_NOTIF] ? rawData[i][KOLOM.STATUS_NOTIF].toString().trim() : "";
-
-    if (picRaw === picName && statusNotif === "BARU") {
-      notifs.push({
-        row: i + 1,
-        nama: rawData[i][KOLOM.NAMA_MHS],
-        nim: rawData[i][KOLOM.NIM]
-      });
-    }
+    if (picRaw === picName && statusNotif === "BARU") notifs.push({ row: i + 1, nama: rawData[i][KOLOM.NAMA_MHS], nim: rawData[i][KOLOM.NIM] });
   }
   return notifs;
 }
@@ -842,18 +592,13 @@ function tandaiNotifDibaca(row) {
     var KOLOM = getKamusKolom(sheet);
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
     return {status: "success"};
-  } catch (e) {
-    return {status: "error", message: e.message};
-  } finally {
-    lock.releaseLock();
-  }
+  } catch (e) { return {status: "error", message: e.message}; } finally { lock.releaseLock(); }
 }
 
 // ==========================================
-// 9. FUNGSI AUTO-GENERATE SURAT (ADMIN PANEL)
+// 9. FUNGSI AUTO-GENERATE SURAT & EMAIL ADMIN
 // ==========================================
 
-// A. Fungsi untuk menarik daftar mahasiswa yang butuh surat
 function getAntreanSurat() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
@@ -869,96 +614,20 @@ function getAntreanSurat() {
         nama: rawData[i][KOLOM.NAMA_MHS].toString(),
         perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-",
         spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
-        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", // PASTIKAN BARIS INI ADA
-        status: (statusSrt === "Sudah Konfirmasi") ? "Sudah Konfirmasi" : "Belum Konfirmasi"
+        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-",
+        status: (statusSrt === "Sudah Konfirmasi") ? "Sudah Konfirmasi" : "Belum Konfirmasi",
+        linkSurat: rawData[i][KOLOM.LINK_SURAT] ? rawData[i][KOLOM.LINK_SURAT].toString().trim() : "",
+        linkSuratDosen: rawData[i][KOLOM.LINK_SURAT_DOSEN] ? rawData[i][KOLOM.LINK_SURAT_DOSEN].toString().trim() : "",
+        emailSpv: rawData[i][KOLOM.EMAIL_SPV] ? rawData[i][KOLOM.EMAIL_SPV].toString().trim() : "",
+        emailDosen: rawData[i][KOLOM.EMAIL_DOSEN] ? rawData[i][KOLOM.EMAIL_DOSEN].toString().trim() : "",
+        idSpv: rawData[i][KOLOM.ID_SPV] ? rawData[i][KOLOM.ID_SPV].toString().trim() : "",
+        idDosen: rawData[i][KOLOM.ID_DOSEN] ? rawData[i][KOLOM.ID_DOSEN].toString().trim() : ""
       });
     }
   }
   return antrean;
 }
 
-
-// B. Fungsi Mesin Cetak PDF
-function generateSuratPengantar(nim) {
-  // ID yang sudah Anda siapkan
-  var TEMPLATE_ID = "1gV8AJI-VrQ9rSwIhm_BuTQ_M9DHEvL0GafWMyZvi5Cg"; 
-  var FOLDER_ID = "1q9q1rLXBAeUHkxL_WcBRIYc73UeWIoP1";
-  var PORTAL_URL = "https://management.uii.ac.id/portal-responsi/?"; 
-
-  try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    var KOLOM = getKamusKolom(sheet);
-    var data = sheet.getDataRange().getValues();
-
-    for (var i = 1; i < data.length; i++) {
-      if (data[i][KOLOM.NIM] == nim) {
-        
-        var namaSpv = data[i][KOLOM.NAMA_SPV] || "-";
-        var perusahaan = data[i][KOLOM.PERUSAHAAN] || "-";
-        // Ambil ID SPV (yang ?spv1122 dll)
-        var idSpv = data[i][KOLOM.ID_SPV] ? data[i][KOLOM.ID_SPV].toString().trim() : ""; 
-        var mhsName = data[i][KOLOM.NAMA_MHS] || nim;
-
-        // Cegat jika ID SPV belum ada di Spreadsheet
-        if(!idSpv || idSpv === "") {
-            return {status: "error", message: "ID SPV belum tersedia di Spreadsheet (Kolom ID SPV). Pastikan ID SPV sudah di-generate agar link Dashboard valid."};
-        }
-
-        var linkDashboard = PORTAL_URL + idSpv;
-        var namaFilePdf = "Surat_Undangan_SPV_" + perusahaan.replace(/[^a-zA-Z0-9]/g, "") + "_" + mhsName.replace(/[^a-zA-Z0-9]/g, "");
-
-        // 1. Duplikasi Template Docs
-        var fileTemplate = DriveApp.getFileById(TEMPLATE_ID);
-        var folderTujuan = DriveApp.getFolderById(FOLDER_ID);
-        var docCopy = fileTemplate.makeCopy(namaFilePdf, folderTujuan);
-        
-        // 2. Buka file duplikat dan lakukan Replace Text (Mail Merge)
-        var doc = DocumentApp.openById(docCopy.getId());
-        var body = doc.getBody();
-        
-        body.replaceText("<<Nama SPV>>", namaSpv);
-        body.replaceText("<<Perusahaan>>", perusahaan);
-        body.replaceText("<<Link>>", linkDashboard);
-        
-        doc.saveAndClose();
-
-        // 3. Konversi menjadi PDF
-        var blobPdf = docCopy.getAs('application/pdf');
-        var filePdf = folderTujuan.createFile(blobPdf);
-        filePdf.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-        // 4. Hapus file Docs Temporary agar drive bersih
-        docCopy.setTrashed(true);
-        
-        // (Opsional) Jika ingin otomatis menandai di sheet bahwa surat sudah dibuat, Anda bisa uncomment kode di bawah:
-        // sheet.getRange(i + 1, KOLOM.STATUS_SURAT + 1).setValue("Surat Telah Di-Generate");
-
-        return {status: "success", url: filePdf.getUrl(), message: "Surat berhasil dibuat!"};
-      }
-    }
-    return {status: "error", message: "NIM Mahasiswa tidak ditemukan."};
-  } catch (error) {
-    return {status: "error", message: error.message};
-  }
-}
-
-function tandaiNotifDibaca(row) {
-  var lock = LockService.getScriptLock(); lock.waitLock(5000);
-  try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-    var KOLOM = getKamusKolom(sheet);
-    sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
-    return {status: "success"};
-  } catch (e) {
-    return {status: "error", message: e.message};
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-// ==========================================
-// 10. FUNGSI AUTO-GENERATE SURAT BULK (GROUPING SPV)
-// ==========================================
 function generateSuratGrupSPV(groupsToProcess) {
   var TEMPLATE_ID = "1gV8AJI-VrQ9rSwIhm_BuTQ_M9DHEvL0GafWMyZvi5Cg"; 
   var FOLDER_ID = "1q9q1rLXBAeUHkxL_WcBRIYc73UeWIoP1";
@@ -968,77 +637,234 @@ function generateSuratGrupSPV(groupsToProcess) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var KOLOM = getKamusKolom(sheet);
     var data = sheet.getDataRange().getValues();
-
     var hasil = { sukses: 0, gagal: 0, pesan: [] };
 
-    // Looping sebanyak jumlah SPV yang dicentang
     for (var g = 0; g < groupsToProcess.length; g++) {
       var group = groupsToProcess[g];
       var namaSpv = group.spv || "-";
       var perusahaan = group.perusahaan || "-";
-
-      // Karena 1 grup memiliki SPV yang sama, kita ambil ID SPV dari mhs pertama saja
       var firstNim = group.mahasiswa[0].nim;
       var idSpv = "";
 
-      // Cari ID SPV di Spreadsheet
       for (var i = 1; i < data.length; i++) {
-        if (data[i][KOLOM.NIM] == firstNim) {
-           idSpv = data[i][KOLOM.ID_SPV] ? data[i][KOLOM.ID_SPV].toString().trim() : "";
-           break;
-        }
+        if (data[i][KOLOM.NIM] == firstNim) { idSpv = data[i][KOLOM.ID_SPV] ? data[i][KOLOM.ID_SPV].toString().trim() : ""; break; }
       }
 
       if(!idSpv || idSpv === "") {
-         hasil.gagal++;
-         hasil.pesan.push("Gagal: ID SPV untuk " + namaSpv + " belum di-generate di Spreadsheet.");
-         continue; // Lanjut ke SPV berikutnya (skip yang ini)
+         hasil.gagal++; hasil.pesan.push("Gagal: ID SPV untuk " + namaSpv + " belum di-generate."); continue; 
       }
 
       var linkDashboard = PORTAL_URL + idSpv;
-      var namaFilePdf = "Surat_Undangan_SPV_" + perusahaan.replace(/[^a-zA-Z0-9]/g, "") + "_" + namaSpv.replace(/[^a-zA-Z0-9]/g, "");
+      var namaFilePdf = "Surat Undangan Responsi SPV - " + namaSpv + " - " + perusahaan;
 
-      // Rangkai Teks Daftar Mahasiswa (misal: "1. Budi (20311...)\n2. Andi (20311...)")
       var daftarMahasiswaTeks = "";
       for(var m = 0; m < group.mahasiswa.length; m++) {
-         var mhs = group.mahasiswa[m];
-         daftarMahasiswaTeks += (m + 1) + ". " + mhs.nama + " (" + mhs.nim + ")\n";
+         daftarMahasiswaTeks += (m + 1) + ". " + group.mahasiswa[m].nama + " (" + group.mahasiswa[m].nim + ")\n";
       }
 
-      // 1. Duplikasi Template
       var fileTemplate = DriveApp.getFileById(TEMPLATE_ID);
       var folderTujuan = DriveApp.getFolderById(FOLDER_ID);
       var docCopy = fileTemplate.makeCopy(namaFilePdf, folderTujuan);
-      
-      // 2. Buka duplikat dan lakukan Replace Text (Mail Merge)
       var doc = DocumentApp.openById(docCopy.getId());
       var body = doc.getBody();
       
       body.replaceText("<<Nama SPV>>", namaSpv);
       body.replaceText("<<Perusahaan>>", perusahaan);
       body.replaceText("<<Link>>", linkDashboard);
-      
-      // MENGGANTI PLACEHOLDER DAFTAR MAHASISWA
       body.replaceText("<<Daftar Mahasiswa>>", daftarMahasiswaTeks.trim());
-      
       doc.saveAndClose();
 
-      // 3. Konversi ke PDF & Buka Akses
       var blobPdf = docCopy.getAs('application/pdf');
       var filePdf = folderTujuan.createFile(blobPdf);
       filePdf.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-
-      // 4. Bersihkan file Docs
       docCopy.setTrashed(true);
 
-      // (Opsi) Tandai baris mahasiswa ini bahwa suratnya sudah selesai
-      // Bisa dilooping lagi untuk menulis ke kolom STATUS_SURAT
-
+      var urlPdf = filePdf.getUrl();
+      for(var x = 0; x < group.mahasiswa.length; x++) {
+         var mhsN = group.mahasiswa[x].nim;
+         for (var r = 1; r < data.length; r++) {
+            if (data[r][KOLOM.NIM] == mhsN) {
+               sheet.getRange(r + 1, KOLOM.LINK_SURAT + 1).setValue(urlPdf);
+               break;
+            }
+         }
+      }
       hasil.sukses++;
     }
-
     return { status: "success", summary: hasil };
+  } catch (error) { return { status: "error", message: error.message }; }
+}
 
+function generateSuratGrupDosen(groupsToProcess) {
+  var TEMPLATE_ID = "1t-B8Fbgq8KVOc0cyrWo1h1BlYLKPFFrgn5lHdW-p1-0"; 
+  var FOLDER_ID = "1bLTnZcK2Ti6lFhDrLwOj3HTb1_uXKNyO"; 
+  var PORTAL_URL = "https://management.uii.ac.id/portal-responsi/?"; 
+
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    var data = sheet.getDataRange().getValues();
+    var hasil = { sukses: 0, gagal: 0, pesan: [] };
+
+    for (var g = 0; g < groupsToProcess.length; g++) {
+      var group = groupsToProcess[g];
+      var namaDosen = group.dosbing || "-";
+      var firstNim = group.mahasiswa[0].nim;
+      var idDosen = "";
+
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][KOLOM.NIM] == firstNim) { idDosen = data[i][KOLOM.ID_DOSEN] ? data[i][KOLOM.ID_DOSEN].toString().trim() : ""; break; }
+      }
+
+      if(!idDosen || idDosen === "") {
+         hasil.gagal++; hasil.pesan.push("Gagal: ID Dosen untuk " + namaDosen + " belum di-generate."); continue; 
+      }
+
+      var linkDashboard = PORTAL_URL + idDosen;
+      var namaFilePdf = "Surat Undangan Responsi Dosen - " + namaDosen;
+
+      var daftarMahasiswaTeks = "";
+      for(var m = 0; m < group.mahasiswa.length; m++) {
+         var mhs = group.mahasiswa[m];
+         daftarMahasiswaTeks += (m + 1) + ". " + mhs.nama + " (" + mhs.nim + ") - " + mhs.perusahaan + "\n";
+      }
+
+      var fileTemplate = DriveApp.getFileById(TEMPLATE_ID);
+      var folderTujuan = DriveApp.getFolderById(FOLDER_ID);
+      var docCopy = fileTemplate.makeCopy(namaFilePdf, folderTujuan);
+      var doc = DocumentApp.openById(docCopy.getId());
+      var body = doc.getBody();
+      
+      body.replaceText("<<Nama Dosen>>", namaDosen);
+      body.replaceText("<<Link>>", linkDashboard);
+      body.replaceText("<<Daftar Mahasiswa>>", daftarMahasiswaTeks.trim());
+      doc.saveAndClose();
+
+      var blobPdf = docCopy.getAs('application/pdf');
+      var filePdf = folderTujuan.createFile(blobPdf);
+      filePdf.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      docCopy.setTrashed(true);
+
+      var urlPdf = filePdf.getUrl();
+      for(var x = 0; x < group.mahasiswa.length; x++) {
+         var mhsN = group.mahasiswa[x].nim;
+         for (var r = 1; r < data.length; r++) {
+            if (data[r][KOLOM.NIM] == mhsN) {
+               sheet.getRange(r + 1, KOLOM.LINK_SURAT_DOSEN + 1).setValue(urlPdf);
+               break;
+            }
+         }
+      }
+      hasil.sukses++;
+    }
+    return { status: "success", summary: hasil };
+  } catch (error) { return { status: "error", message: error.message }; }
+}
+
+// D. FUNGSI KIRIM EMAIL OTOMATIS
+function kirimEmailOtomatis(type, group) {
+  try {
+    var mhsUtama = group.mahasiswa[0];
+    var isSPV = (type === 'spv');
+
+    var penerima = isSPV ? mhsUtama.emailSpv : mhsUtama.emailDosen;
+    var namaTujuan = isSPV ? group.spv : group.dosbing;
+    var linkPDF = isSPV ? mhsUtama.linkSurat : mhsUtama.linkSuratDosen;
+    var portalID = isSPV ? mhsUtama.idSpv : mhsUtama.idDosen;
+    var portalURL = "https://management.uii.ac.id/portal-responsi/?" + portalID; 
+    
+    var roleTeks = isSPV ? "SPV" : "Dosen";
+    var judulRole = isSPV ? "Supervisor" : "Dosen Pembimbing";
+    
+    if (!penerima || penerima === "" || penerima === "-") {
+      return { status: "error", message: "Alamat email " + roleTeks + " kosong di Spreadsheet." };
+    }
+
+    var subject = "Surat Undangan Responsi Mahasiswa Magang UII";
+    if (isSPV) subject += " - " + group.perusahaan;
+
+    var htmlBody = "";
+
+    // ==========================================
+    // 1. TEMPLATE EMAIL UNTUK SPV
+    // ==========================================
+    if (isSPV) {
+      htmlBody = "" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<i>Assalamualaikum Warahmatullahi Wabarakatuh</i>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<b>Yth. Bapak/Ibu " + namaTujuan + "</b>,<br><br>" +
+          "Bersama email ini, kami sampaikan Surat Undangan Responsi untuk mahasiswa magang Prodi Manajemen Universitas Islam Indonesia (UII) yang berada di bawah bimbingan Bapak/Ibu." +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Anda dapat mengunduh dan melihat surat resmi melalui tautan berikut:<br><br>" +
+          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Surat Undangan Resmi</b></a>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
+          "🔗 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Atas perhatian dan kerja samanya, kami ucapkan terima kasih." +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<i>Wassalamualaikum Warahmatullahi Wabarakatuh</i>" +
+        "</p>";
+    } 
+    // ==========================================
+    // 2. TEMPLATE EMAIL UNTUK DOSEN
+    // ==========================================
+    else {
+      htmlBody = "" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<i>Assalamualaikum Warahmatullahi Wabarakatuh</i>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<b>Yth. Bapak/Ibu " + namaTujuan + "</b>,<br><br>" +
+          "Bersama email ini, kami sampaikan Undangan Responsi mahasiswa magang Prodi Manajemen S1 Universitas Islam Indonesia yang berada di bawah bimbingan Bapak/Ibu." + // Anda bisa bebas mengedit kata-kata di blok ini
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Bapak/Ibu dapat mengunduh dan melihat surat undangan resmi melalui tautan berikut:<br><br>" +
+          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Undangan Responsi</b></a>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
+          "🔗 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "Atas perhatian dan kerja samanya, kami ucapkan terima kasih." +
+        "</p>" +
+        "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
+          "<i>Wassalamualaikum Warahmatullahi Wabarakatuh</i>" +
+        "</p>";
+    }
+
+    // ==========================================
+    // 3. SIGNATURE / FOOTER (Sama untuk Keduanya)
+    // ==========================================
+    htmlBody += "" +
+      "<br><br>" +
+      "<div style='font-size:12px; font-family:Arial, sans-serif; color:#666;'>" +
+        "<p style='margin-bottom:8px;'><b>Regards,</b></p>" +
+        "<p style='margin-bottom:8px;'><img src='https://ci3.googleusercontent.com/mail-sig/AIorK4ySxd1AWhz1UM-QGfEsCeYvUqumzFyS6-dYjgZEQJFWKRTx8DhUxRlGhElYwPMW3mgAjH9oMNtvUa7W' alt='Logo Prodi' width='160'></p>" +
+        "<p style='line-height:1.5;'>" +
+          "<b>Program Studi Manajemen (Program Sarjana)</b><br>" +
+          "Gedung Prof. Dr. Ace Partadiredja<br>" +
+          "Fakultas Bisnis dan Ekonomika<br>" +
+          "Universitas Islam Indonesia<br>" +
+          "Phone : +62 274 881546 ext. 2104<br>" +
+          "E-mail: <a href='mailto:management@uii.ac.id' style='color:#666;'>management@uii.ac.id</a>" +
+        "</p>" +
+      "</div>";
+
+    MailApp.sendEmail({
+      to: penerima,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+
+    return { status: "success", message: "Email berhasil dikirim ke " + penerima };
   } catch (error) {
     return { status: "error", message: error.message };
   }
