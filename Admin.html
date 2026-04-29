@@ -5,22 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Panel - Portal Magang</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; margin: 0; }
-    
     .spinner-css { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    
     .table-container { -webkit-overflow-scrolling: touch; }
     .table-container::-webkit-scrollbar { height: 6px; width: 6px; }
     .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-checkbox { width: 1.125rem; height: 1.125rem; cursor: pointer; border-radius: 0.25rem; border: 1px solid #cbd5e1; accent-color: #2563eb; }
+    
+    /* Tab System CSS */
+    .tab-btn { position: relative; transition: all 0.2s ease; }
+    .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background-color: transparent; transition: all 0.2s ease; }
+    .tab-btn.active { color: #2563eb; font-weight: 600; }
+    .tab-btn.active::after { background-color: #2563eb; }
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="antialiased py-8 px-4 sm:py-12 max-w-5xl mx-auto flex flex-col min-h-screen">
@@ -37,6 +43,7 @@
       </a>
     </div>
 
+    <!-- MODULE ATAS: FASE & JADWAL HARI INI -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
       
       <!-- KOLOM KIRI: PENGATURAN FASE (1 Kolom di Desktop) -->
@@ -46,7 +53,7 @@
             <i class="fas fa-toggle-on text-blue-500"></i> Mode Aplikasi Aktif
           </h5>
           
-          <!-- LOADER -->
+          <!-- LOADER FASE -->
           <div id="loaderAdmin" class="flex flex-col items-center justify-center py-6">
             <div class="spinner-css mb-3 w-8 h-8 border-[3px]"></div>
             <p class="text-slate-500 font-medium text-xs">Membaca server...</p>
@@ -111,7 +118,7 @@
             <p class="text-slate-500 text-sm">Waktunya istirahat atau fokus pada tugas lain.</p>
           </div>
 
-          <!-- Tabel Jadwal Hari Ini (Desktop) -->
+          <!-- Tabel Jadwal Hari Ini (Desktop & Mobile) -->
           <div id="scheduleContainer" class="hidden flex-grow flex flex-col">
             <div class="hidden md:block table-container overflow-x-auto border border-slate-200 rounded-xl">
               <table class="min-w-full divide-y divide-slate-200">
@@ -140,17 +147,96 @@
       </div>
       
     </div>
-  </div>
+
+    <!-- ========================================== -->
+    <!-- TABEL ANTREAN SURAT PENGANTAR (TAB SYSTEM) -->
+    <!-- ========================================== -->
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mt-6 mb-8">
+      
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-2 pb-2">
+        <div>
+          <h5 class="font-bold text-lg text-slate-800 flex items-center gap-2 mb-1">
+            <i class="fas fa-envelope-open-text text-blue-500"></i> Antrean Surat Tugas & Pengantar
+          </h5>
+          <p class="text-sm font-medium text-slate-500">Pilih tab di bawah untuk melihat kelompok antrean SPV atau Dosen.</p>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+          <button onclick="loadAntreanSurat()" class="text-sm bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 flex-grow sm:flex-none">
+            <i class="fas fa-sync-alt text-xs"></i> Refresh
+          </button>
+          <button id="btnBulkGenerate" onclick="generateBulkSurat()" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm font-medium flex-grow sm:flex-none disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-file-pdf"></i> Generate yang Diceklis (<span id="bulkCount">0</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- TABS NAVIGATION -->
+      <div class="flex gap-6 border-b border-slate-200 mb-5 px-2">
+        <button onclick="switchTab('spv')" id="btnTabSpv" class="tab-btn active pb-3 text-slate-500 hover:text-blue-600 font-medium text-sm flex items-center gap-2">
+            <i class="far fa-building"></i> Surat SPV
+        </button>
+        <button onclick="switchTab('dosen')" id="btnTabDosen" class="tab-btn pb-3 text-slate-500 hover:text-blue-600 font-medium text-sm flex items-center gap-2">
+            <i class="fas fa-chalkboard-teacher"></i> Surat DPL (Dosen)
+        </button>
+      </div>
+      
+      <!-- TAB CONTENT: SPV -->
+      <div id="contentTabSpv" class="tab-content active">
+          <div class="table-container overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="min-w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold">
+                <tr>
+                  <th class="px-4 py-3 text-center w-12"><input type="checkbox" id="selectAllSpv" class="custom-checkbox" onchange="toggleAllCheckboxes('spv', this)"></th>
+                  <th class="px-4 py-3 text-left w-64">SPV & Mitra Instansi</th>
+                  <th class="px-4 py-3 text-center w-24">Jml Mhs</th>
+                  <th class="px-4 py-3 text-left">Daftar Mahasiswa Bimbingan</th>
+                  <th class="px-4 py-3 text-center w-36">Aksi Cepat</th>
+                </tr>
+              </thead>
+              <tbody id="tabelAntreanSpv" class="bg-white divide-y divide-slate-100 text-sm">
+                <tr><td colspan="5" class="text-center py-8 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-4 h-4 border-[2px]"></div> Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+      </div>
+
+      <!-- TAB CONTENT: DOSEN -->
+      <div id="contentTabDosen" class="tab-content">
+          <div class="table-container overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="min-w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider font-semibold">
+                <tr>
+                  <th class="px-4 py-3 text-center w-12"><input type="checkbox" id="selectAllDosen" class="custom-checkbox" onchange="toggleAllCheckboxes('dosen', this)"></th>
+                  <th class="px-4 py-3 text-left w-64">Dosen Pembimbing (DPL)</th>
+                  <th class="px-4 py-3 text-center w-24">Jml Mhs</th>
+                  <th class="px-4 py-3 text-left">Daftar Mahasiswa & Lokasi Magang</th>
+                  <th class="px-4 py-3 text-center w-36">Aksi Cepat</th>
+                </tr>
+              </thead>
+              <tbody id="tabelAntreanDosen" class="bg-white divide-y divide-slate-100 text-sm">
+                <tr><td colspan="5" class="text-center py-8 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-4 h-4 border-[2px]"></div> Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+      </div>
+
+    </div>
+  </div> <!-- End Flex Grow -->
 
   <script>
-    // Memuat status dari backend saat aplikasi dibuka
+    // Variabel Global
+    let activeTab = 'spv'; 
+    let rawDataGlobal = [];
+    let groupedDataSpv = [];
+    let groupedDataDosen = [];
+
     window.onload = function() {
       // 1. Muat Pengaturan Fase
       if (typeof google === 'undefined') {
           setTimeout(() => {
               document.getElementById('loaderAdmin').classList.add('hidden');
               document.getElementById('phaseContainer').classList.remove('hidden');
-              updateUI(2); // Anggap default Fase 2
+              updateUI(2); // Anggap default Fase 2 di simulasi
           }, 800);
       } else {
           google.script.run.withSuccessHandler(function(activePhase) {
@@ -160,8 +246,9 @@
           }).getPhaseStatus();
       }
 
-      // 2. Muat Jadwal Hari Ini
+      // 2. Muat Jadwal Hari Ini & Antrean Surat
       loadTodaySchedule();
+      loadAntreanSurat();
     };
 
     // ==========================================
@@ -222,16 +309,13 @@
       });
     }
 
-
     // ==========================================
     // LOGIKA JADWAL HARI INI (MODUL KANAN)
     // ==========================================
     function getTodayString() {
-        // Mendapatkan tanggal hari ini dalam format YYYY-MM-DD sesuai zona waktu Jakarta
         const today = new Date();
         const options = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit' };
-        const formatter = new Intl.DateTimeFormat('en-CA', options); // en-CA menghasilkan YYYY-MM-DD
-        return formatter.format(today);
+        return new Intl.DateTimeFormat('en-CA', options).format(today);
     }
 
     function getTodayIndoString() {
@@ -245,15 +329,13 @@
         document.getElementById('emptySchedule').classList.add('hidden');
         document.getElementById('scheduleLoader').classList.remove('hidden');
         
-        const todayStr = getTodayString(); // Format: YYYY-MM-DD
+        const todayStr = getTodayString(); 
         document.getElementById('todayDateLabel').innerText = getTodayIndoString();
 
         if (typeof google === 'undefined') {
-            // Dummy Data untuk testing di Canvas
             setTimeout(() => {
                 let mockData = [
                     { tanggalInput: todayStr, jam: "08:15", nama: "Ahmad Budi", nim: "20311234", dosbing: "Bpk. Haris", spv: "Pak Joko", perusahaan: "PT Pertamina", pic: "Siti Rahma", status: "Belum Responsi" },
-                    { tanggalInput: "2026-01-01", jam: "09:00", nama: "Bukan Hari Ini", nim: "20311000" }, // Tidak akan tampil
                     { tanggalInput: todayStr, jam: "13:00", nama: "Rini Melati", nim: "20311235", dosbing: "Ibu Maya", spv: "Ibu Dina", perusahaan: "PT Telkom", pic: "Andi Saputra", status: "Responsi Selesai" }
                 ];
                 renderTodaySchedule(mockData, todayStr);
@@ -266,17 +348,13 @@
                     document.getElementById('emptySchedule').classList.remove('hidden');
                     document.getElementById('emptySchedule').innerHTML = `<p class="text-rose-500 font-medium">Gagal memuat jadwal: ${err.message}</p>`;
                 })
-                .getPreviewData(); // Mendaur ulang fungsi yang sudah ada di backend
+                .getPreviewData(); 
         }
     }
 
     function renderTodaySchedule(allData, todayStr) {
         document.getElementById('scheduleLoader').classList.add('hidden');
-
-        // Filter hanya untuk data hari ini dan jadwal tidak kosong
         let todayData = allData.filter(item => item.tanggalInput === todayStr && item.jam !== "");
-        
-        // Urutkan berdasarkan jam dari pagi ke sore
         todayData.sort((a, b) => (a.jam || "23:59").localeCompare(b.jam || "23:59"));
 
         if (todayData.length === 0) {
@@ -291,15 +369,13 @@
         let htmlMobile = '';
 
         todayData.forEach(item => {
-            // Style badge status
             let stat = (item.status || "").toLowerCase();
             let dotColor = "bg-rose-500";
             if (stat.includes('selesai')) dotColor = "bg-emerald-500";
             else if (stat.includes('belum isi')) dotColor = "bg-amber-500";
 
-            let displayJam = item.jam.substring(0,5); // Hilangkan detik jika ada (08:00:00 -> 08:00)
+            let displayJam = item.jam.substring(0,5); 
 
-            // Render Table Row (Desktop)
             htmlDesktop += `
                 <tr class="hover:bg-slate-50/50 transition-colors">
                     <td class="px-4 py-3 text-center">
@@ -325,7 +401,6 @@
                 </tr>
             `;
 
-            // Render Card (Mobile)
             htmlMobile += `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full ${dotColor}"></div>
@@ -354,6 +429,234 @@
 
         document.getElementById('todayTableBody').innerHTML = htmlDesktop;
         document.getElementById('todayMobileList').innerHTML = htmlMobile;
+    }
+
+    // ==========================================
+    // LOGIKA ANTREAN SURAT PENGANTAR (DOUBLE GROUPING TABS)
+    // ==========================================
+    function switchTab(tabName) {
+        activeTab = tabName;
+        
+        document.getElementById('btnTabSpv').classList.remove('active');
+        document.getElementById('btnTabDosen').classList.remove('active');
+        if(tabName === 'spv') document.getElementById('btnTabSpv').classList.add('active');
+        if(tabName === 'dosen') document.getElementById('btnTabDosen').classList.add('active');
+        
+        document.getElementById('contentTabSpv').classList.remove('active');
+        document.getElementById('contentTabDosen').classList.remove('active');
+        if(tabName === 'spv') document.getElementById('contentTabSpv').classList.add('active');
+        if(tabName === 'dosen') document.getElementById('contentTabDosen').classList.add('active');
+
+        document.getElementById('selectAllSpv').checked = false;
+        document.getElementById('selectAllDosen').checked = false;
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        updateBulkCount();
+    }
+
+    function loadAntreanSurat() {
+        document.getElementById('tabelAntreanSpv').innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-4 h-4 border-[2px]"></div> Menarik data antrean...</td></tr>';
+        document.getElementById('tabelAntreanDosen').innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500 text-sm"><div class="spinner-css inline-block align-middle me-2 w-4 h-4 border-[2px]"></div> Menarik data antrean...</td></tr>';
+        
+        document.getElementById('selectAllSpv').checked = false;
+        document.getElementById('selectAllDosen').checked = false;
+        updateBulkCount();
+        
+        if (typeof google === 'undefined') {
+            setTimeout(() => {
+                rawDataGlobal = [
+                    { nim: "20311901", nama: "Nisa Sabyan", perusahaan: "PT Telkom Indonesia", spv: "Bpk. Hermawan", dosbing: "Prof. Sudirman", status: "Sudah Konfirmasi" },
+                    { nim: "20311902", nama: "Ahmad Budi", perusahaan: "PT Telkom Indonesia", spv: "Bpk. Hermawan", dosbing: "Dr. Lilik", status: "Belum Konfirmasi" },
+                    { nim: "20311903", nama: "Kevin Sanjaya", perusahaan: "PT Telkom Indonesia", spv: "Bpk. Hermawan", dosbing: "Prof. Sudirman", status: "Sudah Konfirmasi" },
+                    { nim: "20311904", nama: "Dian Sastro", perusahaan: "Bank Mandiri Syariah", spv: "Ibu Ratna", dosbing: "Dr. Lilik", status: "Sudah Konfirmasi" }
+                ];
+                processAndRenderAllData();
+            }, 1000);
+        } else {
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    rawDataGlobal = data;
+                    processAndRenderAllData();
+                })
+                .withFailureHandler(function(err) {
+                    let errHtml = `<tr><td colspan="5" class="text-center py-6 text-rose-500 text-sm">Gagal memuat: ${err.message}</td></tr>`;
+                    document.getElementById('tabelAntreanSpv').innerHTML = errHtml;
+                    document.getElementById('tabelAntreanDosen').innerHTML = errHtml;
+                })
+                .getAntreanSurat();
+        }
+    }
+
+    function processAndRenderAllData() {
+        if (!rawDataGlobal || rawDataGlobal.length === 0) {
+            let emptyHtml = '<tr><td colspan="5" class="text-center py-12 text-slate-500 text-sm"><i class="fas fa-check-circle text-emerald-500 text-3xl mb-2 block"></i>Semua antrean surat sudah bersih.</td></tr>';
+            document.getElementById('tabelAntreanSpv').innerHTML = emptyHtml;
+            document.getElementById('tabelAntreanDosen').innerHTML = emptyHtml;
+            groupedDataSpv = [];
+            groupedDataDosen = [];
+            return;
+        }
+
+        // 1. Grouping Data SPV
+        let tempSpv = {};
+        rawDataGlobal.forEach(item => {
+            let key = (item.spv + "|||" + item.perusahaan).toUpperCase(); 
+            if (!tempSpv[key]) tempSpv[key] = { spv: item.spv, perusahaan: item.perusahaan, mahasiswa: [] };
+            tempSpv[key].mahasiswa.push(item);
+        });
+        groupedDataSpv = Object.values(tempSpv);
+
+        // 2. Grouping Data DOSEN
+        let tempDosen = {};
+        rawDataGlobal.forEach(item => {
+            let key = item.dosbing.toUpperCase(); 
+            if (!tempDosen[key]) tempDosen[key] = { dosbing: item.dosbing, mahasiswa: [] };
+            tempDosen[key].mahasiswa.push(item);
+        });
+        groupedDataDosen = Object.values(tempDosen);
+
+        // RENDER SPV
+        let htmlSpv = '';
+        groupedDataSpv.forEach((group, index) => {
+            let listMhs = '<ul class="text-xs leading-relaxed space-y-1.5">';
+            group.mahasiswa.forEach((mhs, idx) => {
+                let isBelum = (mhs.status === "Belum Konfirmasi" || !mhs.status);
+                let textClass = isBelum ? "text-rose-600 font-bold" : "text-slate-700 font-semibold";
+                let badge = isBelum ? ' <span class="bg-rose-50 text-rose-600 border border-rose-200 text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider ml-1">Belum</span>' : '';
+                listMhs += `<li><span class="font-medium text-slate-400 w-4 inline-block">${idx + 1}.</span> <span class="${textClass}">${mhs.nama}</span> <span class="font-mono text-slate-400">(${mhs.nim})</span>${badge}</li>`;
+            });
+            listMhs += '</ul>';
+
+            htmlSpv += `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-4 py-3 text-center"><input type="checkbox" class="custom-checkbox row-checkbox spv-checkbox" value="${index}" onchange="updateBulkCount()"></td>
+                    <td class="px-4 py-4"><div class="font-bold text-slate-800 text-sm mb-1">${group.spv}</div><div class="text-xs font-medium text-slate-500"><i class="far fa-building mr-1 text-slate-400"></i> ${group.perusahaan}</div></td>
+                    <td class="px-4 py-4 text-center"><span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-700 font-bold text-sm border border-blue-100">${group.mahasiswa.length}</span></td>
+                    <td class="px-4 py-4">${listMhs}</td>
+                    <td class="px-4 py-4 text-center"><button onclick="generateSingleSurat('spv', ${index})" class="bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-blue-600 px-3 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors flex items-center justify-center gap-1.5 mx-auto w-full"><i class="fas fa-magic"></i> Buat 1 Surat</button></td>
+                </tr>`;
+        });
+        document.getElementById('tabelAntreanSpv').innerHTML = htmlSpv;
+
+        // RENDER DOSEN
+        let htmlDosen = '';
+        groupedDataDosen.forEach((group, index) => {
+            let listMhs = '<ul class="text-xs leading-relaxed space-y-2">';
+            group.mahasiswa.forEach((mhs, idx) => {
+                let isBelum = (mhs.status === "Belum Konfirmasi" || !mhs.status);
+                let textClass = isBelum ? "text-rose-600 font-bold" : "text-slate-700 font-semibold";
+                let badge = isBelum ? ' <span class="bg-rose-50 text-rose-600 border border-rose-200 text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider ml-1">Belum</span>' : '';
+                listMhs += `<li>
+                                <div class="flex items-center gap-1"><span class="font-medium text-slate-400 w-4 inline-block">${idx + 1}.</span> <span class="${textClass}">${mhs.nama}</span> <span class="font-mono text-slate-400">(${mhs.nim})</span>${badge}</div>
+                                <div class="text-[11px] text-slate-500 ml-5 flex items-center gap-1"><i class="far fa-building text-slate-300"></i> ${mhs.perusahaan}</div>
+                            </li>`;
+            });
+            listMhs += '</ul>';
+
+            htmlDosen += `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-4 py-3 text-center"><input type="checkbox" class="custom-checkbox row-checkbox dosen-checkbox" value="${index}" onchange="updateBulkCount()"></td>
+                    <td class="px-4 py-4"><div class="font-bold text-slate-800 text-sm flex items-center gap-2"><div class="bg-slate-100 text-slate-500 w-8 h-8 rounded-full flex justify-center items-center"><i class="fas fa-user-tie"></i></div> ${group.dosbing}</div></td>
+                    <td class="px-4 py-4 text-center"><span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-700 font-bold text-sm border border-blue-100">${group.mahasiswa.length}</span></td>
+                    <td class="px-4 py-4">${listMhs}</td>
+                    <td class="px-4 py-4 text-center"><button onclick="generateSingleSurat('dosen', ${index})" class="bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-blue-600 px-3 py-2 rounded-lg text-xs font-medium shadow-sm transition-colors flex items-center justify-center gap-1.5 mx-auto w-full"><i class="fas fa-magic"></i> Buat 1 Surat</button></td>
+                </tr>`;
+        });
+        document.getElementById('tabelAntreanDosen').innerHTML = htmlDosen;
+    }
+
+    // --- Logika Checkbox Cerdas ---
+    function toggleAllCheckboxes(tabType, source) {
+        let classTarget = tabType === 'spv' ? '.spv-checkbox' : '.dosen-checkbox';
+        let checkboxes = document.querySelectorAll(classTarget);
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateBulkCount();
+    }
+
+    function updateBulkCount() {
+        let classTarget = activeTab === 'spv' ? '.spv-checkbox:checked' : '.dosen-checkbox:checked';
+        let checkboxes = document.querySelectorAll(classTarget);
+        let count = checkboxes.length;
+        
+        document.getElementById('bulkCount').innerText = count;
+        
+        let bulkBtn = document.getElementById('btnBulkGenerate');
+        if (count > 0) {
+            bulkBtn.removeAttribute('disabled');
+            bulkBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            bulkBtn.setAttribute('disabled', 'true');
+            bulkBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            if(activeTab === 'spv') document.getElementById('selectAllSpv').checked = false;
+            if(activeTab === 'dosen') document.getElementById('selectAllDosen').checked = false;
+        }
+    }
+
+    // --- Aksi Pembuatan Surat ---
+    function generateSingleSurat(type, groupIndex) {
+        let groupData = type === 'spv' ? [groupedDataSpv[groupIndex]] : [groupedDataDosen[groupIndex]];
+        eksekusiPembuatanSurat(type, groupData);
+    }
+
+    function generateBulkSurat() {
+        let classTarget = activeTab === 'spv' ? '.spv-checkbox:checked' : '.dosen-checkbox:checked';
+        let checkedBoxes = document.querySelectorAll(classTarget);
+        if (checkedBoxes.length === 0) return;
+
+        let selectedGroups = [];
+        checkedBoxes.forEach(cb => {
+            let idx = parseInt(cb.value);
+            if(activeTab === 'spv') selectedGroups.push(groupedDataSpv[idx]);
+            if(activeTab === 'dosen') selectedGroups.push(groupedDataDosen[idx]);
+        });
+
+        eksekusiPembuatanSurat(activeTab, selectedGroups);
+    }
+
+    function eksekusiPembuatanSurat(type, groupsToProcess) {
+        let countGrup = groupsToProcess.length;
+        let totalMhs = 0;
+        groupsToProcess.forEach(g => totalMhs += g.mahasiswa.length);
+
+        let jenisTxt = type === 'spv' ? 'Surat SPV' : 'Surat Dosen (DPL)';
+        let titleTxt = countGrup > 1 ? `Meracik Beberapa ${jenisTxt}...` : `Meracik 1 ${jenisTxt}...`;
+        let descTxt = `Sistem sedang merangkai ${countGrup} dokumen untuk total ${totalMhs} mahasiswa.<br><br><b>Mohon tunggu, proses ini butuh beberapa detik.</b>`;
+
+        Swal.fire({ 
+            title: titleTxt, html: `<span class="text-sm text-slate-500">${descTxt}</span>`, 
+            allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }
+        });
+
+        let targetFunction = type === 'spv' ? 'generateSuratGrupSPV' : 'generateSuratGrupDosen';
+
+        if (typeof google === 'undefined') {
+            // Simulasi sukses
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'success', title: 'Pembuatan Selesai!',
+                    html: `<p class="text-sm text-slate-600 mb-4">Berhasil membuat <b>${countGrup} dokumen PDF</b>.</p>`,
+                    confirmButtonText: '<i class="fas fa-check"></i> Selesai', confirmButtonColor: '#2563eb'
+                }).then(() => loadAntreanSurat());
+            }, 2500);
+        } else {
+            // Menembak fungsi Backend sesuai tab aktif
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.status === "success") {
+                        let msg = `<p class="text-sm text-slate-600 mb-4">Berhasil membuat <b>${response.summary.sukses} dokumen PDF</b> ke folder Drive Anda.</p>`;
+                        if (response.summary.gagal > 0) msg += `<p class="text-xs text-rose-500 font-medium p-2 bg-rose-50 rounded border border-rose-200">Namun ada ${response.summary.gagal} surat gagal dibuat (ID belum ada di Sheet).</p>`;
+                        
+                        Swal.fire({
+                            icon: 'success', title: 'Pembuatan Selesai!', html: msg,
+                            confirmButtonText: '<i class="fas fa-check"></i> Selesai', confirmButtonColor: '#2563eb'
+                        }).then(() => loadAntreanSurat());
+                    } else {
+                        Swal.fire('Gagal Membuat Surat', response.message, 'error');
+                    }
+                })
+                .withFailureHandler(function(error) { Swal.fire('Error Server', error.message, 'error'); })
+                [targetFunction](groupsToProcess);
+        }
     }
   </script>
 </body>
