@@ -64,7 +64,8 @@ function getKamusKolom(sheet) {
     SPV_BERDAMPAK: cari("SPV Berdampak", 29), JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
     STATUS_NOTIF: cari("Status Notifikasi", 31),
     LINK_SURAT: cari("Link Surat", 32), LINK_SURAT_DOSEN: cari("Link Surat Dosen", 33),
-    EMAIL_DOSEN: cari("Email Dosen", 34) // <-- BARU: Email Dosen
+    EMAIL_DOSEN: cari("Email Dosen", 34),
+    DOKUMENTASI: cari("Dokumentasi", 38) // <-- FITUR BARU: Mapping kolom Dokumentasi
   };
 }
 
@@ -107,7 +108,7 @@ function setPhaseStatus(phaseNumber) {
 }
 function clearCache() {
   var cache = CacheService.getScriptCache();
-  cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN"]);
+  cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN", "CACHE_NOTIF"]); // <-- FITUR BARU: Clear Cache Notif
 }
 
 // ==========================================
@@ -571,18 +572,41 @@ function simpanEvaluasi(info) {
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
 
+// ==========================================
+// 8. FUNGSI CEK NOTIFIKASI PIC (DENGAN CACHE)
+// ==========================================
 function cekNotifPIC(picName) {
   if (!picName) return [];
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  var KOLOM = getKamusKolom(sheet);
-  var rawData = sheet.getDataRange().getValues();
-  var notifs = [];
-  for (var i = 1; i < rawData.length; i++) {
-    var picRaw = rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString().trim() : "";
-    var statusNotif = rawData[i][KOLOM.STATUS_NOTIF] ? rawData[i][KOLOM.STATUS_NOTIF].toString().trim() : "";
-    if (picRaw === picName && statusNotif === "BARU") notifs.push({ row: i + 1, nama: rawData[i][KOLOM.NAMA_MHS], nim: rawData[i][KOLOM.NIM] });
+  
+  var cache = CacheService.getScriptCache();
+  var cachedNotif = cache.get("CACHE_NOTIF");
+  var allNotifs = [];
+
+  // FITUR BARU: Baca cache dulu biar irit kuota server
+  if (cachedNotif) {
+    allNotifs = JSON.parse(cachedNotif);
+  } else {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    var rawData = sheet.getDataRange().getValues();
+    
+    for (var i = 1; i < rawData.length; i++) {
+      var statusNotif = rawData[i][KOLOM.STATUS_NOTIF] ? rawData[i][KOLOM.STATUS_NOTIF].toString().trim() : "";
+      if (statusNotif === "BARU") {
+        allNotifs.push({
+          pic: rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString().trim() : "",
+          row: i + 1, 
+          nama: rawData[i][KOLOM.NAMA_MHS], 
+          nim: rawData[i][KOLOM.NIM]
+        });
+      }
+    }
+    // Simpan ke cache 5 menit
+    cache.put("CACHE_NOTIF", JSON.stringify(allNotifs), 300);
   }
-  return notifs;
+
+  // Saring cuma buat PIC yang nanya
+  return allNotifs.filter(function(n) { return n.pic === picName; });
 }
 
 function tandaiNotifDibaca(row) {
@@ -591,6 +615,7 @@ function tandaiNotifDibaca(row) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var KOLOM = getKamusKolom(sheet);
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
+    clearCache(); // Hapus cache biar data notif diperbarui
     return {status: "success"};
   } catch (e) { return {status: "error", message: e.message}; } finally { lock.releaseLock(); }
 }
@@ -598,7 +623,6 @@ function tandaiNotifDibaca(row) {
 // ==========================================
 // 9. FUNGSI AUTO-GENERATE SURAT & EMAIL ADMIN
 // ==========================================
-
 function getAntreanSurat() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
@@ -761,7 +785,6 @@ function generateSuratGrupDosen(groupsToProcess) {
   } catch (error) { return { status: "error", message: error.message }; }
 }
 
-// D. FUNGSI KIRIM EMAIL OTOMATIS
 function kirimEmailOtomatis(type, group) {
   try {
     var mhsUtama = group.mahasiswa[0];
@@ -785,9 +808,6 @@ function kirimEmailOtomatis(type, group) {
 
     var htmlBody = "";
 
-    // ==========================================
-    // 1. TEMPLATE EMAIL UNTUK SPV
-    // ==========================================
     if (isSPV) {
       htmlBody = "" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
@@ -799,7 +819,7 @@ function kirimEmailOtomatis(type, group) {
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda dapat mengunduh dan melihat surat resmi melalui tautan berikut:<br><br>" +
-          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Surat Undangan Resmi</b></a>" +
+          "📄 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Surat Undangan Resmi</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
@@ -812,9 +832,6 @@ function kirimEmailOtomatis(type, group) {
           "<i>Wassalamualaikum Warahmatullahi Wabarakatuh</i>" +
         "</p>";
     } 
-    // ==========================================
-    // 2. TEMPLATE EMAIL UNTUK DOSEN
-    // ==========================================
     else {
       htmlBody = "" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
@@ -822,11 +839,11 @@ function kirimEmailOtomatis(type, group) {
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "<b>Yth. Bapak/Ibu " + namaTujuan + "</b>,<br><br>" +
-          "Bersama email ini, kami sampaikan Undangan Responsi mahasiswa magang Prodi Manajemen S1 Universitas Islam Indonesia yang berada di bawah bimbingan Bapak/Ibu." + // Anda bisa bebas mengedit kata-kata di blok ini
+          "Bersama email ini, kami sampaikan Undangan Responsi mahasiswa magang Prodi Manajemen S1 Universitas Islam Indonesia yang berada di bawah bimbingan Bapak/Ibu." + 
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Bapak/Ibu dapat mengunduh dan melihat surat undangan resmi melalui tautan berikut:<br><br>" +
-          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Undangan Responsi</b></a>" +
+          "📄 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Undangan Responsi</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
@@ -840,9 +857,6 @@ function kirimEmailOtomatis(type, group) {
         "</p>";
     }
 
-    // ==========================================
-    // 3. SIGNATURE / FOOTER (Sama untuk Keduanya)
-    // ==========================================
     htmlBody += "" +
       "<br><br>" +
       "<div style='font-size:12px; font-family:Arial, sans-serif; color:#666;'>" +
@@ -867,5 +881,59 @@ function kirimEmailOtomatis(type, group) {
     return { status: "success", message: "Email berhasil dikirim ke " + penerima };
   } catch (error) {
     return { status: "error", message: error.message };
+  }
+}
+
+// ==========================================
+// 10. AUTO-SYNC DOKUMENTASI DARI GOOGLE DRIVE (FITUR BARU ADMIN)
+// ==========================================
+function sinkronisasiDokumentasi() {
+  // Folder ID tempat PIC upload file (dengan nama NIM.pdf)
+  var folderId = "1QPfDRx8-kXKYf9-KcNuVYAQawFvVuSCo"; 
+  var lock = LockService.getScriptLock();
+  lock.waitLock(15000); // Tunggu sampai 15 detik kalau ada proses lain
+
+  try {
+    var folder = DriveApp.getFolderById(folderId);
+    var files = folder.getFiles();
+    var fileMap = {}; // Untuk menyimpan mapping NIM -> URL File
+
+    // 1. Baca semua isi folder dan ekstrak NIM dari namanya
+    while (files.hasNext()) {
+      var file = files.next();
+      var namaFile = file.getName();
+      // Cari angka 8 digit berurutan yang merepresentasikan NIM
+      var nimMatch = namaFile.match(/\d{8}/);
+      if (nimMatch) {
+        var nimsaja = nimMatch[0];
+        fileMap[nimsaja] = file.getUrl();
+      }
+    }
+
+    // 2. Tulis ke Spreadsheet jika cocok
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var KOLOM = getKamusKolom(sheet);
+    var data = sheet.getDataRange().getValues();
+    var countUpdate = 0;
+
+    for (var i = 1; i < data.length; i++) {
+      var nimSheet = data[i][KOLOM.NIM] ? String(data[i][KOLOM.NIM]).trim() : "";
+      var linkSaatIni = data[i][KOLOM.DOKUMENTASI] ? String(data[i][KOLOM.DOKUMENTASI]).trim() : "";
+
+      // Jika ada mahasiswa dengan NIM tersebut, dan file-nya ada di map
+      if (nimSheet !== "" && fileMap[nimSheet]) {
+        // Cek apakah linknya belum diinput atau beda, kalau beda baru di-update biar gak makan waktu ekskusi
+        if (linkSaatIni !== fileMap[nimSheet]) {
+          sheet.getRange(i + 1, KOLOM.DOKUMENTASI + 1).setValue(fileMap[nimSheet]);
+          countUpdate++;
+        }
+      }
+    }
+    
+    return { status: "success", count: countUpdate };
+  } catch (e) {
+    return { status: "error", message: e.message };
+  } finally {
+    lock.releaseLock();
   }
 }
