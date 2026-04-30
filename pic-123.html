@@ -5,31 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Command Center PIC - Tailwind Build</title>
     
-    <!-- 
-    ========================================================================
-    🛠️ THE TAILWIND COMPROMISE (STRATEGI PRODUCTION DI GOOGLE APPS SCRIPT) 🛠️
-    ========================================================================
-    Langkah saat kamu memindahkan kode ini ke Google Apps Script:
-    1. Hapus tag <script src="https://cdn.tailwindcss.com"></script> di bawah.
-    2. Jalankan build Tailwind CLI di laptopmu (npx tailwindcss -o output.css --minify).
-    3. Buka file 'output.css', copy semua isinya.
-    4. Paste isinya tepat di dalam tag <style> di bawah ini!
-    ========================================================================
-    -->
     <style id="compiled-tailwind-css">
-        /* ---> PASTE HASIL BUILD MINIFIED TAILWIND (output.css) DI SINI <--- */
-        /* Hasilnya nanti hanya sekitar 5KB - 15KB. Sangat ringan untuk HP mahasiswa! */
+        /* ---> PASTE HASIL BUILD MINIFIED TAILWIND (output.css) DI SINI NANTI <--- */
     </style>
 
-    <!-- !!! SCRIPT INI HANYA UNTUK TAHAP DEVELOPMENT / PREVIEW DI CANVAS !!! -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     
     <style>
-        /* CSS Kustom Tambahan (Animasi & Scrollbar) tetap aman di sini */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
         
@@ -56,24 +41,19 @@
         .pulse-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 12px; width: 12px; background-color: #f59e0b; border: 2px solid #ffffff; }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
 
-        /* Top Loading Bar ala YouTube/LinkedIn */
         #top-progress-bar {
             position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background-color: #3b82f6; /* Warna biru sesuai tema */
-            z-index: 9999999;
-            width: 0%;
-            opacity: 1;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
-            pointer-events: none;
+            top: 0; left: 0; height: 3px; background-color: #3b82f6; z-index: 9999999; width: 0%; opacity: 1; box-shadow: 0 0 10px rgba(59, 130, 246, 0.7); pointer-events: none;
         }
+
+        .template-textarea {
+            width: 100%; height: 280px; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; font-family: monospace; font-size: 13px; color: #334155; background-color: #f8fafc; resize: none; outline: none;
+        }
+        .template-textarea:focus { border-color: #cbd5e1; }
     </style>
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Loading Bar Element -->
     <div id="top-progress-bar"></div>
 
     <div id="initial-loader" class="fade-in">
@@ -107,10 +87,7 @@
 
         <div id="dashboardScreen" class="hidden animate__animated animate__fadeIn">
             
-            <!-- 🛎️ WADAH NOTIFIKASI REAL-TIME (POLLING) 🛎️ -->
-            <div id="notificationArea" class="hidden mb-5">
-                <!-- Card Notifikasi akan diinject ke sini via Javascript -->
-            </div>
+            <div id="notificationArea" class="hidden mb-5"></div>
 
             <div class="bg-white p-6 sm:p-8 rounded-xl border border-slate-200 shadow-sm mb-5 relative">
                 <div class="mb-6 pb-5 border-b border-slate-100 flex justify-between items-start gap-4">
@@ -212,6 +189,7 @@
     <!-- MODAL EDIT DATA -->
     <div id="editModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="editModalContent">
+            
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h3 class="font-semibold text-slate-800 text-lg">Edit Jadwal & Kontak</h3>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
@@ -272,6 +250,19 @@
                         </div>
                     </label>
                 </div>
+
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-file-pdf text-blue-500 text-xl mt-0.5"></i>
+                        <div>
+                            <p class="text-sm font-bold text-blue-800">Upload Dokumentasi</p>
+                            <p class="text-xs text-blue-600 font-medium">Unggah Berita Acara & Screenshoot (PDF)</p>
+                        </div>
+                    </div>
+                    <button onclick="bukaFolderUpload()" class="shrink-0 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                        <i class="fas fa-cloud-upload-alt"></i> Buka Folder
+                    </button>
+                </div>
             </div>
             
             <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50/50">
@@ -283,41 +274,96 @@
         </div>
     </div>
 
+    <!-- MODAL BARU: TEMPLATE WA -->
+    <div id="templateModal" class="fixed inset-0 z-[105] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="templateModalContent">
+            
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <i class="fab fa-whatsapp text-lg"></i>
+                    </div>
+                    <h3 class="font-semibold text-slate-800 text-lg">Template Pesan WA</h3>
+                </div>
+                <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="p-0">
+                <div class="flex border-b border-slate-200 px-6 pt-2 bg-slate-50">
+                    <button id="tabBtnDosen" onclick="switchTemplateTab('dosen')" class="px-4 py-3 text-sm font-semibold text-blue-600 border-b-2 border-blue-600 transition-colors focus:outline-none flex items-center gap-2">
+                        <i class="fas fa-user-tie"></i> Dosen Pembimbing
+                    </button>
+                    <button id="tabBtnSpv" onclick="switchTemplateTab('spv')" class="px-4 py-3 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition-colors focus:outline-none flex items-center gap-2">
+                        <i class="far fa-user"></i> Supervisor Perusahaan
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div class="mb-2 flex justify-between items-end">
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Pratinjau Pesan</p>
+                        <span id="templateTargetName" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded"></span>
+                    </div>
+                    <textarea id="templateTextarea" class="template-textarea" readonly></textarea>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3 bg-slate-50/50">
+                <button onclick="closeTemplateModal()" class="px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors order-last sm:order-first">Tutup</button>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button onclick="sendWaEmpty()" class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 shadow-sm transition-colors flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-lg"></i> Chat Biasa
+                    </button>
+                    <button onclick="copyTemplateText()" class="w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 shadow-sm transition-colors flex items-center justify-center gap-2">
+                        <i class="far fa-copy text-slate-500"></i> Salin Teks
+                    </button>
+                    <button onclick="sendWaDirect()" class="w-full sm:w-auto px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors flex items-center justify-center gap-2">
+                        <i class="fas fa-paper-plane text-sm"></i> Kirim Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let allData = []; 
         let uniquePics = []; 
         let currentActivePic = "";
-        let pollingInterval = null; // Variabel untuk menyimpan interval polling
+        let pollingInterval = null; 
         
         const attrHref = 'hr' + 'ef';
         const attrOnclick = 'on' + 'click';
 
-        // --- FUNGSI TOP LOADING BAR ---
         function startTopProgress() {
             const bar = document.getElementById('top-progress-bar');
-            bar.style.opacity = '1';
-            bar.style.width = '0%';
-            bar.style.transition = 'none';
-            setTimeout(() => {
-                bar.style.transition = 'width 2.5s cubic-bezier(0.1, 0.8, 0.3, 1)'; 
-                bar.style.width = '85%';
-            }, 10);
+            bar.style.opacity = '1'; bar.style.width = '0%'; bar.style.transition = 'none';
+            setTimeout(() => { bar.style.transition = 'width 2.5s cubic-bezier(0.1, 0.8, 0.3, 1)'; bar.style.width = '85%'; }, 10);
         }
 
         function completeTopProgress() {
             const bar = document.getElementById('top-progress-bar');
-            bar.style.transition = 'width 0.3s ease-out';
-            bar.style.width = '100%'; 
-            setTimeout(() => {
-                bar.style.transition = 'opacity 0.4s ease';
-                bar.style.opacity = '0';
-                setTimeout(() => { bar.style.width = '0%'; }, 400); 
-            }, 300);
+            bar.style.transition = 'width 0.3s ease-out'; bar.style.width = '100%'; 
+            setTimeout(() => { bar.style.transition = 'opacity 0.4s ease'; bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 400); }, 300);
         }
 
         function formatTitleCase(input) { let str = input.value; input.value = str.replace(/\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1); }); }
-        function formatWAInput(el) { let val = el.value.replace(/[^0-9]/g, ''); if (val.startsWith('62')) val = '0' + val.substring(2); if (val.length > 0 && val[0] === '8') val = '0' + val; else if (val.length > 0 && val[0] !== '0') val = '08' + val; el.value = val; }
-        function populateTimeDropdown() { let select = document.getElementById('editJam'); select.innerHTML = '<option value="" disabled>Pilih Jam...</option>'; for (let h = 6; h <= 21; h++) { for (let m = 0; m < 60; m += 15) { let t = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0'); select.appendChild(new Option(t, t)); } } }
+        
+        function formatWAInput(el) { 
+            let val = el.value.replace(/[^0-9]/g, ''); 
+            if (val.startsWith('62')) val = '0' + val.substring(2); 
+            if (val.length > 0 && val[0] === '8') val = '0' + val; 
+            else if (val.length > 0 && val[0] !== '0') val = '08' + val; 
+            el.value = val; 
+        }
+        
+        function populateTimeDropdown() { 
+            let select = document.getElementById('editJam'); select.innerHTML = '<option value="" disabled>Pilih Jam...</option>'; 
+            for (let h = 6; h <= 21; h++) { 
+                for (let m = 0; m < 60; m += 15) { 
+                    let t = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0'); 
+                    select.appendChild(new Option(t, t)); 
+                } 
+            } 
+        }
 
         window.onload = () => {
             startTopProgress();
@@ -325,7 +371,6 @@
             if (typeof google !== 'undefined') {
                 google.script.run.withSuccessHandler(initPicTerminal).withFailureHandler((e)=>{ completeTopProgress(); Swal.fire('Error',e.message,'error') }).getPreviewData();
             } else {
-                // Dummy data untuk Canvas preview lokal
                 let dummyData = [
                     { row: 2, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "08:15", nim: "20311234", nama: "Ahmad Budi", perusahaan: "PT Pertamina", spv: "Pak Joko", dosbing: "Bpk. Haris", pic: "Siti Rahma", waPic: "0812345", waMhs: "08111", waSpv: "08222", waDosen: "08999", status: "Belum Responsi", isWChecked: false },
                     { row: 3, tanggalInput: "2026-05-24", tanggal: "Jumat, 24 Mei 2026", jam: "09:00:00", nim: "20311235", nama: "Rini Melati", perusahaan: "PT Telkom", spv: "Ibu Dina", dosbing: "Ibu Maya", pic: "Andi Saputra", waPic: "0812346", waMhs: "08333", waSpv: "08444", waDosen: "", status: "Belum Isi Form Pasca Responsi", isWChecked: true }
@@ -338,48 +383,26 @@
             if (typeof google !== 'undefined') {
                 startTopProgress();
                 const loader = document.getElementById('initial-loader');
-                loader.classList.remove('fade-out');
-                loader.style.display = 'flex';
-                loader.classList.add('fade-in');
-                
-                google.script.run
-                    .withSuccessHandler(function(data) {
-                        completeTopProgress();
-                        allData = data || [];
-                        let picSet = new Set();
-                        allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
-                        uniquePics = Array.from(picSet).sort();
-                        
-                        loader.classList.remove('fade-in'); 
-                        loader.classList.add('fade-out');
-                        setTimeout(() => loader.style.display = 'none', 300);
-
-                        if (currentActivePic !== "") { renderDashboard(); } 
-                        else { renderGateScreen(); }
-                    })
-                    .withFailureHandler(function(err){
-                        completeTopProgress();
-                        loader.classList.remove('fade-in'); loader.classList.add('fade-out');
-                        setTimeout(() => loader.style.display = 'none', 300);
-                        Swal.fire('Error', 'Gagal memuat ulang data.', 'error');
-                    })
-                    .getPreviewData();
-            } else { 
-                startTopProgress();
-                setTimeout(() => window.location.reload(), 500); 
-            }
+                loader.classList.remove('fade-out'); loader.style.display = 'flex'; loader.classList.add('fade-in');
+                google.script.run.withSuccessHandler(function(data) {
+                    completeTopProgress(); allData = data || [];
+                    let picSet = new Set(); allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
+                    uniquePics = Array.from(picSet).sort();
+                    loader.classList.remove('fade-in'); loader.classList.add('fade-out'); setTimeout(() => loader.style.display = 'none', 300);
+                    if (currentActivePic !== "") { renderDashboard(); } else { renderGateScreen(); }
+                }).withFailureHandler(function(err){
+                    completeTopProgress(); loader.classList.remove('fade-in'); loader.classList.add('fade-out'); setTimeout(() => loader.style.display = 'none', 300);
+                    Swal.fire('Error', 'Gagal memuat ulang data.', 'error');
+                }).getPreviewData();
+            } else { startTopProgress(); setTimeout(() => window.location.reload(), 500); }
         }
 
         function initPicTerminal(data) {
             completeTopProgress();
-            const loader = document.getElementById('initial-loader');
-            loader.classList.remove('fade-in'); loader.classList.add('fade-out');
-            setTimeout(() => loader.style.display = 'none', 300);
-
+            const loader = document.getElementById('initial-loader'); loader.classList.remove('fade-in'); loader.classList.add('fade-out'); setTimeout(() => loader.style.display = 'none', 300);
             allData = data || []; let picSet = new Set();
             allData.forEach(item => { if (item.pic && item.pic.trim() !== "" && item.pic.trim() !== "-") picSet.add(item.pic.trim()); });
             uniquePics = Array.from(picSet).sort();
-            
             if (currentActivePic !== "") { renderDashboard(); } else { renderGateScreen(); }
         }
 
@@ -395,124 +418,67 @@
                     container.appendChild(btn);
                 });
             }
-            document.getElementById('dashboardScreen').classList.add('hidden'); 
-            document.getElementById('gateScreen').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden');
         }
 
-        // ==========================================
-        // MANAJEMEN NOTIFIKASI & POLLING (HEMAT KUOTA)
-        // ==========================================
         function selectPic(picName) { 
-            currentActivePic = picName; 
-            document.getElementById('activePicName').innerText = picName; 
-            document.getElementById('gateScreen').classList.add('hidden'); 
-            document.getElementById('dashboardScreen').classList.remove('hidden'); 
-            renderDashboard(); 
-            
-            // Mulai mesin polling background saat PIC masuk dashboard
-            startPolling();
-            cekNotifSekarang();
+            currentActivePic = picName; document.getElementById('activePicName').innerText = picName; 
+            document.getElementById('gateScreen').classList.add('hidden'); document.getElementById('dashboardScreen').classList.remove('hidden'); 
+            renderDashboard(); startPolling(); cekNotifSekarang();
         }
         
         function logoutPic() { 
-            currentActivePic = ""; 
-            document.getElementById('dashboardScreen').classList.add('hidden'); 
-            document.getElementById('gateScreen').classList.remove('hidden'); 
-            
-            // Matikan polling dan bersihkan UI notifikasi saat keluar
-            stopPolling();
-            document.getElementById('notificationArea').innerHTML = '';
-            document.getElementById('notificationArea').classList.add('hidden');
+            currentActivePic = ""; document.getElementById('dashboardScreen').classList.add('hidden'); document.getElementById('gateScreen').classList.remove('hidden'); 
+            stopPolling(); document.getElementById('notificationArea').innerHTML = ''; document.getElementById('notificationArea').classList.add('hidden');
         }
 
         function startPolling() {
             if(pollingInterval) clearInterval(pollingInterval);
-            
-            // Polling dieksekusi setiap 60 detik (60000 ms), tapi HANYA jika tab browser aktif/terlihat
-            pollingInterval = setInterval(() => {
-                if (document.visibilityState === 'visible') {
-                    cekNotifSekarang();
-                } else {
-                    console.log("Tab tidak aktif. Polling notifikasi ditunda untuk menghemat kuota Google Apps Script.");
-                }
-            }, 60000);
+            pollingInterval = setInterval(() => { if (document.visibilityState === 'visible') { cekNotifSekarang(); } }, 90000); 
         }
-
-        function stopPolling() {
-            if(pollingInterval) clearInterval(pollingInterval);
+        
+        function stopPolling() { 
+            if(pollingInterval) clearInterval(pollingInterval); 
         }
 
         function cekNotifSekarang() {
             if (!currentActivePic || typeof google === 'undefined') return;
-            // Background script run tanpa loading screen
-            google.script.run
-                .withSuccessHandler(renderNotifUI)
-                .cekNotifPIC(currentActivePic);
+            google.script.run.withSuccessHandler(renderNotifUI).cekNotifPIC(currentActivePic);
         }
 
         function renderNotifUI(notifs) {
             let container = document.getElementById('notificationArea');
-            if (!notifs || notifs.length === 0) {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-                return;
-            }
-
+            if (!notifs || notifs.length === 0) { container.classList.add('hidden'); container.innerHTML = ''; return; }
             let html = '';
             notifs.forEach(n => {
                 html += '<div id="notif-' + n.row + '" class="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm mb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 animate__animated animate__fadeInDown">' +
-                    '<div class="flex items-start gap-3 w-full sm:w-auto">' +
-                        '<div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5">' +
-                            '<i class="fas fa-bell animate-pulse"></i>' +
-                        '</div>' +
-                        '<div>' +
-                            '<p class="text-amber-800 font-semibold text-sm mb-0.5">Pembaruan dari Mahasiswa!</p>' +
-                            '<p class="text-amber-700/80 text-xs leading-relaxed"><b>' + n.nama + '</b> (' + n.nim + ') baru saja melakukan pendaftaran atau merubah jadwal responsi.</p>' +
-                        '</div>' +
-                    '</div>' +
-                    '<button onclick="tandaiDibaca(' + n.row + ')" class="shrink-0 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5">' +
-                        '<i class="fas fa-check"></i> Sudah Dicek' +
-                    '</button>' +
-                '</div>';
+                    '<div class="flex items-start gap-3 w-full sm:w-auto"><div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5"><i class="fas fa-bell animate-pulse"></i></div>' +
+                    '<div><p class="text-amber-800 font-semibold text-sm mb-0.5">Pembaruan dari Mahasiswa!</p><p class="text-amber-700/80 text-xs leading-relaxed"><b>' + n.nama + '</b> (' + n.nim + ') baru saja melakukan pendaftaran atau merubah jadwal.</p></div></div>' +
+                    '<button onclick="tandaiDibaca(' + n.row + ')" class="shrink-0 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium px-4 py-2.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-1.5"><i class="fas fa-check"></i> Sudah Dicek</button></div>';
             });
-            container.innerHTML = html;
-            container.classList.remove('hidden');
+            container.innerHTML = html; container.classList.remove('hidden');
         }
 
         function tandaiDibaca(row) {
-            // Optimistic UI update: Sembunyikan elemen secara instan sebelum server selesai
             let notifElement = document.getElementById('notif-' + row);
             if(notifElement) {
                 notifElement.classList.replace('animate__fadeInDown', 'animate__fadeOutUp');
-                setTimeout(() => {
-                    notifElement.remove();
-                    let container = document.getElementById('notificationArea');
-                    if(container.children.length === 0) container.classList.add('hidden');
+                setTimeout(() => { 
+                    notifElement.remove(); 
+                    let container = document.getElementById('notificationArea'); 
+                    if(container.children.length === 0) container.classList.add('hidden'); 
                 }, 500);
             }
-
-            if(typeof google !== 'undefined') {
-                google.script.run
-                    .withSuccessHandler(() => {
-                        // Jika berhasil ditandai, lakukan refresh (background) untuk memperbarui tabel
-                        refreshDataBackground();
-                    })
-                    .tandaiNotifDibaca(row);
+            if(typeof google !== 'undefined') { 
+                google.script.run.withSuccessHandler(() => { refreshDataBackground(); }).tandaiNotifDibaca(row); 
             }
         }
 
         function refreshDataBackground() {
-            if (typeof google !== 'undefined') {
-                 google.script.run
-                    .withSuccessHandler(function(data) {
-                        allData = data || [];
-                        renderDashboard(); // Rerender table tanpa trigger initial-loader
-                    })
-                    .getPreviewData();
+            if (typeof google !== 'undefined') { 
+                google.script.run.withSuccessHandler(function(data) { allData = data || []; renderDashboard(); }).getPreviewData(); 
             }
         }
-        // ==========================================
-
 
         function renderDashboard() {
             let myData = allData.filter(item => item.pic.trim() === currentActivePic);
@@ -525,8 +491,11 @@
             let tbodyDesktop = document.getElementById('desktopTableBody'); let viewMobile = document.getElementById('mobileCardView');
             tbodyDesktop.innerHTML = ''; viewMobile.innerHTML = '';
 
-            if (myData.length === 0) { document.getElementById('noResults').classList.remove('hidden'); document.getElementById('mobileCardView').classList.add('hidden'); return; } 
-            else { document.getElementById('noResults').classList.add('hidden'); document.getElementById('mobileCardView').classList.remove('hidden'); }
+            if (myData.length === 0) { 
+                document.getElementById('noResults').classList.remove('hidden'); document.getElementById('mobileCardView').classList.add('hidden'); return; 
+            } else { 
+                document.getElementById('noResults').classList.add('hidden'); document.getElementById('mobileCardView').classList.remove('hidden'); 
+            }
 
             let htmlDesktop = ''; let htmlMobile = '';
 
@@ -536,11 +505,11 @@
                 else if (item.status === "Belum Isi Form" || item.status === "Belum Isi Form Pasca Responsi") badgeClass = "bg-amber-50 text-amber-600 border border-amber-100";
                 else badgeClass = "bg-rose-50 text-rose-500 border border-rose-100";
 
-                let btnWaMhs = item.waMhs ? '<a ' + attrHref + '="https://wa.me/' + item.waMhs + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> Mhs</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> Mhs</button>';
-                let btnWaSpv = item.waSpv ? '<a ' + attrHref + '="https://wa.me/' + item.waSpv + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> SPV</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> SPV</button>';
-                let btnWaDosen = item.waDosen ? '<a ' + attrHref + '="https://wa.me/' + item.waDosen + '" target="_blank" class="btn-wa-outline px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full"><i class="fab fa-whatsapp text-sm"></i> Dosen</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed" title="Nomor belum terdaftar"><i class="fab fa-whatsapp text-sm opacity-50"></i> Dosen</button>';
+                let btnWaMhs = item.waMhs ? '<a ' + attrHref + '="https://wa.me/' + item.waMhs + '" target="_blank" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fab fa-whatsapp text-emerald-600 text-sm"></i> WA Mhs</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> WA Mhs</button>';
                 
-                let btnEdit = '<button ' + attrOnclick + '="openEditModal(' + item.row + ')" class="mt-2 w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-3 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fas fa-edit text-blue-500"></i> Edit Data & Status</button>';
+                let btnEdit = '<button ' + attrOnclick + '="openEditModal(' + item.row + ')" class="w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fas fa-edit text-blue-500"></i> Edit Data</button>';
+                let btnTemplate = '<button ' + attrOnclick + '="openTemplateModal(' + item.row + ')" class="w-full bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fab fa-whatsapp text-blue-500 text-sm"></i> Template Pesan</button>';
+                let actionGrid = '<div class="grid grid-cols-2 gap-1.5">' + btnWaMhs + btnEdit + '</div><div class="mt-1.5">' + btnTemplate + '</div>';
 
                 htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
                         '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
@@ -558,9 +527,8 @@
                             '<p class="text-slate-500 text-xs mb-0.5"><i class="far fa-user text-slate-400 w-4 text-center mr-1"></i> SPV: ' + item.spv + '</p>' +
                             '<p class="text-slate-500 text-xs"><i class="fas fa-user-tie text-slate-400 w-4 text-center mr-1"></i> DPL: ' + item.dosbing + '</p>' +
                         '</td>' +
-                        '<td class="px-5 py-4 w-48">' +
-                            '<div class="grid grid-cols-3 gap-1.5">' + btnWaMhs + btnWaSpv + btnWaDosen + '</div>' +
-                            btnEdit +
+                        '<td class="px-5 py-4 w-56">' +
+                            actionGrid +
                         '</td>' +
                     '</tr>';
 
@@ -580,15 +548,15 @@
                                 '<p class="text-xs text-slate-500"><i class="fas fa-user-tie text-slate-400 mr-1"></i> DPL: ' + item.dosbing + '</p>' +
                             '</div>' +
                         '</div>' +
-                        '<div class="grid grid-cols-3 gap-2 mt-3">' + btnWaMhs + btnWaSpv + btnWaDosen + '</div>' +
-                        '<div class="mt-3">' + btnEdit + '</div>' +
+                        '<div class="mt-3">' + actionGrid + '</div>' +
                     '</div>';
             });
 
             tbodyDesktop.innerHTML = htmlDesktop; viewMobile.innerHTML = htmlMobile;
         }
 
-        const modal = document.getElementById('editModal'); const modalContent = document.getElementById('editModalContent');
+        const modal = document.getElementById('editModal'); 
+        const modalContent = document.getElementById('editModalContent');
 
         function openEditModal(rowId) {
             let item = allData.find(d => d.row === rowId); if (!item) return;
@@ -610,51 +578,48 @@
             document.getElementById('editWaMhs').value = item.waMhs || "";
             document.getElementById('editWaSpv').value = item.waSpv || ""; 
             document.getElementById('editWaDosen').value = item.waDosen || "";
-            
             document.getElementById('editIsWChecked').checked = item.isWChecked || false;
             
-            modal.classList.remove('hidden'); 
-            void modal.offsetWidth;
-            
-            modal.classList.remove('opacity-0'); 
-            modalContent.classList.remove('scale-95', 'opacity-0'); 
-            modalContent.classList.add('scale-100', 'opacity-100');
+            modal.classList.remove('hidden'); void modal.offsetWidth;
+            modal.classList.remove('opacity-0'); modalContent.classList.remove('scale-95', 'opacity-0'); modalContent.classList.add('scale-100', 'opacity-100');
         }
 
         function closeEditModal() {
-            modal.classList.add('opacity-0'); 
-            modalContent.classList.remove('scale-100', 'opacity-100'); 
-            modalContent.classList.add('scale-95', 'opacity-0');
+            modal.classList.add('opacity-0'); modalContent.classList.remove('scale-100', 'opacity-100'); modalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
+        function bukaFolderUpload() {
+            let mhsInfo = document.getElementById('editInfoMhs').innerText; 
+            let nimMatch = mhsInfo.match(/\((\d{8})\)/); let nimSiswa = nimMatch ? nimMatch[1] : "NIM";
+
+            Swal.fire({
+                title: '<span class="font-bold text-slate-800">Perhatian Penting!</span>',
+                html: '<div class="text-sm text-slate-600 text-left"><p class="mb-2">Sebelum mengunggah file ke Google Drive, pastikan Anda telah mengubah nama file PDF dokumentasi menjadi <b>NIM mahasiswa</b>.</p><div class="bg-blue-50 p-3 rounded-lg border border-blue-200 text-center font-mono text-blue-700 font-bold mb-3 shadow-inner">' + nimSiswa + '.pdf</div><p class="text-[11px] text-rose-500 font-medium italic"><i class="fas fa-exclamation-triangle mr-1"></i>Sistem admin otomatis menolak/gagal membaca file jika format nama tidak sesuai.</p></div>',
+                icon: 'warning', showCancelButton: true, confirmButtonText: '<i class="fas fa-external-link-alt mr-1.5"></i> Oke, Buka Folder', cancelButtonText: 'Batal', confirmButtonColor: '#2563eb', cancelButtonColor: '#94a3b8', customClass: { confirmButton: 'rounded-lg', cancelButton: 'rounded-lg' }
+            }).then((result) => {
+                if(result.isConfirmed) { window.open('https://drive.google.com/drive/folders/1QPfDRx8-kXKYf9-KcNuVYAQawFvVuSCo?usp=sharing', '_blank'); }
+            });
+        }
+
         function submitEditPIC() {
-            let row = document.getElementById('editRow').value; 
-            let tanggal = document.getElementById('editTanggal').value; 
-            let jam = document.getElementById('editJam').value;
-            let spv = document.getElementById('editNamaSpv').value.trim(); 
-            let waMhs = document.getElementById('editWaMhs').value.trim(); 
-            let waSpv = document.getElementById('editWaSpv').value.trim(); 
-            let waDosen = document.getElementById('editWaDosen').value.trim();
+            let row = document.getElementById('editRow').value; let tanggal = document.getElementById('editTanggal').value; let jam = document.getElementById('editJam').value;
+            let spv = document.getElementById('editNamaSpv').value.trim(); let waMhs = document.getElementById('editWaMhs').value.trim(); let waSpv = document.getElementById('editWaSpv').value.trim(); let waDosen = document.getElementById('editWaDosen').value.trim();
             let isWChecked = document.getElementById('editIsWChecked').checked; 
 
-            if (!tanggal || !jam || !spv || !waMhs || !waSpv) { Swal.fire({ icon: 'warning', title: 'Belum Lengkap', text: 'Semua kolom wajib diisi kecuali WA Dosen.', confirmButtonColor: '#1e293b' }); return; }
-            
-            startTopProgress();
-            Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            if (!tanggal || !jam || !spv || !waMhs || !waSpv) { 
+                Swal.fire({ icon: 'warning', title: 'Belum Lengkap', text: 'Semua kolom wajib diisi kecuali WA Dosen.', confirmButtonColor: '#1e293b' }); 
+                return; 
+            }
+            startTopProgress(); Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             let info = { row: row, tanggal: tanggal, jam: jam, spv: spv, waMhs: waMhs, waSpv: waSpv, waDosen: waDosen, isWChecked: isWChecked };
-
             if (typeof google === 'undefined') {
                 setTimeout(() => { 
-                    completeTopProgress();
-                    let idx = allData.findIndex(d => d.row == row); 
+                    completeTopProgress(); let idx = allData.findIndex(d => d.row == row); 
                     if(idx !== -1) { 
-                        allData[idx].tanggalInput = tanggal; allData[idx].tanggal = "Telah Diedit"; 
-                        allData[idx].jam = jam; allData[idx].spv = spv; allData[idx].waMhs = waMhs; 
-                        allData[idx].waSpv = waSpv; allData[idx].waDosen = waDosen; allData[idx].isWChecked = isWChecked;
-                        if(isWChecked) allData[idx].status = "Belum Isi Form Pasca Responsi";
-                        else allData[idx].status = "Belum Responsi";
+                        allData[idx].tanggalInput = tanggal; allData[idx].tanggal = "Telah Diedit"; allData[idx].jam = jam; 
+                        allData[idx].spv = spv; allData[idx].waMhs = waMhs; allData[idx].waSpv = waSpv; allData[idx].waDosen = waDosen; allData[idx].isWChecked = isWChecked; 
                     }
                     Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data diperbarui.', confirmButtonColor: '#2563eb' }).then(() => { closeEditModal(); renderDashboard(); }); 
                 }, 800);
@@ -663,15 +628,172 @@
                     completeTopProgress();
                     if (res.status === "success") { 
                         Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data diperbarui.', confirmButtonColor: '#2563eb' }); 
-                        closeEditModal(); 
-                        refreshData(); 
-                    } else { Swal.fire({ icon: 'error', title: 'Gagal', text: res.message, confirmButtonColor: '#1e293b' }); }
-                }).withFailureHandler(function(err){
-                    completeTopProgress();
-                    Swal.fire({ icon: 'error', title: 'Error Server', text: 'Gagal menghubungi server.', confirmButtonColor: '#1e293b' });
+                        closeEditModal(); refreshData(); 
+                    } else { 
+                        Swal.fire({ icon: 'error', title: 'Gagal', text: res.message, confirmButtonColor: '#1e293b' }); 
+                    }
+                }).withFailureHandler(function(err){ 
+                    completeTopProgress(); Swal.fire({ icon: 'error', title: 'Error Server', text: 'Gagal menghubungi server.', confirmButtonColor: '#1e293b' }); 
                 }).updateByPIC(info);
             }
         }
+
+        let currentTemplateData = { dosen: '', spv: '', waDosen: '', waSpv: '', targetDosen: '', targetSpv: '' };
+        let activeTabTemplate = 'dosen';
+
+        function openTemplateModal(rowId) {
+            let item = allData.find(d => d.row === rowId); 
+            if (!item) return;
+            
+            let displayJam = item.jam;
+            if(displayJam && !displayJam.toString().toLowerCase().includes("wib")) {
+                displayJam += " WIB";
+            }
+
+            let templateDosen = "_Assalamualaikum Warahmatullahi Wabarakatuh_\n\n" +
+                "Kepada Yth.\n" +
+                "Bapak/Ibu " + (item.dosbing || "Dosen Pembimbing") + "\n" +
+                "Dosen Pembimbing Pelaksanaan Magang\n" +
+                "Mahasiswa Prodi Manajemen S1\n" +
+                "di tempat\n\n" +
+                "Dengan hormat,\n\n" +
+                "Perkenalkan, saya " + currentActivePic + ", staff Prodi Manajemen S1 yang bertugas mengkoordinasikan pelaksanaan ujian responsi magang. Mohon izin mengingatkan bahwa ujian responsi pelaksanaan magang sudah dijadwalkan dan akan segera dilaksanakan. Mohon kesediaannya untuk bersiap menguji sesuai dengan jadwal yang telah ditentukan:\n\n" +
+                "Detail Ujian:\n" +
+                "Hari, Tanggal: " + item.tanggal + "\n" +
+                "Waktu: " + displayJam + "\n" +
+                "Tempat: Zoom Meeting\n\n" +
+                "Link Zoom : https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09\n" +
+                "🔗 Meeting ID: 223 556 7899\n" +
+                "🔒 Passcode: fujitsu\n\n" +
+                "Tata Tertib Acara Responsi:\n" +
+                "- Acara akan dilaksanakan selama 30 menit.\n" +
+                "- Mahasiswa diberikan waktu maksimal 15 menit untuk presentasi.\n" +
+                "- Sisa 15 menit digunakan untuk dosen pembimbing dan supervisor memberikan pertanyaan maupun komentar terkait laporan magang mahasiswa.\n\n" +
+                "Terima kasih atas perhatian dan kerjasama Bapak/Ibu\n\n" +
+                "_Wassalamualaikum Warahmatullahi Wabarakatuh_\n\n" +
+                "Prodi Manajemen\n" +
+                "Universitas Islam Indonesia";
+
+            let templateSpv = "_Assalamualaikum Warahmatullahi Wabarakatuh_\n\n" +
+                "Kepada Yth.\n" +
+                "Bapak/Ibu " + (item.spv || "Supervisor Perusahaan") + "\n" +
+                (item.perusahaan || "Perusahaan Mitra") + "\n" +
+                "Supervisor Perusahaan Pelaksanaan Magang\n" +
+                "Mahasiswa Prodi Manajemen S1\n" +
+                "di tempat\n\n" +
+                "Dengan hormat,\n\n" +
+                "Perkenalkan, saya " + currentActivePic + ", staff Prodi Manajemen S1 yang bertugas mengkoordinasikan pelaksanaan ujian responsi magang. Mohon izin mengingatkan bahwa ujian responsi pelaksanaan magang sudah dijadwalkan dan akan segera dilaksanakan. Mohon kesediaannya untuk bersiap menguji sesuai dengan jadwal yang telah ditentukan:\n\n" +
+                "Detail Ujian:\n" +
+                "Hari, Tanggal: " + item.tanggal + "\n" +
+                "Waktu: " + displayJam + "\n" +
+                "Tempat: Zoom Meeting\n\n" +
+                "Link Zoom : https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09\n" +
+                "🔗 Meeting ID: 223 556 7899\n" +
+                "🔒 Passcode: fujitsu\n\n" +
+                "Tata Tertib Acara Responsi:\n" +
+                "- Acara akan dilaksanakan selama 30 menit.\n" +
+                "- Mahasiswa diberikan waktu maksimal 15 menit untuk presentasi.\n" +
+                "- Sisa 15 menit digunakan untuk dosen pembimbing dan supervisor memberikan pertanyaan maupun komentar terkait laporan magang mahasiswa.\n\n" +
+                "Terima kasih atas perhatian dan kerjasama Bapak/Ibu\n\n" +
+                "_Wassalamualaikum Warahmatullahi Wabarakatuh_\n\n" +
+                "Prodi Manajemen\n" +
+                "Universitas Islam Indonesia";
+            
+            currentTemplateData.dosen = templateDosen;
+            currentTemplateData.spv = templateSpv;
+            currentTemplateData.waDosen = item.waDosen;
+            currentTemplateData.waSpv = item.waSpv;
+            currentTemplateData.targetDosen = item.dosbing;
+            currentTemplateData.targetSpv = item.spv;
+
+            switchTemplateTab('dosen');
+            
+            const m = document.getElementById('templateModal');
+            const mc = document.getElementById('templateModalContent');
+            m.classList.remove('hidden'); 
+            void m.offsetWidth;
+            m.classList.remove('opacity-0'); 
+            mc.classList.remove('scale-95', 'opacity-0'); 
+            mc.classList.add('scale-100', 'opacity-100');
+        }
+
+        function closeTemplateModal() {
+            const m = document.getElementById('templateModal');
+            const mc = document.getElementById('templateModalContent');
+            m.classList.add('opacity-0'); 
+            mc.classList.remove('scale-100', 'opacity-100'); 
+            mc.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { m.classList.add('hidden'); }, 300);
+        }
+
+        function switchTemplateTab(tab) {
+            activeTabTemplate = tab;
+            document.getElementById('templateTextarea').value = currentTemplateData[tab];
+            
+            if(tab === 'dosen') {
+                document.getElementById('tabBtnDosen').classList.add('border-blue-600', 'text-blue-600');
+                document.getElementById('tabBtnDosen').classList.remove('border-transparent', 'text-slate-500');
+                document.getElementById('tabBtnSpv').classList.remove('border-blue-600', 'text-blue-600');
+                document.getElementById('tabBtnSpv').classList.add('border-transparent', 'text-slate-500');
+                document.getElementById('templateTargetName').innerText = "Kpd: " + (currentTemplateData.targetDosen || "Dosen Pembimbing");
+            } else {
+                document.getElementById('tabBtnSpv').classList.add('border-blue-600', 'text-blue-600');
+                document.getElementById('tabBtnSpv').classList.remove('border-transparent', 'text-slate-500');
+                document.getElementById('tabBtnDosen').classList.remove('border-blue-600', 'text-blue-600');
+                document.getElementById('tabBtnDosen').classList.add('border-transparent', 'text-slate-500');
+                document.getElementById('templateTargetName').innerText = "Kpd: " + (currentTemplateData.targetSpv || "Supervisor");
+            }
+        }
+
+        function copyTemplateText() {
+            const textarea = document.getElementById('templateTextarea');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); 
+            
+            try {
+                document.execCommand('copy');
+                Swal.fire({
+                    icon: 'success', title: 'Teks Disalin!', text: 'Template WA siap untuk di-paste.', timer: 1500, showConfirmButton: false
+                });
+            } catch (err) {
+                Swal.fire('Gagal Menyalin', 'Silakan block dan copy manual.', 'error');
+            }
+            window.getSelection().removeAllRanges();
+        }
+        
+        function sendWaDirect() {
+            const text = encodeURIComponent(document.getElementById('templateTextarea').value);
+            const nomor = activeTabTemplate === 'dosen' ? currentTemplateData.waDosen : currentTemplateData.waSpv;
+            
+            if(!nomor || nomor.trim() === "") {
+                Swal.fire({
+                    icon: 'warning', title: 'Nomor WA Kosong', text: 'Nomor WA untuk ' + (activeTabTemplate === 'dosen' ? 'Dosen' : 'SPV') + ' tersebut belum terdaftar. Silakan salin teks dan kirim manual.', confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+            
+            let finalNomor = nomor;
+            if(finalNomor.startsWith('0')) finalNomor = '62' + finalNomor.substring(1);
+            
+            window.open('https://wa.me/' + finalNomor + '?text=' + text, '_blank');
+        }
+        
+        function sendWaEmpty() {
+            const nomor = activeTabTemplate === 'dosen' ? currentTemplateData.waDosen : currentTemplateData.waSpv;
+            
+            if(!nomor || nomor.trim() === "") {
+                Swal.fire({
+                    icon: 'warning', title: 'Nomor WA Kosong', text: 'Nomor WA untuk ' + (activeTabTemplate === 'dosen' ? 'Dosen' : 'SPV') + ' tersebut belum terdaftar. Silakan hubungi secara manual.', confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+            
+            let finalNomor = nomor;
+            if(finalNomor.startsWith('0')) finalNomor = '62' + finalNomor.substring(1);
+            
+            window.open('https://wa.me/' + finalNomor, '_blank');
+        }
+        
     </script>
 </body>
 </html>
