@@ -510,11 +510,21 @@
     // --- FUNGSI KIRIM EMAIL OTOMATIS ---
     function kirimEmailNotif(type, index) {
         var group = type === 'spv' ? groupedDataSpv[index] : groupedDataDosen[index];
-        var emailPenerima = type === 'spv' ? group.mahasiswa[0].emailSpv : group.mahasiswa[0].emailDosen;
+        var emailPenerima = "";
+        
+        // PENCARIAN EMAIL DI SELURUH DATA MAHASISWA DALAM GRUP TERSEBUT
+        if (type === 'spv') {
+            var mhsEmail = group.mahasiswa.find(function(m) { return m.emailSpv && m.emailSpv.trim() !== "" && m.emailSpv !== "-"; });
+            emailPenerima = mhsEmail ? mhsEmail.emailSpv : "";
+        } else {
+            var mhsEmail = group.mahasiswa.find(function(m) { return m.emailDosen && m.emailDosen.trim() !== "" && m.emailDosen !== "-"; });
+            emailPenerima = mhsEmail ? mhsEmail.emailDosen : "";
+        }
+        
         var role = type === 'spv' ? 'SPV' : 'Dosen (DPL)';
 
         if (!emailPenerima || emailPenerima === "" || emailPenerima === "-") {
-            Swal.fire('Email Kosong', 'Alamat email untuk ' + role + ' ini belum diisi di Spreadsheet.', 'warning');
+            Swal.fire('Email Kosong', 'Alamat email untuk ' + role + ' ini belum diisi di Spreadsheet pada satupun baris mahasiswa.', 'warning');
             return;
         }
 
