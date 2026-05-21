@@ -43,10 +43,11 @@ function formatWA(wa) {
 function getKamusKolom(sheet) {
   if (sheet.getLastColumn() === 0) return {};
 
-  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var rawHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var headers = rawHeaders.map(function(h) { return String(h).trim().toLowerCase(); });
   
   function cari(namaJudul, indeksDefault) {
-    var indeks = headers.indexOf(namaJudul);
+    var indeks = headers.indexOf(String(namaJudul).toLowerCase());
     return indeks !== -1 ? indeks : indeksDefault;
   }
 
@@ -64,8 +65,8 @@ function getKamusKolom(sheet) {
     SPV_BERDAMPAK: cari("SPV Berdampak", 29), JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
     STATUS_NOTIF: cari("Status Notifikasi", 31),
     LINK_SURAT: cari("Link Surat", 32), LINK_SURAT_DOSEN: cari("Link Surat Dosen", 33),
-    EMAIL_DOSEN: cari("Email Dosen", 34),
-    DOKUMENTASI: cari("Dokumentasi", 38) // <-- FITUR BARU: Mapping kolom Dokumentasi
+    EMAIL_DOSEN: cari("Email Dosen", 38), // Diupdate dari 34 ke 38 (Kolom AM)
+    DOKUMENTASI: cari("Dokumentasi", 37)
   };
 }
 
@@ -108,7 +109,7 @@ function setPhaseStatus(phaseNumber) {
 }
 function clearCache() {
   var cache = CacheService.getScriptCache();
-  cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN", "CACHE_NOTIF"]); // <-- FITUR BARU: Clear Cache Notif
+  cache.removeAll(["CACHE_PREVIEW", "CACHE_DROPDOWN", "CACHE_NOTIF"]);
 }
 
 // ==========================================
@@ -317,9 +318,8 @@ function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
   return { nama: "Menunggu Admin", wa: "" };
 }
 
-
 // ==========================================
-// 5. UPDATE DATA (Fase 1 & Fase 2)
+// 5. UPDATE DATA & SIMPAN FORM JADWAL BARU
 // ==========================================
 function updateByPIC(info) {
   if (!info || !info.row) return { status: "error", message: "Gagal: Data baris tidak valid." };
@@ -394,6 +394,21 @@ function simpanUpdate(info) {
     var picSaatIni = sheet.getRange(row, KOLOM.PIC + 1).getValue() ? sheet.getRange(row, KOLOM.PIC + 1).getValue().toString().trim() : "";
     var assignedPIC = autoAssignPIC(tglIndoStr, info.jam, info.dosbing, picSaatIni);
 
+    var idSpv = sheet.getRange(row, KOLOM.ID_SPV + 1).getValue();
+    if (!idSpv || idSpv === "") idSpv = "spv-" + Math.random().toString(36).substring(2, 8);
+
+    var idDosen = sheet.getRange(row, KOLOM.ID_DOSEN + 1).getValue();
+    if (!idDosen || idDosen === "") idDosen = "dos-" + Math.random().toString(36).substring(2, 8);
+
+    var tglLama = sheet.getRange(row, KOLOM.TANGGAL + 1).getValue();
+    var isReschedule = (tglLama && String(tglLama).trim() !== "");
+
+    var emailDosenExisting = sheet.getRange(row, KOLOM.EMAIL_DOSEN + 1).getValue();
+
+    if (!emailDosenExisting || String(emailDosenExisting).trim() === "") {
+        emailDosenExisting = cariEmailDosen(sheet, info.dosbing, KOLOM);
+    }
+
     sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(tglIndoStr); sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
     sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan); 
     sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));      
@@ -404,8 +419,18 @@ function simpanUpdate(info) {
     sheet.getRange(row, KOLOM.PIC + 1).setValue(assignedPIC.nama); sheet.getRange(row, KOLOM.WA_PIC + 1).setValue(formatWA(assignedPIC.wa));
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue("BARU");
     
+    sheet.getRange(row, KOLOM.ID_SPV + 1).setValue(idSpv);
+    sheet.getRange(row, KOLOM.ID_DOSEN + 1).setValue(idDosen);
+    
+    if (emailDosenExisting !== "") {
+        sheet.getRange(row, KOLOM.EMAIL_DOSEN + 1).setValue(emailDosenExisting);
+    }
+    
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
     clearCache();
+
+    kirimEmailNotifJadwal(info, isReschedule, emailDosenExisting, idSpv, idDosen, tglIndoStr);
+
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -417,7 +442,7 @@ function simpanBaru(info) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var newRow = sheet.getLastRow() + 1;
-    var maxCol = Math.max(35, sheet.getLastColumn()); 
+    var maxCol = Math.max(40, sheet.getLastColumn()); 
     var rowData = new Array(maxCol).fill(""); 
 
     var tglIndoStr = toIndoDateString(info.tanggal);
@@ -426,6 +451,11 @@ function simpanBaru(info) {
 
     var assignedPIC = autoAssignPIC(tglIndoStr, info.jam, info.dosbing, "");
     
+    var idSpv = "spv-" + Math.random().toString(36).substring(2, 8);
+    var idDosen = "dos-" + Math.random().toString(36).substring(2, 8);
+    
+    var emailDosenTarget = cariEmailDosen(sheet, info.dosbing, KOLOM);
+
     rowData[KOLOM.NO] = newRow - 1; rowData[KOLOM.TANGGAL] = tglIndoStr; rowData[KOLOM.JAM] = info.jam; 
     rowData[KOLOM.NIM] = info.nim; rowData[KOLOM.NAMA_MHS] = info.nama; rowData[KOLOM.WA_MHS] = formatWA(info.waMhs); 
     rowData[KOLOM.PERUSAHAAN] = info.perusahaan; rowData[KOLOM.NAMA_SPV] = info.spv; rowData[KOLOM.WA_SPV] = formatWA(info.waSpv); 
@@ -434,9 +464,16 @@ function simpanBaru(info) {
     rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti); rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
     rowData[KOLOM.PIC] = assignedPIC.nama; rowData[KOLOM.WA_PIC] = formatWA(assignedPIC.wa); rowData[KOLOM.STATUS_NOTIF] = "BARU";
     
+    rowData[KOLOM.ID_SPV] = idSpv;
+    rowData[KOLOM.ID_DOSEN] = idDosen;
+    if (emailDosenTarget !== "") rowData[KOLOM.EMAIL_DOSEN] = emailDosenTarget;
+
     sheet.getRange(newRow, 1, 1, maxCol).setValues([rowData]); 
     sheet.getRange(newRow, 1, 1, maxCol).setBackground('#ecfdf5');
     clearCache();
+
+    kirimEmailNotifJadwal(info, false, emailDosenTarget, idSpv, idDosen, tglIndoStr);
+
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -582,7 +619,6 @@ function cekNotifPIC(picName) {
   var cachedNotif = cache.get("CACHE_NOTIF");
   var allNotifs = [];
 
-  // FITUR BARU: Baca cache dulu biar irit kuota server
   if (cachedNotif) {
     allNotifs = JSON.parse(cachedNotif);
   } else {
@@ -601,11 +637,8 @@ function cekNotifPIC(picName) {
         });
       }
     }
-    // Simpan ke cache 5 menit
     cache.put("CACHE_NOTIF", JSON.stringify(allNotifs), 300);
   }
-
-  // Saring cuma buat PIC yang nanya
   return allNotifs.filter(function(n) { return n.pic === picName; });
 }
 
@@ -615,7 +648,7 @@ function tandaiNotifDibaca(row) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var KOLOM = getKamusKolom(sheet);
     sheet.getRange(row, KOLOM.STATUS_NOTIF + 1).setValue(""); 
-    clearCache(); // Hapus cache biar data notif diperbarui
+    clearCache(); 
     return {status: "success"};
   } catch (e) { return {status: "error", message: e.message}; } finally { lock.releaseLock(); }
 }
@@ -819,11 +852,11 @@ function kirimEmailOtomatis(type, group) {
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda dapat mengunduh dan melihat surat resmi melalui tautan berikut:<br><br>" +
-          "📄 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Surat Undangan Resmi</b></a>" +
+          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Surat Undangan Resmi</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
-          "🔗 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
+          "📌 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Atas perhatian dan kerja samanya, kami ucapkan terima kasih." +
@@ -843,11 +876,11 @@ function kirimEmailOtomatis(type, group) {
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Bapak/Ibu dapat mengunduh dan melihat surat undangan resmi melalui tautan berikut:<br><br>" +
-          "📄 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Undangan Responsi</b></a>" +
+          "🔗 <a href='" + linkPDF + "' style='color:#1a73e8; text-decoration:none;'><b>Link Undangan Responsi</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Anda juga dapat mengakses Portal " + judulRole + " untuk memantau dan memperbarui jadwal responsi mahasiswa melalui tautan di bawah ini:<br><br>" +
-          "🔗 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
+          "📌 <a href='" + portalURL + "' style='color:#1a73e8; text-decoration:none;'><b>Link Portal Jadwal Responsi " + judulRole + "</b></a>" +
         "</p>" +
         "<p style='font-size:14px; font-family:Arial, sans-serif; color:#333;'>" +
           "Atas perhatian dan kerja samanya, kami ucapkan terima kasih." +
@@ -888,21 +921,18 @@ function kirimEmailOtomatis(type, group) {
 // 10. AUTO-SYNC DOKUMENTASI DARI GOOGLE DRIVE (FITUR BARU ADMIN)
 // ==========================================
 function sinkronisasiDokumentasi() {
-  // Folder ID tempat PIC upload file (dengan nama NIM.pdf)
   var folderId = "1QPfDRx8-kXKYf9-KcNuVYAQawFvVuSCo"; 
   var lock = LockService.getScriptLock();
-  lock.waitLock(15000); // Tunggu sampai 15 detik kalau ada proses lain
+  lock.waitLock(15000); 
 
   try {
     var folder = DriveApp.getFolderById(folderId);
     var files = folder.getFiles();
-    var fileMap = {}; // Untuk menyimpan mapping NIM -> URL File
+    var fileMap = {}; 
 
-    // 1. Baca semua isi folder dan ekstrak NIM dari namanya
     while (files.hasNext()) {
       var file = files.next();
       var namaFile = file.getName();
-      // Cari angka 8 digit berurutan yang merepresentasikan NIM
       var nimMatch = namaFile.match(/\d{8}/);
       if (nimMatch) {
         var nimsaja = nimMatch[0];
@@ -910,7 +940,6 @@ function sinkronisasiDokumentasi() {
       }
     }
 
-    // 2. Tulis ke Spreadsheet jika cocok
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     var KOLOM = getKamusKolom(sheet);
     var data = sheet.getDataRange().getValues();
@@ -920,9 +949,7 @@ function sinkronisasiDokumentasi() {
       var nimSheet = data[i][KOLOM.NIM] ? String(data[i][KOLOM.NIM]).trim() : "";
       var linkSaatIni = data[i][KOLOM.DOKUMENTASI] ? String(data[i][KOLOM.DOKUMENTASI]).trim() : "";
 
-      // Jika ada mahasiswa dengan NIM tersebut, dan file-nya ada di map
       if (nimSheet !== "" && fileMap[nimSheet]) {
-        // Cek apakah linknya belum diinput atau beda, kalau beda baru di-update biar gak makan waktu ekskusi
         if (linkSaatIni !== fileMap[nimSheet]) {
           sheet.getRange(i + 1, KOLOM.DOKUMENTASI + 1).setValue(fileMap[nimSheet]);
           countUpdate++;
@@ -935,5 +962,181 @@ function sinkronisasiDokumentasi() {
     return { status: "error", message: e.message };
   } finally {
     lock.releaseLock();
+  }
+}
+
+// ==========================================
+// 11. HELPER & NOTIFIKASI EMAIL SAAT PENDAFTARAN JADWAL
+// ==========================================
+
+function cariEmailDosen(sheet, namaDosen, KOLOM) {
+  if (!namaDosen || String(namaDosen).trim() === "" || namaDosen === "-") return "";
+  var data = sheet.getDataRange().getValues();
+  // Membersihkan titik, koma, huruf besar agar tahan typo (misal "Bpk. Budi" vs "Bpk Budi")
+  var searchName = String(namaDosen).toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  for (var i = 1; i < data.length; i++) {
+    var currentDosen = String(data[i][KOLOM.DOSBING]).toLowerCase().replace(/[^a-z0-9]/g, '');
+    var currentEmail = data[i][KOLOM.EMAIL_DOSEN] ? String(data[i][KOLOM.EMAIL_DOSEN]).trim() : "";
+    
+    if (currentDosen === searchName && currentEmail !== "" && currentEmail !== "-") {
+      return currentEmail;
+    }
+  }
+  return "";
+}
+
+function kirimEmailNotifJadwal(info, isReschedule, emailDosen, idSpv, idDosen, tglIndoStr) {
+  var emailMhs = info.nim + "@students.uii.ac.id";
+  var emailSpv = info.emailSpv;
+  var portalBase = "https://management.uii.ac.id/portal-responsi/?";
+
+  // -- TAMBAHAN LOG UNTUK EXECUTION LOGS --
+  console.log("=== SISTEM PENGIRIMAN EMAIL DIMULAI ===");
+  console.log("Memproses jadwal mahasiswa: " + info.nama);
+  console.log("- Status Reschedule: " + isReschedule);
+  console.log("- Target Email SPV: [" + emailSpv + "]");
+  console.log("- Target Email Dosen: [" + emailDosen + "]");
+  console.log("- Target Email Mhs: [" + emailMhs + "]");
+
+  var subjectSpv = (isReschedule ? "[REVISI JADWAL PENTING] Perubahan Waktu Responsi UII - " : "[PEMBERITAHUAN] Jadwal Responsi Magang UII - ") + info.nama;
+  var subjectDosen = (isReschedule ? "[REVISI JADWAL PENTING] Perubahan Waktu Responsi - " : "[PEMBERITAHUAN] Jadwal Responsi Magang - ") + info.nama;
+  var subjectMhs = (isReschedule ? "[REVISI JADWAL PENTING] Perubahan Waktu Responsi - " : "[BUKTI PENDAFTARAN] Jadwal Responsi Magang Anda - ") + info.nama;
+
+  var headerReschedule = isReschedule ?
+    "<p style='color:#d97706;'>Menindaklanjuti koordinasi terbaru, kami menginformasikan bahwa terdapat <b>PERUBAHAN WAKTU PELAKSANAAN</b> untuk Ujian Responsi Magang mahasiswa atas nama <b>" + info.nama + "</b>.</p>" +
+    "<p style='color:#dc2626;'>🚨 <b>MOHON ABAIKAN JADWAL SEBELUMNYA.</b> Berikut adalah jadwal terbaru yang telah disepakati:</p>" :
+    "<p>Melalui email ini, kami menginformasikan bahwa jadwal Ujian Responsi Magang Program Studi Manajemen S1 Universitas Islam Indonesia (UII) untuk mahasiswa bimbingan Bapak/Ibu telah dijadwalkan dengan rincian sebagai berikut:</p>";
+
+  var headerRescheduleMhs = isReschedule ?
+    "<p style='color:#d97706;'>Menindaklanjuti koordinasi terbaru, kami menginformasikan bahwa terdapat <b>PERUBAHAN WAKTU PELAKSANAAN</b> untuk Ujian Responsi Magang Anda.</p>" +
+    "<p style='color:#dc2626;'>🚨 <b>MOHON ABAIKAN JADWAL SEBELUMNYA.</b> Berikut adalah jadwal terbaru yang telah disepakati:</p>" :
+    "<p>Selamat! Jadwal Ujian Responsi Magang Anda telah berhasil tercatat di sistem Program Studi Manajemen S1 UII. Sistem juga telah mengirimkan undangan resmi kepada Dosen Pembimbing dan Supervisor Anda. Berikut adalah rincian jadwal Anda:</p>";
+
+  var detailJadwal =
+    "<ul>" +
+    "<li><b>Nama Mahasiswa:</b> " + info.nama + " (" + info.nim + ")</li>" +
+    "<li><b>Perusahaan:</b> " + info.perusahaan + "</li>" +
+    "<li><b>Hari, Tanggal:</b> " + tglIndoStr + "</li>" +
+    "<li><b>Waktu:</b> " + info.jam + " WIB</li>" +
+    "<li><b>Media Pelaksanaan:</b> Zoom Meeting</li>" +
+    "</ul>";
+
+  var infoZoom =
+    "<p><b>Informasi Tautan Zoom Meeting:</b></p>" +
+    "<ul>" +
+    "<li><b>Tautan:</b> <a href='https://uii.zoom.us/j/2235567899?pwd=MXN0VkNiZUdUT2lOaEttWGNZVWtSQT09' style='color:#2563eb;'>Klik di sini untuk Bergabung ke Zoom</a></li>" +
+    "<li><b>Meeting ID:</b> 223 556 7899</li>" +
+    "<li><b>Passcode:</b> fujitsu</li>" +
+    "</ul>";
+
+  var footer =
+    "<p>Atas perhatian, kehadiran, dan kerja sama Bapak/Ibu, kami ucapkan terima kasih.</p>" +
+    "<p><i>Wassalamualaikum Warahmatullahi Wabarakatuh,</i></p>" +
+    "<p><b>Program Studi Manajemen S1</b><br>Fakultas Bisnis dan Ekonomika, UII</p>";
+
+  // 1. Eksekusi Pengiriman Ke SPV
+  if (emailSpv && emailSpv !== "" && emailSpv !== "-") {
+    var bodySpv =
+      "<div style='font-family: Arial, sans-serif; color: #334155;'>" +
+      "<p><i>Assalamualaikum Warahmatullahi Wabarakatuh,</i></p>" +
+      "<p>Kepada Yth. Bapak/Ibu <b>" + info.spv + "</b><br><i>(Supervisor Perusahaan - " + info.perusahaan + ")</i></p>" +
+      "<p>Dengan hormat,</p>" +
+      headerReschedule + detailJadwal + infoZoom +
+      "<p>Untuk memudahkan Bapak/Ibu dalam memantau seluruh jadwal responsi mahasiswa bimbingan Anda, silakan akses <b>Portal Supervisor</b> melalui tautan khusus di bawah ini<br>" +
+      "👉 <a href='" + portalBase + idSpv + "' style='color:#2563eb;'><b>Akses Portal Responsi Jadwal Supervisor</b></a></p>" +
+      footer + "</div>";
+
+    try { 
+      MailApp.sendEmail({ to: emailSpv.toString().trim(), subject: subjectSpv, htmlBody: bodySpv }); 
+      console.log("-> SUKSES terkirim ke SPV");
+    } catch(e) { console.error("-> GAGAL kirim ke SPV: " + e.message); }
+  } else {
+    console.log("-> SKIP: Email SPV kosong atau tidak valid.");
+  }
+
+  // 2. Eksekusi Pengiriman Ke Dosen Pembimbing
+  var finalEmailDosen = emailDosen ? emailDosen.toString().trim() : "";
+  if (finalEmailDosen !== "" && finalEmailDosen !== "-") {
+    var bodyDosen =
+      "<div style='font-family: Arial, sans-serif; color: #334155;'>" +
+      "<p><i>Assalamualaikum Warahmatullahi Wabarakatuh,</i></p>" +
+      "<p>Kepada Yth. Bapak/Ibu <b>" + info.dosbing + "</b><br><i>(Dosen Pembimbing Magang)</i></p>" +
+      "<p>Dengan hormat,</p>" +
+      headerReschedule + detailJadwal + infoZoom +
+      "<p>Untuk memantau seluruh antrean jadwal responsi dan mengakses panduan dosen, silakan kunjungi <b>Portal Dosen</b> melalui tautan di bawah ini:<br>" +
+      "👉 <a href='" + portalBase + idDosen + "' style='color:#2563eb;'><b>Akses Portal Responsi Jadwal Dosen</b></a></p>" +
+      footer + "</div>";
+
+    try { 
+        MailApp.sendEmail({ to: finalEmailDosen, subject: subjectDosen, htmlBody: bodyDosen }); 
+        console.log("-> SUKSES terkirim ke DOSEN");
+    } catch(e) {
+        console.error("-> GAGAL kirim email ke DOSEN: " + e.message + " | Cek apakah format email salah?");
+    }
+  } else {
+    console.log("-> SKIP: Email Dosen kosong atau tidak terbaca dari Spreadsheet.");
+  }
+
+  // 3. Eksekusi Pengiriman Ke Mahasiswa
+  var bodyMhs =
+    "<div style='font-family: Arial, sans-serif; color: #334155;'>" +
+    "<p><i>Assalamualaikum Warahmatullahi Wabarakatuh,</i></p>" +
+    "<p>Halo Saudara/i <b>" + info.nama + "</b>,</p>" +
+    headerRescheduleMhs + detailJadwal +
+    "<ul><li><b>Dosen Pembimbing:</b> " + info.dosbing + "</li><li><b>Supervisor Utama:</b> " + info.spv + "</li></ul>" +
+    infoZoom +
+    "<div style='background-color: #fffbeb; border: 1px solid #fde68a; padding: 15px; border-radius: 8px; margin-top: 20px;'>" +
+    "<p style='color: #b45309; margin-top:0;'><b>📌 PENGINGAT PENTING SEBELUM RESPONSI:</b></p>" +
+    "<ol style='color: #b45309; margin-bottom:0;'>" +
+    "<li>Anda wajib <i>standby</i> di Waiting Room Zoom minimal <b>10 menit</b> sebelum jadwal dimulai.</li>" +
+    "<li>Siapkan File Presentasi (PPT) dan gunakan Virtual Background resmi Prodi.</li>" +
+    "<li>Pastikan Laporan, Monev Anda sudah diunggah dan disetujui Dosen Pembimbing di sistem SITA.</li>" +
+    "</ol></div>" +
+    "<p>Jika terdapat kendala atau perlu merubah jadwal, silakan hubungi PIC Teknis Anda atau akses kembali Portal Mahasiswa.</p>" +
+    "<p><i>Wassalamualaikum Warahmatullahi Wabarakatuh,</i></p>" +
+    "<p><b>Program Studi Manajemen S1</b><br>Fakultas Bisnis dan Ekonomika, UII</p></div>";
+
+  try { 
+    MailApp.sendEmail({ to: emailMhs, subject: subjectMhs, htmlBody: bodyMhs }); 
+    console.log("-> SUKSES terkirim ke MAHASISWA");
+  } catch(e) { console.error("-> GAGAL kirim ke MAHASISWA: " + e.message); }
+  
+  console.log("=== SISTEM PENGIRIMAN EMAIL SELESAI ===");
+}
+
+// ==========================================
+// 12. ALAT DEBUGGER KHUSUS DOSEN (UNTUK TESTING MANUAL)
+// ==========================================
+function testDebuggerDosen() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var KOLOM = getKamusKolom(sheet);
+  
+  Logger.log("=== HASIL TES DETEKSI EMAIL DOSEN ===");
+  Logger.log("Sistem membaca kolom 'Email Dosen' berada di Indeks: " + KOLOM.EMAIL_DOSEN + " (Ini adalah Kolom alfabet ke-" + (KOLOM.EMAIL_DOSEN + 1) + " di Sheet)");
+  
+  var data = sheet.getDataRange().getValues();
+  var ditemukan = 0;
+  
+  // Memindai 10 baris pertama untuk dianalisis
+  var limit = Math.min(data.length, 10);
+  for (var i = 1; i < limit; i++) {
+    var nim = data[i][KOLOM.NIM];
+    var namaDosen = data[i][KOLOM.DOSBING];
+    var emailDosen = data[i][KOLOM.EMAIL_DOSEN];
+    
+    if (nim && String(nim).trim() !== "") {
+      var statusEmail = (!emailDosen || String(emailDosen).trim() === "") ? "❌ KOSONG" : "✅ TERISI -> [" + emailDosen + "]";
+      Logger.log("Baris " + (i+1) + " | NIM: " + nim + " | Dosen: " + namaDosen + " | Status Email di Sheet: " + statusEmail);
+      if (emailDosen && String(emailDosen).trim() !== "") {
+        ditemukan++;
+      }
+    }
+  }
+  
+  Logger.log("=====================================");
+  Logger.log("Berdasarkan sampel data di atas, sistem menemukan " + ditemukan + " alamat email dosen.");
+  if (ditemukan === 0) {
+     Logger.log("⚠️ PERINGATAN: TIDAK ADA SATUPUN EMAIL DOSEN YANG TERBACA! Coba cek ejaan header kolom 'Email Dosen' di Sheet Anda.");
   }
 }
