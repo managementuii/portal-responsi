@@ -823,6 +823,11 @@ function kirimEmailOtomatis(type, group) {
     var mhsUtama = group.mahasiswa[0];
     var isSPV = (type === 'spv');
 
+    var mhsUtama = group.mahasiswa.find(function(m) { 
+        return isSPV ? (m.emailSpv && m.emailSpv.trim() !== "" && m.emailSpv !== "-") 
+                     : (m.emailDosen && m.emailDosen.trim() !== "" && m.emailDosen !== "-");
+    }) || group.mahasiswa[0];
+
     var penerima = isSPV ? mhsUtama.emailSpv : mhsUtama.emailDosen;
     var namaTujuan = isSPV ? group.spv : group.dosbing;
     var linkPDF = isSPV ? mhsUtama.linkSurat : mhsUtama.linkSuratDosen;
