@@ -820,7 +820,6 @@ function generateSuratGrupDosen(groupsToProcess) {
 
 function kirimEmailOtomatis(type, group) {
   try {
-    var mhsUtama = group.mahasiswa[0];
     var isSPV = (type === 'spv');
 
     var mhsUtama = group.mahasiswa.find(function(m) { 
