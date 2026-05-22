@@ -66,7 +66,8 @@ function getKamusKolom(sheet) {
     STATUS_NOTIF: cari("Status Notifikasi", 31),
     LINK_SURAT: cari("Link Surat", 32), LINK_SURAT_DOSEN: cari("Link Surat Dosen", 33),
     EMAIL_DOSEN: cari("Email Dosen", 38), // Diupdate dari 34 ke 38 (Kolom AM)
-    DOKUMENTASI: cari("Dokumentasi", 37)
+    DOKUMENTASI: cari("Dokumentasi", 37),
+    RIWAYAT_SPV: cari("Riwayat Ganti SPV", 40)
   };
 }
 
@@ -258,7 +259,19 @@ function cekBentrokDosen(sheet, KOLOM, nimToIgnore, dosbing, tglIndoStr, jamStr)
     var rJam = rawData[i][KOLOM.JAM]; var rawJamStr = "";
     if (rJam !== "") rawJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
     
-    if (rawTglStr === tglIndoStr && rawJamStr === jamStr) return rawData[i][KOLOM.NAMA_MHS]; 
+    // LOGIKA BARU: Cek rentang waktu 30 menit
+    if (rawTglStr === tglIndoStr && rawJamStr !== "" && jamStr !== "") {
+        var reqParts = jamStr.split(':');
+        var reqMinutes = parseInt(reqParts[0], 10) * 60 + parseInt(reqParts[1], 10);
+        
+        var rawParts = rawJamStr.split(':');
+        var rawMinutes = parseInt(rawParts[0], 10) * 60 + parseInt(rawParts[1], 10);
+        
+        // Cek apakah selisih waktunya kurang dari 30 menit
+        if (Math.abs(reqMinutes - rawMinutes) < 30) {
+            return rawData[i][KOLOM.NAMA_MHS]; 
+        }
+    }
   }
   return false; 
 }
@@ -416,18 +429,32 @@ function simpanUpdate(info) {
     var tglLama = sheet.getRange(row, KOLOM.TANGGAL + 1).getValue();
     var jamLama = sheet.getRange(row, KOLOM.JAM + 1).getValue();
     
-    // Ubah jam lama ke format string (HH:mm) agar bisa dibandingkan
-    var jamLamaStr = "";
-    if (jamLama !== "") jamLamaStr = (jamLama instanceof Date) ? Utilities.formatDate(jamLama, TIMEZONE_JKT, "HH:mm") : jamLama.toString().trim();
+    // 1. Format TANGGAL Lama agar sama bentuknya dengan tglIndoStr
+    var tglLamaStr = "";
+    if (tglLama && tglLama !== "") {
+        tglLamaStr = (tglLama instanceof Date) ? toIndoDateString(Utilities.formatDate(tglLama, TIMEZONE_JKT, "yyyy-MM-dd")) : tglLama.toString().trim();
+    }
     
-    // Hanya anggap reschedule JIKA tanggal atau jamnya benar-benar berubah
-    var isReschedule = (tglLama && String(tglLama).trim() !== "") && 
-                       (String(tglLama).trim() !== tglIndoStr || jamLamaStr !== info.jam);
+    // 2. Format JAM Lama
+    var jamLamaStr = "";
+    if (jamLama !== "") {
+        jamLamaStr = (jamLama instanceof Date) ? Utilities.formatDate(jamLama, TIMEZONE_JKT, "HH:mm") : jamLama.toString().trim();
+    }
+    
+    // 3. Bandingkan dengan adil (Teks vs Teks)
+    var isReschedule = (tglLamaStr !== "") && (tglLamaStr !== tglIndoStr || jamLamaStr !== info.jam);
 
     var emailDosenExisting = sheet.getRange(row, KOLOM.EMAIL_DOSEN + 1).getValue();
 
     if (!emailDosenExisting || String(emailDosenExisting).trim() === "") {
         emailDosenExisting = cariEmailDosen(sheet, info.dosbing, KOLOM);
+    }
+
+    // --- TAMBAHAN LOGIKA GANTI SPV ---
+    var spvLama = sheet.getRange(row, KOLOM.NAMA_SPV + 1).getValue();
+    if (spvLama && String(spvLama).trim() !== "" && String(spvLama).trim() !== String(info.spv).trim()) {
+        // Jika nama SPV lama ada isinya, dan tidak sama dengan SPV baru dari form
+        sheet.getRange(row, KOLOM.RIWAYAT_SPV + 1).setValue("Ganti SPV");
     }
 
     sheet.getRange(row, KOLOM.TANGGAL + 1).setValue(tglIndoStr); sheet.getRange(row, KOLOM.JAM + 1).setValue(info.jam);        
@@ -450,8 +477,9 @@ function simpanUpdate(info) {
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
     clearCache();
 
-    kirimEmailNotifJadwal(info, isReschedule, emailDosenExisting, idSpv, idDosen, tglIndoStr);
-
+    if (isReschedule === true) {
+        kirimEmailNotifJadwal(info, isReschedule, emailDosenExisting, idSpv, idDosen, tglIndoStr);
+    }
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -467,7 +495,7 @@ function simpanBaru(info) {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
     var KOLOM = getKamusKolom(sheet);
     var newRow = sheet.getLastRow() + 1;
-    var maxCol = Math.max(40, sheet.getLastColumn()); 
+    var maxCol = Math.max(41, sheet.getLastColumn()); 
     var rowData = new Array(maxCol).fill(""); 
 
     var tglIndoStr = toIndoDateString(info.tanggal);
