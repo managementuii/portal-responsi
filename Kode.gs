@@ -232,7 +232,12 @@ function getDropdownOptions() {
   }
   companies.sort(); spvs.sort();
   var result = { companies: companies, spvs: spvs };
-  cache.put("CACHE_DROPDOWN", JSON.stringify(result), 3600);
+  // Tambahkan pelindung Try-Catch
+  try {
+    cache.put("CACHE_DROPDOWN", JSON.stringify(result), 3600);
+  } catch (e) {
+    console.log("Peringatan: Cache Dropdown gagal disimpan karena over-limit.");
+  }
   return result;
 }
 
@@ -409,7 +414,15 @@ function simpanUpdate(info) {
     if (!idDosen || idDosen === "") idDosen = "dos-" + Math.random().toString(36).substring(2, 8);
 
     var tglLama = sheet.getRange(row, KOLOM.TANGGAL + 1).getValue();
-    var isReschedule = (tglLama && String(tglLama).trim() !== "");
+    var jamLama = sheet.getRange(row, KOLOM.JAM + 1).getValue();
+    
+    // Ubah jam lama ke format string (HH:mm) agar bisa dibandingkan
+    var jamLamaStr = "";
+    if (jamLama !== "") jamLamaStr = (jamLama instanceof Date) ? Utilities.formatDate(jamLama, TIMEZONE_JKT, "HH:mm") : jamLama.toString().trim();
+    
+    // Hanya anggap reschedule JIKA tanggal atau jamnya benar-benar berubah
+    var isReschedule = (tglLama && String(tglLama).trim() !== "") && 
+                       (String(tglLama).trim() !== tglIndoStr || jamLamaStr !== info.jam);
 
     var emailDosenExisting = sheet.getRange(row, KOLOM.EMAIL_DOSEN + 1).getValue();
 
@@ -445,6 +458,10 @@ function simpanUpdate(info) {
 
 function simpanBaru(info) {
   if (!info || !info.nim) return { status: "error", message: "Gagal: Data kosong." };
+  var cekData = getDataByNIM(info.nim);
+  if (!cekData.isNew) {
+      return { status: "error", message: "NIM ini sudah terdaftar di dalam sistem! Gunakan menu Ubah Data." };
+  }
   var lock = LockService.getScriptLock(); lock.waitLock(10000);
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
