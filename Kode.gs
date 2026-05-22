@@ -945,7 +945,7 @@ function sinkronisasiDokumentasi() {
     while (files.hasNext()) {
       var file = files.next();
       var namaFile = file.getName();
-      var nimMatch = namaFile.match(/\d{8}/);
+      var nimMatch = namaFile.match(/\b\d{8}\b/);
       if (nimMatch) {
         var nimsaja = nimMatch[0];
         fileMap[nimsaja] = file.getUrl();
