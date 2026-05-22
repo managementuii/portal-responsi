@@ -186,7 +186,15 @@ function getPreviewData() {
     if (a.timestamp > 0 && b.timestamp > 0) return a.timestamp - b.timestamp; 
     return 0; 
   });
-  cache.put("CACHE_PREVIEW", JSON.stringify(previewData), 1800);
+  // KODE YANG DIUBAH (Ditambahkan pelindung Try-Catch)
+  try {
+    cache.put("CACHE_PREVIEW", JSON.stringify(previewData), 1800);
+  } catch (e) {
+    // Jika data terlalu besar (melebihi limit 100KB Google), abaikan error-nya.
+    // Sistem akan tetap berjalan dan mengembalikan data langsung dari Spreadsheet.
+    console.log("Peringatan: Cache gagal disimpan karena data terlalu besar.");
+  }
+  
   return previewData;
 }
 
