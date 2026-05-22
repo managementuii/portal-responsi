@@ -236,7 +236,7 @@
               <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">1</div>
               <h4 class="font-bold text-slate-800 mb-2">Administrasi & Koordinasi Jadwal</h4>
               <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
-                <li>Waktu pelaksanaan responsi: <b>1 – 30 Mei 2026 (08.00–17.00 WIB)</b>.</li>
+                <li>Waktu pelaksanaan responsi: <b>22 Juni – 3 Juli 2026 (08.00–17.00 WIB)</b>.</li>
                 <li>Wajib mengisi data melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Konfirmasi Surat SPV</span>.</li>
                 <li>Surat undangan akan diproses setelah <b>seluruh data mahasiswa lengkap</b>, dan akan dikirim ke email SPV & Mahasiswa.</li>
                 <li>Koordinasikan jadwal dengan SPV (dapat diwakilkan) lalu konfirmasikan ke Dosen Pembimbing.</li>
@@ -589,6 +589,12 @@
 
     <!-- SCRIPT JAVASCRIPT -->
     <script>
+      function escapeHTML(str) {
+          if (!str) return "-";
+          return str.toString().replace(/[&<>'"]/g, 
+              tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+          );
+      }
       let ACTIVE_PHASE = 2; 
       let availableCompanies = []; 
       let availableSpvs = []; 
@@ -967,24 +973,24 @@
           htmlDesktop += '<tr class="hover:bg-slate-50/50 transition-colors">' +
                          '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
                          '<td class="px-5 py-4">' +
-                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + row.nama + '</div>' +
-                            '<div class="text-slate-500 text-xs">DPL: ' + row.dosbing + '</div>' +
+                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + escapeHTML(row.nama) + '</div>' +
+                            '<div class="text-slate-500 text-xs">DPL: ' + escapeHTML(row.dosbing) + '</div>' +
                          '</td>' +
                          '<td class="px-5 py-4">' +
-                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-slate-500 text-xs">SPV: ' + row.spv + '</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + escapeHTML(row.perusahaan) + '</div>' +
+                            '<div class="text-slate-500 text-xs">SPV: ' + escapeHTML(row.spv) + '</div>' +
                          '</td>' +
                          '<td class="px-5 py-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></td></tr>';
             
           htmlMobile += '<div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">' +
                         '<div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">' +
-                            '<div><div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + row.nama + '</div><div class="text-xs text-slate-500">DPL: ' + row.dosbing + '</div></div>' +
+                            '<div><div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + escapeHTML(row.nama) + '</div><div class="text-xs text-slate-500">DPL: ' + escapeHTML(row.dosbing) + '</div></div>' +
                             '<div><span class="inline-block px-2 py-1 rounded-md text-[10px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></div>' +
                         '</div>' +
                         '<div class="pt-1">' +
                             '<div class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Mitra Evaluasi</div>' +
-                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-xs text-slate-500">SPV: ' + row.spv + '</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + escapeHTML(row.perusahaan) + '</div>' +
+                            '<div class="text-xs text-slate-500">SPV: ' + escapeHTML(row.spv) + '</div>' +
                         '</div></div>';
         });
         
@@ -1064,12 +1070,12 @@
                          '<td class="px-5 py-4 text-center font-medium text-slate-400 text-sm">' + (index + 1) + '</td>' +
                          '<td class="px-5 py-4">' + jadwalDisplay + '</td>' +
                          '<td class="px-5 py-4">' +
-                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + row.nama + '</div>' +
-                            '<div class="text-slate-500 text-xs">' + row.nim + '</div>' +
+                            '<div class="font-semibold text-slate-800 text-sm mb-0.5">' + escapeHTML(row.nama) + '</div>' +
+                            '<div class="text-slate-500 text-xs">' + escapeHTML(row.nim) + '</div>' +
                          '</td>' +
                          '<td class="px-5 py-4">' +
-                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-slate-500 text-xs">SPV: ' + spvText + '</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + escapeHTML(row.perusahaan) + '</div>' +
+                            '<div class="text-slate-500 text-xs">SPV: ' + escapeHTML(spvText) + '</div>' +
                             picDisplay +
                          '</td>' +
                          '<td class="px-5 py-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md text-[11px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></td></tr>';
@@ -1078,18 +1084,18 @@
                         '<div class="flex justify-between items-start mb-3 pb-3 border-b border-slate-100">' +
                             '<div class="flex items-center gap-2 text-slate-500">' +
                                 '<i class="fas fa-calendar-alt text-xs"></i>' +
-                                '<span class="text-xs font-semibold">' + (row.tanggal ? row.tanggal + ' &bull; ' + row.jam + ' WIB' : 'Belum ditentukan') + '</span>' +
+                                '<span class="text-xs font-semibold">' + (row.tanggal ? row.tanggal + ' • ' + row.jam + ' WIB' : 'Belum ditentukan') + '</span>' +
                             '</div>' +
                             '<div><span class="inline-block px-2 py-1 rounded-md text-[10px] font-medium shadow-sm ' + badgeClass + '">' + row.status + '</span></div>' +
                         '</div>' +
                         '<div class="mb-3">' +
-                            '<div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + row.nama + '</div>' +
-                            '<div class="text-xs text-slate-500">' + row.nim + '</div>' +
+                            '<div class="font-semibold text-slate-800 text-base leading-tight mb-0.5">' + escapeHTML(row.nama) + '</div>' +
+                            '<div class="text-xs text-slate-500">' + escapeHTML(row.nim) + '</div>' +
                         '</div>' +
                         '<div class="pt-1">' +
                             '<div class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">Mitra Evaluasi</div>' +
-                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + row.perusahaan + '</div>' +
-                            '<div class="text-xs text-slate-500">SPV: ' + spvText + '</div>' +
+                            '<div class="font-medium text-slate-800 text-sm mb-0.5">' + escapeHTML(row.perusahaan) + '</div>' +
+                            '<div class="text-xs text-slate-500">SPV: ' + escapeHTML(spvText) + '</div>' +
                             picDisplay +
                         '</div></div>';
         });
