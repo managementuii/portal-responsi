@@ -358,7 +358,7 @@
         function populateTimeDropdown() { 
             let select = document.getElementById('editJam'); select.innerHTML = '<option value="" disabled>Pilih Jam...</option>'; 
             for (let h = 6; h <= 21; h++) { 
-                for (let m = 0; m < 60; m += 15) { 
+                for (let m = 0; m < 60; m += 30) { 
                     let t = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0'); 
                     select.appendChild(new Option(t, t)); 
                 } 
@@ -569,7 +569,7 @@
                 let parts = item.jam.toString().split(":");
                 if (parts.length >= 2) {
                     let h = parseInt(parts[0], 10); let m = parseInt(parts[1], 10); 
-                    let roundedM = Math.round(m / 15) * 15; if (roundedM === 60) { roundedM = 0; h = (h + 1) % 24; } 
+                    let roundedM = Math.round(m / 30) * 30; if (roundedM === 60) { roundedM = 0; h = (h + 1) % 24; } 
                     finalJam = h.toString().padStart(2, '0') + ':' + roundedM.toString().padStart(2, '0');
                 }
             }
