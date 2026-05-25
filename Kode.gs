@@ -36,7 +36,14 @@ function formatWA(wa) {
   if (str.startsWith("8")) return "62" + str;
   return str;
 }
-
+// Fungsi untuk mengubah nomor menjadi 08... khusus untuk ditampilkan di UI
+function formatWADisplay(wa) {
+  if (!wa) return "";
+  var str = wa.toString().replace(/[^0-9]/g, '');
+  if (str.startsWith("62")) return "0" + str.substring(2);
+  if (str.startsWith("8")) return "0" + str;
+  return str;
+}
 // ==========================================
 // OTOMATISASI KAMUS HEADER
 // ==========================================
@@ -175,9 +182,9 @@ function getPreviewData() {
         row: i + 1, timestamp: timestamp, tanggal: tglDisplay, tanggalInput: tglInput, jam: jamDisplay, 
         nim: rawData[i][KOLOM.NIM] ? rawData[i][KOLOM.NIM].toString() : "-", nama: rawData[i][KOLOM.NAMA_MHS].toString(), 
         perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-", spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
-        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", waMhs: waMhsRaw !== "" ? formatWA(waMhsRaw) : "",
-        waSpv: waSpvRaw !== "" ? formatWA(waSpvRaw) : "", waDosen: waDosenRaw !== "" ? formatWA(waDosenRaw) : "",
-        pic: picTeknis, waPic: waPicRaw !== "" ? formatWA(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked 
+        dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", waMhs: waMhsRaw !== "" ? formatWADisplay(waMhsRaw) : "",
+        waSpv: waSpvRaw !== "" ? formatWADisplay(waSpvRaw) : "", waDosen: waDosenRaw !== "" ? formatWADisplay(waDosenRaw) : "",
+        pic: picTeknis, waPic: waPicRaw !== "" ? formatWADisplay(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked 
       });
     }
   }
@@ -383,11 +390,10 @@ function getDataByNIM(nim) {
       var isWChecked = data[i][KOLOM.CENTANG_W] === true || String(data[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
       var isXChecked = data[i][KOLOM.CENTANG_X] === true || String(data[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
       
-      var rawWaMhs = data[i][KOLOM.WA_MHS] ? data[i][KOLOM.WA_MHS].toString() : ""; if(rawWaMhs.startsWith("62")) rawWaMhs = "0" + rawWaMhs.substring(2); else if(rawWaMhs.startsWith("8")) rawWaMhs = "0" + rawWaMhs;
-      var rawWaSpv = data[i][KOLOM.WA_SPV] ? data[i][KOLOM.WA_SPV].toString() : ""; if(rawWaSpv.startsWith("62")) rawWaSpv = "0" + rawWaSpv.substring(2); else if(rawWaSpv.startsWith("8")) rawWaSpv = "0" + rawWaSpv;
-      var rawWaPengganti = data[i][KOLOM.WA_PENGGANTI] ? data[i][KOLOM.WA_PENGGANTI].toString() : ""; if(rawWaPengganti.startsWith("62")) rawWaPengganti = "0" + rawWaPengganti.substring(2); else if(rawWaPengganti.startsWith("8")) rawWaPengganti = "0" + rawWaPengganti;
-      var rawWaPic = data[i][KOLOM.WA_PIC] ? data[i][KOLOM.WA_PIC].toString() : ""; if(rawWaPic.startsWith("62")) rawWaPic = "0" + rawWaPic.substring(2); else if(rawWaPic.startsWith("8")) rawWaPic = "0" + rawWaPic;
-
+      var rawWaMhs = data[i][KOLOM.WA_MHS] ? formatWADisplay(data[i][KOLOM.WA_MHS]) : "";
+      var rawWaSpv = data[i][KOLOM.WA_SPV] ? formatWADisplay(data[i][KOLOM.WA_SPV]) : "";
+      var rawWaPengganti = data[i][KOLOM.WA_PENGGANTI] ? formatWADisplay(data[i][KOLOM.WA_PENGGANTI]) : "";
+      var rawWaPic = data[i][KOLOM.WA_PIC] ? formatWADisplay(data[i][KOLOM.WA_PIC]) : "";
       return {
         isNew: false, isFinished: (isWChecked && isXChecked), row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,    
         tanggal: tglFormat, jam: jamFormat, perusahaan: data[i][KOLOM.PERUSAHAAN], spv: data[i][KOLOM.NAMA_SPV], waSpv: rawWaSpv, dosbing: data[i][KOLOM.DOSBING],        
@@ -600,7 +606,7 @@ function getJadwalPersonalisasi(targetId) {
         perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-",
         spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
         dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", status: finalStatus,
-        pic: rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString() : "-", waPic: waPicRaw !== "" ? formatWA(waPicRaw) : ""
+        pic: rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString() : "-", waPic: waPicRaw !== "" ? formatWADisplay(waPicRaw) : ""
       });
     }
   }
