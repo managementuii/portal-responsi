@@ -333,7 +333,7 @@
         </a>
     </p>
   </footer>
-  
+
     <script>
         let allData = []; 
         let uniquePics = []; 
@@ -515,7 +515,11 @@
                 else if (item.status === "Belum Isi Form" || item.status === "Belum Isi Form Pasca Responsi") badgeClass = "bg-amber-50 text-amber-600 border border-amber-100";
                 else badgeClass = "bg-rose-50 text-rose-500 border border-rose-100";
 
-                let btnWaMhs = item.waMhs ? '<a ' + attrHref + '="https://wa.me/' + item.waMhs + '" target="_blank" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fab fa-whatsapp text-emerald-600 text-sm"></i> WA Mhs</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> WA Mhs</button>';
+                // Kita buat variabel khusus untuk mengubah awalan 0 menjadi 62 khusus untuk link
+                let waLinkMhs = item.waMhs ? '62' + item.waMhs.substring(1) : '';
+
+                // Tombol WA sekarang memanggil waLinkMhs, bukan item.waMhs
+                let btnWaMhs = item.waMhs ? '<a ' + attrHref + '="https://wa.me/' + waLinkMhs + '" target="_blank" class="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fab fa-whatsapp text-emerald-600 text-sm"></i> WA Mhs</a>' : '<button disabled class="bg-slate-50 border border-slate-200 text-slate-400 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 w-full cursor-not-allowed"><i class="fab fa-whatsapp text-sm opacity-50"></i> WA Mhs</button>';
                 
                 let btnEdit = '<button ' + attrOnclick + '="openEditModal(' + item.row + ')" class="w-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fas fa-edit text-blue-500"></i> Edit Data</button>';
                 let btnTemplate = '<button ' + attrOnclick + '="openTemplateModal(' + item.row + ')" class="w-full bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 px-2.5 py-1.5 rounded text-[11px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"><i class="fab fa-whatsapp text-blue-500 text-sm"></i> Template Pesan</button>';
