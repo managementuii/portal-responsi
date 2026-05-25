@@ -410,7 +410,10 @@
                 // Skenario 1 PIC (Langsung Direct WA)
                 btnHelp.classList.remove('hidden');
                 btnHelp.classList.add('flex');
-                btnHelp.href = "https://wa.me/" + uniquePics[0].wa;
+                // Mengubah awalan 0 menjadi 62 khusus untuk link WhatsApp
+                let linkWaPic = uniquePics[0].wa.startsWith('0') ? '62' + uniquePics[0].wa.substring(1) : uniquePics[0].wa;
+                // Pasang link yang sudah menggunakan kode negara 62
+                btnHelp.href = "https://wa.me/" + linkWaPic;
                 btnHelp.target = "_blank";
                 btnHelp.removeAttribute("onclick");
             } else if (uniquePics.length > 1) {
