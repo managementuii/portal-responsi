@@ -97,6 +97,9 @@
           <button id="btnSurat" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('surat')">
             <i class="fas fa-envelope opacity-80"></i> Konfirmasi Surat SPV
           </button>
+          <a id="btnJadwalDosen" href="https://docs.google.com/spreadsheets/d/1eaR3h-g2ho-97paIcsH5u5a-NTG2kNmHUu5CZxqIdYk/edit?gid=1914421208#gid=1914421208" target="_blank" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2">
+            <i class="fas fa-chalkboard-teacher opacity-80"></i> Jadwal Mengajar Dosen
+          </a>
         </div>
 
         <!-- ACTION CENTER -->
@@ -236,7 +239,13 @@
               <div class="absolute -left-[13px] top-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">1</div>
               <h4 class="font-bold text-slate-800 mb-2">Administrasi & Koordinasi Jadwal</h4>
               <ul class="list-disc ml-5 space-y-1.5 text-sm text-slate-600 leading-relaxed">
-                <li>Waktu pelaksanaan responsi: <b>26 Juni – 4 Juli 2026 (08.30–16.00 WIB)</b>.</li>
+                <li>
+                  Waktu pelaksanaan responsi:
+                  <div class="ml-1 mt-1 space-y-0.5">
+                    <div><b>Batch 1:</b> 26 Juni – 4 Juli 2026 (Senin - Sabtu 08.30–16.00 WIB).</div>
+                    <div><b>Batch 2:</b> 23 Juli - 8 Agustus 2026 (Senin - Sabtu 08.30-16.00 WIB).</div>
+                  </div>
+                </li>
                 <li>Wajib mengisi data melalui menu <span class="font-semibold text-slate-700 bg-white px-1.5 py-0.5 border border-slate-200 rounded text-[11px]">Konfirmasi Surat SPV</span>.</li>
                 <li>Surat undangan akan diproses setelah <b>seluruh data mahasiswa lengkap</b>, dan akan dikirim ke email SPV & Mahasiswa.</li>
                 <li>Koordinasikan jadwal dengan SPV (dapat diwakilkan) lalu konfirmasikan ke Dosen Pembimbing.</li>
@@ -685,6 +694,8 @@
           document.getElementById('btnUbah').classList.add('flex');
           document.getElementById('btnEvaluasi').classList.remove('hidden'); 
           document.getElementById('btnEvaluasi').classList.add('flex');
+          document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
+          document.getElementById('btnJadwalDosen').classList.add('flex');
           document.getElementById('actionCenterDivider').classList.remove('hidden'); 
           document.getElementById('actionCenterSection').classList.remove('hidden'); 
           document.getElementById('tablePhase2Container').classList.remove('hidden'); 
@@ -703,6 +714,8 @@
                   document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk melengkapi administrasi Surat SPV.";
                   document.getElementById('btnSurat').classList.remove('hidden'); 
                   document.getElementById('btnSurat').classList.add('flex');
+                  document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
+                  document.getElementById('btnJadwalDosen').classList.add('flex');
                   document.getElementById('tablePhase1Container').classList.remove('hidden');
                   document.getElementById('actionCenterDivider').classList.add('hidden'); 
                   document.getElementById('actionCenterSection').classList.add('hidden');
@@ -715,6 +728,8 @@
                   document.getElementById('btnUbah').classList.add('flex');
                   document.getElementById('btnEvaluasi').classList.remove('hidden'); 
                   document.getElementById('btnEvaluasi').classList.add('flex');
+                  document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
+                  document.getElementById('btnJadwalDosen').classList.add('flex');
                   document.getElementById('btnSurat').classList.add('hidden'); 
                   document.getElementById('btnSurat').classList.remove('flex');
                   document.getElementById('tablePhase2Container').classList.remove('hidden');
