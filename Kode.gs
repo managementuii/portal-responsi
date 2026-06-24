@@ -44,6 +44,7 @@ function formatWADisplay(wa) {
   if (str.startsWith("8")) return "0" + str;
   return str;
 }
+
 // ==========================================
 // OTOMATISASI KAMUS HEADER
 // ==========================================
@@ -66,7 +67,9 @@ function getKamusKolom(sheet) {
     PIC: cari("PIC Teknis", 13), WA_PIC: cari("WA PIC", 14), STATUS: cari("Status Responsi", 15),
     EMAIL_SPV: cari("Email SPV", 16), EMAIL_SITA: cari("Email SITA", 17), KEHADIRAN_SPV: cari("Kehadiran SPV", 18),
     NAMA_PENGGANTI: cari("Pengganti SPV", 19), WA_PENGGANTI: cari("WA Pengganti", 20),
-    EMAIL_PENGGANTI: cari("Email Pengganti", 21), CENTANG_W: cari("Kolom W", 22), CENTANG_X: cari("Kolom X", 23),       
+    EMAIL_PENGGANTI: cari("Email Pengganti", 21), 
+    CENTANG_W: cari("Status Responsi Mhs", 21),  // <-- Target PIC geser ke Kolom V
+    CENTANG_X: cari("Status Pasca Mhs", 22),     // <-- Target Mahasiswa geser ke Kolom W       
     ALAMAT: cari("Alamat Perusahaan", 24), ID_SPV: cari("ID SPV", 25), ID_DOSEN: cari("ID Dosen", 26),       
     STATUS_SURAT: cari("Status Surat", 27), JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
     SPV_BERDAMPAK: cari("SPV Berdampak", 29), JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
@@ -128,9 +131,34 @@ function getPreviewData() {
   var cachedData = cache.get("CACHE_PREVIEW");
   if (cachedData) return JSON.parse(cachedData);
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheets()[0];
   var KOLOM = getKamusKolom(sheet); 
   var rawData = sheet.getDataRange().getValues(); 
+
+  // ========================================================
+  // [BARU] TARIK DATA DARI SHEET 9 (VLOOKUP BERDASARKAN NIM)
+  // ========================================================
+  var sheet9 = ss.getSheetByName("Sheet9");
+  var dataMapSheet9 = {};
+  
+  if (sheet9) {
+      var rawData9 = sheet9.getDataRange().getValues();
+      // Indeks: G=6 (NIM), R=17 (Catatan), S=18 (Siap), T=19 (Nilai Dosen), U=20 (Nilai SPV)
+      for (var j = 1; j < rawData9.length; j++) {
+          var nim9 = rawData9[j][6] ? String(rawData9[j][6]).replace(/[^0-9]/g, '') : ""; // Ambil angka NIM saja
+          if (nim9 !== "") {
+              dataMapSheet9[nim9] = {
+                  catatan: rawData9[j][17] ? String(rawData9[j][17]).trim() : "",
+                  siap: rawData9[j][18],
+                  nDosen: rawData9[j][19],
+                  nSpv: rawData9[j][20]
+              };
+          }
+      }
+  }
+  // ========================================================
+
   var previewData = [];
  
   for (var i = 1; i < rawData.length; i++) {
@@ -164,12 +192,18 @@ function getPreviewData() {
 
       var isWChecked = rawData[i][KOLOM.CENTANG_W] === true || String(rawData[i][KOLOM.CENTANG_W]).toUpperCase() === "TRUE"; 
       var isXChecked = rawData[i][KOLOM.CENTANG_X] === true || String(rawData[i][KOLOM.CENTANG_X]).toUpperCase() === "TRUE"; 
-      var finalStatus = "Belum Daftar Ulang"; 
+      var rawStatusSurat = rawData[i][KOLOM.STATUS_SURAT];
+      var isSuratConfirmed = (rawStatusSurat && String(rawStatusSurat).trim() !== "");
+      var finalStatus = "";
 
-      if (timestamp > 0) {
-        if (isWChecked && isXChecked) finalStatus = "Responsi Selesai";
-        else if (isWChecked && !isXChecked) finalStatus = "Belum Isi Form Pasca Responsi";
-        else finalStatus = "Belum Responsi";
+      if (!isSuratConfirmed) {
+          finalStatus = "Belum Konfirmasi";
+      } else if (timestamp === 0) {
+          finalStatus = "Belum Daftar Ulang";
+      } else {
+          if (isWChecked && isXChecked) finalStatus = "Responsi Selesai";
+          else if (isWChecked && !isXChecked) finalStatus = "Belum Isi Form Pasca Responsi";
+          else finalStatus = "Belum Responsi";
       }
 
       var picTeknis = rawData[i][KOLOM.PIC] ? rawData[i][KOLOM.PIC].toString() : "-";
@@ -177,6 +211,17 @@ function getPreviewData() {
       var waMhsRaw = rawData[i][KOLOM.WA_MHS] || "";
       var waSpvRaw = rawData[i][KOLOM.WA_SPV] || "";
       var waDosenRaw = rawData[i][KOLOM.WA_DOSEN] || "";
+      var nimMhs = rawData[i][KOLOM.NIM] ? String(rawData[i][KOLOM.NIM]).replace(/[^0-9]/g, '') : "-";
+
+      // ========================================================
+      // [BARU] SUNTIKKAN DATA DARI SHEET 9 KE OBJEK JADWAL
+      // ========================================================
+      var extra = dataMapSheet9[nimMhs] || { catatan: "", siap: false, nDosen: false, nSpv: false };
+      
+      var statSiap = (extra.siap === true || String(extra.siap).toUpperCase() === "TRUE") ? true : (String(extra.siap).toUpperCase() === "IUP" ? "IUP" : false);
+      var statNilaiDosen = (extra.nDosen === true || String(extra.nDosen).toUpperCase() === "TRUE");
+      var statNilaiSpv = (extra.nSpv === true || String(extra.nSpv).toUpperCase() === "TRUE");
+      // ========================================================
       
       previewData.push({ 
         row: i + 1, timestamp: timestamp, tanggal: tglDisplay, tanggalInput: tglInput, jam: jamDisplay, 
@@ -184,22 +229,24 @@ function getPreviewData() {
         perusahaan: rawData[i][KOLOM.PERUSAHAAN] ? rawData[i][KOLOM.PERUSAHAAN].toString() : "-", spv: rawData[i][KOLOM.NAMA_SPV] ? rawData[i][KOLOM.NAMA_SPV].toString() : "-",
         dosbing: rawData[i][KOLOM.DOSBING] ? rawData[i][KOLOM.DOSBING].toString() : "-", waMhs: waMhsRaw !== "" ? formatWADisplay(waMhsRaw) : "",
         waSpv: waSpvRaw !== "" ? formatWADisplay(waSpvRaw) : "", waDosen: waDosenRaw !== "" ? formatWADisplay(waDosenRaw) : "",
-        pic: picTeknis, waPic: waPicRaw !== "" ? formatWADisplay(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked 
+        pic: picTeknis, waPic: waPicRaw !== "" ? formatWADisplay(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked,
+        
+        // Data Tambahan untuk Admin.html:
+        catatan: extra.catatan, siapResponsi: statSiap, nilaiDosen: statNilaiDosen, nilaiSpv: statNilaiSpv
       });
     }
   }
+  
   previewData.sort(function(a, b) {
     if (a.timestamp > 0 && b.timestamp === 0) return -1;
     if (a.timestamp === 0 && b.timestamp > 0) return 1; 
     if (a.timestamp > 0 && b.timestamp > 0) return a.timestamp - b.timestamp; 
     return 0; 
   });
-  // KODE YANG DIUBAH (Ditambahkan pelindung Try-Catch)
+
   try {
     cache.put("CACHE_PREVIEW", JSON.stringify(previewData), 1800);
   } catch (e) {
-    // Jika data terlalu besar (melebihi limit 100KB Google), abaikan error-nya.
-    // Sistem akan tetap berjalan dan mengembalikan data langsung dari Spreadsheet.
     console.log("Peringatan: Cache gagal disimpan karena data terlalu besar.");
   }
   
@@ -240,7 +287,6 @@ function getDropdownOptions() {
   }
   companies.sort(); spvs.sort();
   var result = { companies: companies, spvs: spvs };
-  // Tambahkan pelindung Try-Catch
   try {
     cache.put("CACHE_DROPDOWN", JSON.stringify(result), 3600);
   } catch (e) {
@@ -266,7 +312,7 @@ function cekBentrokDosen(sheet, KOLOM, nimToIgnore, dosbing, tglIndoStr, jamStr)
     var rJam = rawData[i][KOLOM.JAM]; var rawJamStr = "";
     if (rJam !== "") rawJamStr = (rJam instanceof Date) ? Utilities.formatDate(rJam, TIMEZONE_JKT, "HH:mm") : rJam.toString().trim();
     
-    // LOGIKA BARU: Cek rentang waktu 30 menit
+    // LOGIKA: Cek rentang waktu 30 menit
     if (rawTglStr === tglIndoStr && rawJamStr !== "" && jamStr !== "") {
         var reqParts = jamStr.split(':');
         var reqMinutes = parseInt(reqParts[0], 10) * 60 + parseInt(reqParts[1], 10);
@@ -289,11 +335,111 @@ function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
   var sheetPic = ss.getSheetByName("PIC Teknis");
   
   if (!sheetPic) return {nama: "Menunggu Admin", wa: ""};
+  
   var picData = sheetPic.getDataRange().getValues();
   var masterPics = [];
-  for(var i = 1; i < picData.length; i++) {
-      if(picData[i][1]) masterPics.push({ nama: picData[i][1].toString().trim(), wa: picData[i][2] ? picData[i][2].toString().trim() : "" });
+  
+  // Asumsi: Tanggal Request yang dipilih Mhs diubah jadi format Date untuk perbandingan
+  var tglReqDate = new Date();
+  if (tanggalRequestStr) {
+      // Ambil YYYY-MM-DD dari fungsi custom
+      var parsedStr = fromIndoDateString(tanggalRequestStr); 
+      if(parsedStr && parsedStr.indexOf("-") > -1) {
+          tglReqDate = new Date(parsedStr);
+      }
   }
+  tglReqDate.setHours(0,0,0,0); // Normalisasi ke tengah malam
+  var tglReqTime = tglReqDate.getTime();
+
+  for(var i = 1; i < picData.length; i++) {
+      if(picData[i][1]) {
+          var namaP = picData[i][1].toString().trim();
+          var waP = picData[i][2] ? picData[i][2].toString().trim() : "";
+          
+          // BACA KOLOM E (Indeks 4) SEBAGAI KOLOM "ATURAN JADWAL"
+          var ruleString = picData[i][4] ? picData[i][4].toString().trim().toUpperCase() : "";
+          var isActive = true;
+          
+          if (ruleString !== "") {
+              var lines = ruleString.split(/\r?\n|\|/); // Pisahkan jika ada baris ganda (Alt+Enter)
+              var hasAktifRule = false;
+              var passesAktifRule = false;
+              
+              for (var r = 0; r < lines.length; r++) {
+                  var line = lines[r].trim();
+                  if (line === "") continue;
+                  
+                  // 1. ATURAN AKTIF: YYYY-MM-DD [s/d YYYY-MM-DD]
+                  if (line.indexOf("AKTIF:") === 0) {
+                      hasAktifRule = true;
+                      var dates = line.replace("AKTIF:", "").split(/\s*S\/D\s*/);
+                      var sDate = new Date(dates[0].trim()); sDate.setHours(0,0,0,0);
+                      var eDate = dates.length > 1 && dates[1] ? new Date(dates[1].trim()) : new Date(sDate);
+                      eDate.setHours(23,59,59,999);
+                      
+                      if (!isNaN(sDate.getTime()) && tglReqTime >= sDate.getTime() && tglReqTime <= eDate.getTime()) {
+                          passesAktifRule = true;
+                      }
+                  }
+                  
+                  // 2. ATURAN IZIN: YYYY-MM-DD [s/d YYYY-MM-DD]
+                  else if (line.indexOf("IZIN:") === 0) {
+                      var dates = line.replace("IZIN:", "").split(/\s*S\/D\s*/);
+                      var sDate = new Date(dates[0].trim()); sDate.setHours(0,0,0,0);
+                      var eDate = dates.length > 1 && dates[1] ? new Date(dates[1].trim()) : new Date(sDate);
+                      eDate.setHours(23,59,59,999);
+                      
+                      if (!isNaN(sDate.getTime()) && tglReqTime >= sDate.getTime() && tglReqTime <= eDate.getTime()) {
+                          isActive = false; // Blokir! Mahasiswa daftar di tanggal ini
+                      }
+                  }
+                  
+                  // 3. ATURAN IZIN_JAM: YYYY-MM-DD JAM HH:MM-HH:MM
+                  else if (line.indexOf("IZIN_JAM:") === 0) {
+                      var parts = line.replace("IZIN_JAM:", "").split(/\s*JAM\s*/);
+                      if (parts.length === 2) {
+                          var dRule = new Date(parts[0].trim()); dRule.setHours(0,0,0,0);
+                          
+                          // Cek apakah tanggalnya sama dengan tanggal request mahasiswa
+                          if (!isNaN(dRule.getTime()) && dRule.getTime() === tglReqTime) {
+                              var times = parts[1].split("-");
+                              if (times.length === 2 && jamRequestStr) {
+                                  var startTParts = times[0].trim().split(":");
+                                  var endTParts = times[1].trim().split(":");
+                                  
+                                  if (startTParts.length === 2 && endTParts.length === 2) {
+                                      var startMin = parseInt(startTParts[0], 10) * 60 + parseInt(startTParts[1], 10);
+                                      var endMin = parseInt(endTParts[0], 10) * 60 + parseInt(endTParts[1], 10);
+                                      
+                                      // Ubah Jam Request Mahasiswa jadi menit
+                                      var reqParts = jamRequestStr.split(':');
+                                      if (reqParts.length === 2) {
+                                          var reqMinutes = parseInt(reqParts[0], 10) * 60 + parseInt(reqParts[1], 10);
+                                          
+                                          // Jika mahasiswa minta jam yang masuk dalam blokir, matikan status
+                                          if (reqMinutes >= startMin && reqMinutes <= endMin) {
+                                              isActive = false; 
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+              
+              // Jika PIC punya aturan AKTIF khusus, tapi tanggal request di luar itu, nonaktifkan!
+              if (hasAktifRule && !passesAktifRule) {
+                  isActive = false;
+              }
+          }
+          
+          if (isActive) {
+             masterPics.push({ nama: namaP, wa: waP });
+          }
+      }
+  }
+  
   if (masterPics.length === 0) return {nama: "Menunggu Admin", wa: ""};
 
   var rawData = sheetMain.getDataRange().getValues();
@@ -321,12 +467,14 @@ function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
       for (var k=0; k < masterPics.length; k++) { if (masterPics[k].nama === namaPIC) return masterPics[k].wa; } return "";
   }
 
+  // Cek prioritas 1: Tetap di PIC lama jika masih available
   if (picLama && picLama !== "-" && picLama !== "Menunggu Admin") {
       var picLamaTerdaftar = false;
       for (var k=0; k < masterPics.length; k++) { if (masterPics[k].nama === picLama) picLamaTerdaftar = true; }
       if (picLamaTerdaftar && busyPics.indexOf(picLama) === -1) return { nama: picLama, wa: getWaPIC(picLama) }; 
   }
 
+  // Cek prioritas 2: Gunakan PIC favorit dosen pembimbing
   var favoritePic = ""; var maxAssisted = 0;
   for (var p in dosenTally) {
       if (dosenTally[p] > maxAssisted) { maxAssisted = dosenTally[p]; favoritePic = p; }
@@ -338,6 +486,7 @@ function autoAssignPIC(tanggalRequestStr, jamRequestStr, namaDosen, picLama) {
       if (favTerdaftar && busyPics.indexOf(favoritePic) === -1) return { nama: favoritePic, wa: getWaPIC(favoritePic) }; 
   }
 
+  // Cek prioritas 3: Distribusi beban termuda
   var availablePics = [];
   for (var i=0; i < masterPics.length; i++) {
       if (busyPics.indexOf(masterPics[i].nama) === -1) availablePics.push(masterPics[i]);
@@ -382,7 +531,7 @@ function getDataByNIM(nim) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var KOLOM = getKamusKolom(sheet);
   var data = sheet.getDataRange().getValues();
- 
+  
   for (var i = 1; i < data.length; i++) {
     if (data[i][KOLOM.NIM] == nim) {
       var tglFormat = (data[i][KOLOM.TANGGAL] instanceof Date) ? Utilities.formatDate(data[i][KOLOM.TANGGAL], TIMEZONE_JKT, "yyyy-MM-dd") : fromIndoDateString(data[i][KOLOM.TANGGAL].toString());
@@ -394,15 +543,24 @@ function getDataByNIM(nim) {
       var rawWaSpv = data[i][KOLOM.WA_SPV] ? formatWADisplay(data[i][KOLOM.WA_SPV]) : "";
       var rawWaPengganti = data[i][KOLOM.WA_PENGGANTI] ? formatWADisplay(data[i][KOLOM.WA_PENGGANTI]) : "";
       var rawWaPic = data[i][KOLOM.WA_PIC] ? formatWADisplay(data[i][KOLOM.WA_PIC]) : "";
+      var statusSrt = data[i][KOLOM.STATUS_SURAT] ? data[i][KOLOM.STATUS_SURAT].toString().trim() : "";
+      
+      // [BARU] Baca isi kolom AI, amankan dari spasi & huruf kecil
+      var teksNotif = data[i][KOLOM.STATUS_NOTIF] ? String(data[i][KOLOM.STATUS_NOTIF]).trim().toUpperCase() : "";
+      
       return {
-        isNew: false, isFinished: (isWChecked && isXChecked), row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,    
+        isNew: false, 
+        isFinished: (isWChecked && isXChecked), 
+        isIUP: (teksNotif === "IUP"), // <--- [BARU] TITIPKAN STATUS INI
+        row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,    
         tanggal: tglFormat, jam: jamFormat, perusahaan: data[i][KOLOM.PERUSAHAAN], spv: data[i][KOLOM.NAMA_SPV], waSpv: rawWaSpv, dosbing: data[i][KOLOM.DOSBING],        
         emailSpv: data[i][KOLOM.EMAIL_SPV] || "", emailSita: data[i][KOLOM.EMAIL_SITA] || "", kehadiranSpv: data[i][KOLOM.KEHADIRAN_SPV] || "", namaPengganti: data[i][KOLOM.NAMA_PENGGANTI] || "",
-        waPengganti: rawWaPengganti, emailPengganti: data[i][KOLOM.EMAIL_PENGGANTI] || "", alamatPerusahaan: data[i][KOLOM.ALAMAT] || "", pic: data[i][KOLOM.PIC] || "-", waPic: rawWaPic
+        waPengganti: rawWaPengganti, emailPengganti: data[i][KOLOM.EMAIL_PENGGANTI] || "", alamatPerusahaan: data[i][KOLOM.ALAMAT] || "", pic: data[i][KOLOM.PIC] || "-", waPic: rawWaPic,
+        statusSurat: statusSrt
       };
     }
   }
-  return { isNew: true, isFinished: false, nim: nim };
+  return { isNew: true, isFinished: false, isIUP: false, nim: nim, statusSurat: "" };
 }
 
 function simpanUpdate(info) {
@@ -435,20 +593,21 @@ function simpanUpdate(info) {
     var tglLama = sheet.getRange(row, KOLOM.TANGGAL + 1).getValue();
     var jamLama = sheet.getRange(row, KOLOM.JAM + 1).getValue();
     
-    // 1. Format TANGGAL Lama agar sama bentuknya dengan tglIndoStr
     var tglLamaStr = "";
     if (tglLama && tglLama !== "") {
         tglLamaStr = (tglLama instanceof Date) ? toIndoDateString(Utilities.formatDate(tglLama, TIMEZONE_JKT, "yyyy-MM-dd")) : tglLama.toString().trim();
     }
     
-    // 2. Format JAM Lama
     var jamLamaStr = "";
     if (jamLama !== "") {
         jamLamaStr = (jamLama instanceof Date) ? Utilities.formatDate(jamLama, TIMEZONE_JKT, "HH:mm") : jamLama.toString().trim();
     }
     
-    // 3. Bandingkan dengan adil (Teks vs Teks)
-    var isReschedule = (tglLamaStr !== "") && (tglLamaStr !== tglIndoStr || jamLamaStr !== info.jam);
+    // Cek apakah ini input jadwal pertama kali (sebelumnya kolom tanggal/jam masih kosong)
+    var isFirstTimeSchedule = (tglLamaStr === "" || jamLamaStr === "");
+
+    // Cek apakah ini murni perubahan jadwal (sebelumnya ada isinya, dan sekarang jadwalnya berbeda)
+    var isReschedule = (!isFirstTimeSchedule) && (tglLamaStr !== tglIndoStr || jamLamaStr !== info.jam);
 
     var emailDosenExisting = sheet.getRange(row, KOLOM.EMAIL_DOSEN + 1).getValue();
 
@@ -456,10 +615,8 @@ function simpanUpdate(info) {
         emailDosenExisting = cariEmailDosen(sheet, info.dosbing, KOLOM);
     }
 
-    // --- TAMBAHAN LOGIKA GANTI SPV ---
     var spvLama = sheet.getRange(row, KOLOM.NAMA_SPV + 1).getValue();
     if (spvLama && String(spvLama).trim() !== "" && String(spvLama).trim() !== String(info.spv).trim()) {
-        // Jika nama SPV lama ada isinya, dan tidak sama dengan SPV baru dari form
         sheet.getRange(row, KOLOM.RIWAYAT_SPV + 1).setValue("Ganti SPV");
     }
 
@@ -483,9 +640,11 @@ function simpanUpdate(info) {
     sheet.getRange(row, 1, 1, sheet.getLastColumn()).setBackground('#e0f2fe');
     clearCache();
 
-    if (isReschedule === true) {
-        kirimEmailNotifJadwal(info, isReschedule, emailDosenExisting, idSpv, idDosen, tglIndoStr);
-    }
+    // Kirim email JIKA ini adalah pendaftaran jadwal pertama kali (Daftar Ulang) 
+// ATAU jika ada perubahan jadwal (Ubah Data)
+if (isFirstTimeSchedule === true || isReschedule === true) {
+    kirimEmailNotifJadwal(info, isReschedule, emailDosenExisting, idSpv, idDosen, tglIndoStr);
+}
     return { status: "success" };
   } catch (e) { return { status: "error", message: e.message }; } finally { lock.releaseLock(); }
 }
@@ -1202,4 +1361,10 @@ function testDebuggerDosen() {
   if (ditemukan === 0) {
      Logger.log("⚠️ PERINGATAN: TIDAK ADA SATUPUN EMAIL DOSEN YANG TERBACA! Coba cek ejaan header kolom 'Email Dosen' di Sheet Anda.");
   }
+}
+
+
+function cekSisaKuotaEmail() {
+  var sisa = MailApp.getRemainingDailyQuota();
+  Logger.log("SISA KUOTA EMAIL HARI INI: " + sisa + " penerima lagi.");
 }
