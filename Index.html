@@ -84,7 +84,20 @@
           </button>
         </div>
         
-        <div class="flex flex-wrap gap-3 mb-2 pt-2 border-t border-slate-100">
+        <div id="labelTahap1" class="hidden text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 pt-4 border-t border-slate-100">Tahap 1: Administrasi</div>
+        <div id="containerTombolAtas" class="hidden flex-wrap gap-3 mb-2">
+          <button id="btnSurat" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('surat')">
+            <i class="fas fa-envelope opacity-80"></i> Konfirmasi Surat SPV
+          </button>
+          <a id="btnJadwalDosen" href="https://docs.google.com/spreadsheets/d/1eaR3h-g2ho-97paIcsH5u5a-NTG2kNmHUu5CZxqIdYk/edit?gid=1914421208#gid=1914421208" target="_blank" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2">
+            <i class="fas fa-chalkboard-teacher opacity-80"></i> Jadwal Mengajar Dosen
+          </a>
+        </div>
+
+        <hr id="dividerTombolBawah" class="hidden my-4 border-slate-100 border-dashed">
+        
+        <div id="labelTahap2" class="hidden text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tahap 2: Pendaftaran & Evaluasi</div>
+        <div id="containerTombolBawah" class="hidden flex-wrap gap-3 mb-2">
           <button id="btnDaftar" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('jadwal_baru')">
             <i class="fas fa-calendar-plus opacity-80"></i> Daftar Ulang Responsi
           </button>
@@ -94,12 +107,6 @@
           <button id="btnEvaluasi" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('evaluasi')">
             <i class="fas fa-clipboard-check opacity-80"></i> Evaluasi Pasca Responsi
           </button>
-          <button id="btnSurat" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2" onclick="openAppModal('surat')">
-            <i class="fas fa-envelope opacity-80"></i> Konfirmasi Surat SPV
-          </button>
-          <a id="btnJadwalDosen" href="https://docs.google.com/spreadsheets/d/1eaR3h-g2ho-97paIcsH5u5a-NTG2kNmHUu5CZxqIdYk/edit?gid=1914421208#gid=1914421208" target="_blank" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-colors shadow-sm flex items-center gap-2">
-            <i class="fas fa-chalkboard-teacher opacity-80"></i> Jadwal Mengajar Dosen
-          </a>
         </div>
 
         <!-- ACTION CENTER -->
@@ -667,9 +674,17 @@
       function populateTimeDropdown() { 
           let select = document.getElementById('jam'); 
           select.innerHTML = '<option value="" disabled selected>Pilih Jam...</option>'; 
-          // UPDATE: Mulai dari jam 07, hingga <= 23. Perulangan menitnya sekarang += 30
-          for (let h = 7; h <= 23; h++) { 
+          
+          // Mulai dari jam 8 hingga jam 16
+          for (let h = 8; h <= 16; h++) { 
               for (let m = 0; m < 60; m += 30) { 
+                  
+                  // Lewati 08:00 (Mulai langsung dari 08:30)
+                  if (h === 8 && m === 0) continue;
+                  
+                  // Lewati 16:30 (Batas akhir tepat di 16:00)
+                  if (h === 16 && m === 30) continue;
+                  
                   let textOption = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
                   select.appendChild(new Option(textOption, textOption)); 
               } 
@@ -688,6 +703,17 @@
         if (typeof google === 'undefined') {
           document.getElementById('appLoader').classList.add('hidden'); 
           document.getElementById('mainContent').classList.remove('hidden'); 
+          
+          document.getElementById('labelTahap1').classList.remove('hidden');
+          document.getElementById('containerTombolAtas').classList.remove('hidden');
+          document.getElementById('containerTombolAtas').classList.add('flex');
+
+          // Container Bawah (Fase 2)
+          document.getElementById('dividerTombolBawah').classList.remove('hidden');
+          document.getElementById('labelTahap2').classList.remove('hidden');
+          document.getElementById('containerTombolBawah').classList.remove('hidden');
+          document.getElementById('containerTombolBawah').classList.add('flex');
+          
           document.getElementById('btnDaftar').classList.remove('hidden'); 
           document.getElementById('btnDaftar').classList.add('flex');
           document.getElementById('btnUbah').classList.remove('hidden'); 
@@ -696,6 +722,9 @@
           document.getElementById('btnEvaluasi').classList.add('flex');
           document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
           document.getElementById('btnJadwalDosen').classList.add('flex');
+          // Ditambahkan di sini juga untuk local environment test
+          document.getElementById('btnSurat').classList.remove('hidden'); 
+          document.getElementById('btnSurat').classList.add('flex');
           document.getElementById('actionCenterDivider').classList.remove('hidden'); 
           document.getElementById('actionCenterSection').classList.remove('hidden'); 
           document.getElementById('tablePhase2Container').classList.remove('hidden'); 
@@ -712,16 +741,37 @@
 
                 if (ACTIVE_PHASE === 1) {
                   document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk melengkapi administrasi Surat SPV.";
+                  
+                  document.getElementById('labelTahap1').classList.remove('hidden');
+                  document.getElementById('containerTombolAtas').classList.remove('hidden');
+                  document.getElementById('containerTombolAtas').classList.add('flex');
+                  
                   document.getElementById('btnSurat').classList.remove('hidden'); 
                   document.getElementById('btnSurat').classList.add('flex');
                   document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
                   document.getElementById('btnJadwalDosen').classList.add('flex');
+                  
+                  document.getElementById('dividerTombolBawah').classList.add('hidden');
+                  document.getElementById('labelTahap2').classList.add('hidden');
+                  document.getElementById('containerTombolBawah').classList.add('hidden');
+                  document.getElementById('containerTombolBawah').classList.remove('flex');
+                  
                   document.getElementById('tablePhase1Container').classList.remove('hidden');
                   document.getElementById('actionCenterDivider').classList.add('hidden'); 
                   document.getElementById('actionCenterSection').classList.add('hidden');
                   loadPhase1Data();
                 } else {
                   document.getElementById('teksMenu').innerText = "Pilih menu di bawah ini untuk mendaftar, mengubah jadwal, atau mengisi kuesioner.";
+                  
+                  document.getElementById('labelTahap1').classList.remove('hidden');
+                  document.getElementById('containerTombolAtas').classList.remove('hidden');
+                  document.getElementById('containerTombolAtas').classList.add('flex');
+                  
+                  document.getElementById('dividerTombolBawah').classList.remove('hidden');
+                  document.getElementById('labelTahap2').classList.remove('hidden');
+                  document.getElementById('containerTombolBawah').classList.remove('hidden');
+                  document.getElementById('containerTombolBawah').classList.add('flex');
+                  
                   document.getElementById('btnDaftar').classList.remove('hidden'); 
                   document.getElementById('btnDaftar').classList.add('flex');
                   document.getElementById('btnUbah').classList.remove('hidden'); 
@@ -730,8 +780,9 @@
                   document.getElementById('btnEvaluasi').classList.add('flex');
                   document.getElementById('btnJadwalDosen').classList.remove('hidden'); 
                   document.getElementById('btnJadwalDosen').classList.add('flex');
-                  document.getElementById('btnSurat').classList.add('hidden'); 
-                  document.getElementById('btnSurat').classList.remove('flex');
+                  // BUTTON SURAT KINI DITAMPILKAN DI FASE 2
+                  document.getElementById('btnSurat').classList.remove('hidden'); 
+                  document.getElementById('btnSurat').classList.add('flex');
                   document.getElementById('tablePhase2Container').classList.remove('hidden');
                   document.getElementById('actionCenterDivider').classList.remove('hidden'); 
                   document.getElementById('actionCenterSection').classList.remove('hidden');
@@ -1056,6 +1107,7 @@
           if (stat.includes('selesai')) badgeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100'; 
           else if (stat.includes('belum isi')) badgeClass = 'bg-purple-50 text-purple-600 border border-purple-200'; 
           else if (stat.includes('belum responsi')) badgeClass = 'bg-amber-50 text-amber-600 border border-amber-100';
+          else if (stat.includes('belum konfirmasi')) badgeClass = 'bg-rose-50 text-rose-500 border border-rose-100';
           
           let tglDisplay = row.tanggal === "" ? '<span class="text-slate-400 italic text-xs">Belum ditentukan</span>' : '<div class="font-medium text-slate-800 text-sm">' + row.tanggal + '</div>'; 
           let jamDisplay = row.jam === "" ? '' : '<div class="text-xs text-slate-500 mt-1">' + row.jam + ' WIB</div>'; 
@@ -1232,6 +1284,20 @@
                 Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Akses Ditolak</span>', html: '<span class="text-sm text-slate-600">Responsi telah selesai, data tidak dapat diubah.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
                 return; 
             }
+
+            // --- [BARU] CEGATAN KHUSUS MAHASISWA IUP ---
+            if (data.isIUP === true && (currentAction === 'jadwal_baru' || currentAction === 'jadwal_ubah')) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '<span class="font-semibold text-slate-800 text-lg">Akses Khusus IUP</span>',
+                    html: '<span class="text-sm text-slate-600">Pelaksanaan Responsi untuk mahasiswa <b>Program IUP</b> dijadwalkan secara terpisah.<br><br>Silakan berkoordinasi langsung dengan pengelola/admin prodi IUP.</span>',
+                    confirmButtonColor: '#f59e0b',
+                    confirmButtonText: 'Baik, Mengerti',
+                    customClass: { confirmButton: 'rounded-lg' }
+                });
+                return;
+            }
+
             if (currentAction === 'surat') { 
                 if (data.isNew) { 
                     Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Belum Terdaftar</span>', html: '<span class="text-sm text-slate-600">Data NIM kamu belum terdaftar.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } }); 
@@ -1242,6 +1308,25 @@
                 return; 
             }
             
+            // BLOKIR JIKA BELUM KONFIRMASI SURAT
+            if (currentAction === 'jadwal_baru' || currentAction === 'jadwal_ubah') {
+                if (data.isNew) {
+                    Swal.fire({ icon: 'error', title: '<span class="font-semibold text-slate-800">Akses Ditolak</span>', html: '<span class="text-sm text-slate-600">NIM Anda belum terdaftar di sistem.<br>Hubungi Admin Prodi untuk mendaftarkan NIM Anda.</span>', confirmButtonColor: '#1e293b', customClass: { confirmButton: 'rounded-lg' } });
+                    return;
+                }
+                if (data.statusSurat !== "Sudah Konfirmasi") {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '<span class="font-semibold text-slate-800 text-lg">Akses Ditolak</span>',
+                        html: '<span class="text-sm text-slate-600">Anda belum mengkonfirmasi Surat SPV (Tahap 1).<br><br>Silakan lengkapi data melalui menu <b>Konfirmasi Surat SPV</b> terlebih dahulu sebelum mendaftar jadwal.</span>',
+                        confirmButtonColor: '#f59e0b',
+                        confirmButtonText: 'Baik, Mengerti',
+                        customClass: { confirmButton: 'rounded-lg' }
+                    });
+                    return;
+                }
+            }
+
             Swal.close(); 
             setupFormJadwal(data);
           })
@@ -1644,7 +1729,11 @@
 
         Swal.fire({ 
             title: '<span class="font-semibold text-slate-800 text-lg">Konfirmasi Simpan</span>', 
-            html: '<span class="text-sm text-slate-600">Apakah Anda yakin data jadwal ini sudah benar?</span>', 
+            html: '<div class="text-sm text-slate-600">' +
+          '<p class="mb-3">Apakah Anda yakin data jadwal ini sudah benar?</p>' +
+          '<div class="bg-blue-50 border border-blue-100 text-blue-700 p-2.5 rounded-lg text-xs text-left font-medium">' +
+          '<i class="fas fa-info-circle mr-1.5"></i> Email Notifikasi Penjadwalan akan dikirimkan ke Email SPV, Email Dosen, dan Email Mahasiswa.' +
+          '</div></div>',
             icon: 'question', 
             showCancelButton: true, 
             confirmButtonColor: '#2563eb', 
