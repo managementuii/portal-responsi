@@ -69,8 +69,8 @@ function getKamusKolom(sheet) {
     NAMA_PENGGANTI: cari("Pengganti SPV", 19), WA_PENGGANTI: cari("WA Pengganti", 20),
     EMAIL_PENGGANTI: cari("Email Pengganti", 21), 
     CENTANG_W: cari("Status Responsi Mhs", 21),  // <-- Target PIC geser ke Kolom V
-    CENTANG_X: cari("Status Pasca Mhs", 22),     // <-- Target Mahasiswa geser ke Kolom W       
-    ALAMAT: cari("Alamat Perusahaan", 24), ID_SPV: cari("ID SPV", 25), ID_DOSEN: cari("ID Dosen", 26),       
+    CENTANG_X: cari("Status Pasca Mhs", 22),     // <-- Target Mahasiswa geser ke Kolom W        
+    ALAMAT: cari("Alamat Perusahaan", 24), ID_SPV: cari("ID SPV", 25), ID_DOSEN: cari("ID Dosen", 26),        
     STATUS_SURAT: cari("Status Surat", 27), JABATAN_PENGGANTI: cari("Jabatan Pengganti", 28),
     SPV_BERDAMPAK: cari("SPV Berdampak", 29), JABATAN_SPV_BERDAMPAK: cari("Jabatan SPV Berdampak", 30),
     STATUS_NOTIF: cari("Status Notifikasi", 31),
@@ -137,7 +137,7 @@ function getPreviewData() {
   var rawData = sheet.getDataRange().getValues(); 
 
   // ========================================================
-  // [BARU] TARIK DATA DARI SHEET 9 (VLOOKUP BERDASARKAN NIM)
+  // [BARU] TARIK DATA DARI SHEET 9 TERMASUK P.GATEWAY & P.VA
   // ========================================================
   var sheet9 = ss.getSheetByName("Sheet9");
   var dataMapSheet9 = {};
@@ -145,6 +145,7 @@ function getPreviewData() {
   if (sheet9) {
       var rawData9 = sheet9.getDataRange().getValues();
       // Indeks: G=6 (NIM), R=17 (Catatan), S=18 (Siap), T=19 (Nilai Dosen), U=20 (Nilai SPV)
+      // TAMBAHAN BARU: X=23 (P.Gateway), Y=24 (P.VA)
       for (var j = 1; j < rawData9.length; j++) {
           var nim9 = rawData9[j][6] ? String(rawData9[j][6]).replace(/[^0-9]/g, '') : ""; // Ambil angka NIM saja
           if (nim9 !== "") {
@@ -152,7 +153,9 @@ function getPreviewData() {
                   catatan: rawData9[j][17] ? String(rawData9[j][17]).trim() : "",
                   siap: rawData9[j][18],
                   nDosen: rawData9[j][19],
-                  nSpv: rawData9[j][20]
+                  nSpv: rawData9[j][20],
+                  pGateway: rawData9[j][23] ? String(rawData9[j][23]).trim() : "",
+                  pVa: rawData9[j][24] ? String(rawData9[j][24]).trim() : ""
               };
           }
       }
@@ -216,7 +219,7 @@ function getPreviewData() {
       // ========================================================
       // [BARU] SUNTIKKAN DATA DARI SHEET 9 KE OBJEK JADWAL
       // ========================================================
-      var extra = dataMapSheet9[nimMhs] || { catatan: "", siap: false, nDosen: false, nSpv: false };
+      var extra = dataMapSheet9[nimMhs] || { catatan: "", siap: false, nDosen: false, nSpv: false, pGateway: "", pVa: "" };
       
       var statSiap = (extra.siap === true || String(extra.siap).toUpperCase() === "TRUE") ? true : (String(extra.siap).toUpperCase() === "IUP" ? "IUP" : false);
       var statNilaiDosen = (extra.nDosen === true || String(extra.nDosen).toUpperCase() === "TRUE");
@@ -231,8 +234,9 @@ function getPreviewData() {
         waSpv: waSpvRaw !== "" ? formatWADisplay(waSpvRaw) : "", waDosen: waDosenRaw !== "" ? formatWADisplay(waDosenRaw) : "",
         pic: picTeknis, waPic: waPicRaw !== "" ? formatWADisplay(waPicRaw) : "", status: finalStatus, isWChecked: isWChecked,
         
-        // Data Tambahan untuk Admin.html:
-        catatan: extra.catatan, siapResponsi: statSiap, nilaiDosen: statNilaiDosen, nilaiSpv: statNilaiSpv
+        // Data Tambahan untuk Admin.html dan Terminal PIC:
+        catatan: extra.catatan, siapResponsi: statSiap, nilaiDosen: statNilaiDosen, nilaiSpv: statNilaiSpv,
+        pGateway: extra.pGateway, pVa: extra.pVa
       });
     }
   }
@@ -552,7 +556,7 @@ function getDataByNIM(nim) {
         isNew: false, 
         isFinished: (isWChecked && isXChecked), 
         isIUP: (teksNotif === "IUP"), // <--- [BARU] TITIPKAN STATUS INI
-        row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,    
+        row: i + 1, nim: nim, nama: data[i][KOLOM.NAMA_MHS], waMhs: rawWaMhs,   
         tanggal: tglFormat, jam: jamFormat, perusahaan: data[i][KOLOM.PERUSAHAAN], spv: data[i][KOLOM.NAMA_SPV], waSpv: rawWaSpv, dosbing: data[i][KOLOM.DOSBING],        
         emailSpv: data[i][KOLOM.EMAIL_SPV] || "", emailSita: data[i][KOLOM.EMAIL_SITA] || "", kehadiranSpv: data[i][KOLOM.KEHADIRAN_SPV] || "", namaPengganti: data[i][KOLOM.NAMA_PENGGANTI] || "",
         waPengganti: rawWaPengganti, emailPengganti: data[i][KOLOM.EMAIL_PENGGANTI] || "", alamatPerusahaan: data[i][KOLOM.ALAMAT] || "", pic: data[i][KOLOM.PIC] || "-", waPic: rawWaPic,
@@ -677,7 +681,7 @@ function simpanBaru(info) {
     rowData[KOLOM.NO] = newRow - 1; rowData[KOLOM.TANGGAL] = tglIndoStr; rowData[KOLOM.JAM] = info.jam; 
     rowData[KOLOM.NIM] = info.nim; rowData[KOLOM.NAMA_MHS] = info.nama; rowData[KOLOM.WA_MHS] = formatWA(info.waMhs); 
     rowData[KOLOM.PERUSAHAAN] = info.perusahaan; rowData[KOLOM.NAMA_SPV] = info.spv; rowData[KOLOM.WA_SPV] = formatWA(info.waSpv); 
-    rowData[KOLOM.DOSBING] = info.dosbing; rowData[KOLOM.STATUS] = "Belum Responsi"; rowData[KOLOM.EMAIL_SPV] = info.emailSpv;                 
+    rowData[KOLOM.DOSBING] = info.dosbing; rowData[KOLOM.STATUS] = "Belum Responsi"; rowData[KOLOM.EMAIL_SPV] = info.emailSpv;                  
     rowData[KOLOM.EMAIL_SITA] = info.emailSita; rowData[KOLOM.KEHADIRAN_SPV] = info.kehadiranSpv; rowData[KOLOM.NAMA_PENGGANTI] = info.namaPengganti; 
     rowData[KOLOM.WA_PENGGANTI] = formatWA(info.waPengganti); rowData[KOLOM.EMAIL_PENGGANTI] = info.emailPengganti;
     rowData[KOLOM.PIC] = assignedPIC.nama; rowData[KOLOM.WA_PIC] = formatWA(assignedPIC.wa); rowData[KOLOM.STATUS_NOTIF] = "BARU";
@@ -707,7 +711,7 @@ function simpanSurat(info) {
     if (sheet.getRange(row, KOLOM.NIM + 1).getValue() != info.nim) return { status: "error", message: "Akses Ditolak: Data tidak sinkron." };
     
     sheet.getRange(row, KOLOM.WA_MHS + 1).setValue(formatWA(info.waMhs)); sheet.getRange(row, KOLOM.PERUSAHAAN + 1).setValue(info.perusahaan);      
-    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));              
+    sheet.getRange(row, KOLOM.NAMA_SPV + 1).setValue(info.spv); sheet.getRange(row, KOLOM.WA_SPV + 1).setValue(formatWA(info.waSpv));               
     sheet.getRange(row, KOLOM.EMAIL_SPV + 1).setValue(info.emailSpv); sheet.getRange(row, KOLOM.EMAIL_SITA + 1).setValue(info.emailSita);      
     sheet.getRange(row, KOLOM.ALAMAT + 1).setValue(info.alamat); sheet.getRange(row, KOLOM.STATUS_SURAT + 1).setValue("Sudah Konfirmasi");  
     clearCache();
@@ -1362,7 +1366,6 @@ function testDebuggerDosen() {
      Logger.log("⚠️ PERINGATAN: TIDAK ADA SATUPUN EMAIL DOSEN YANG TERBACA! Coba cek ejaan header kolom 'Email Dosen' di Sheet Anda.");
   }
 }
-
 
 function cekSisaKuotaEmail() {
   var sisa = MailApp.getRemainingDailyQuota();
